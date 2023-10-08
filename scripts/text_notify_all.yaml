@@ -1,0 +1,15 @@
+---
+text_notify_all:
+  icon: mdi:forum
+  sequence:
+    - condition: state
+      entity_id: input_boolean.john_sms
+      state: "on"
+    - service: notify.ios_john
+      data_template:
+        title: >
+          {{ title }}
+        message: >
+          {{ message }}
+        data: >
+          {{ data }}

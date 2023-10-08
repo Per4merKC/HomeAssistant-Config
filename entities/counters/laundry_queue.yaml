@@ -1,0 +1,8 @@
+---
+laundry_queue:
+  name: Wash Load Queue
+  initial: 0
+  restore: true
+  step: 1
+  minimum: 0
+  icon: mdi:washing-machine-alert

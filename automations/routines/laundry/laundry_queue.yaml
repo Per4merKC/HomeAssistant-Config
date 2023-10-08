@@ -1,0 +1,61 @@
+---
+id: "00033"
+alias: Laundry Queue Alerts
+trigger:
+  - platform: time_pattern
+    minutes: "/15"
+    seconds: "00"
+condition:
+  - condition: and
+    conditions:
+      - condition: numeric_state
+        entity_id: counter.laundry_queue
+        above: "0"
+      - condition: numeric_state
+        entity_id: counter.laundry_queue
+        below: "2"
+      - condition: state
+        entity_id: binary_sensor.dryer_active
+        state: "off"
+action:
+  - service: notify.alexa_media
+    data:
+      title: Laundry Queue
+      message: >-
+        {{
+          [
+            "Wet laundry needs to be moved to the dryer",
+            "There are wet clothes in the washing machine",
+            "Don't forget about the wet laundry",
+            "Your clothes are getting stinky. Move them to the dryer",
+            "Time to cycle the wash",
+            "The laundry is finished, don't let it mildew",
+            "Put the laundry in the dryer, or you'll be naked at work tomorrow"
+          ] | random
+        }}
+      target:
+        - media_player.bathroom_flex
+        - media_player.bedroom_dot
+        - media_player.computer_room_spot
+        - media_player.kitchen_show
+        - media_player.living_room_dot
+      data:
+        type: announce
+  - service: esphome.ulanzi_del_screen
+    data:
+      icon_name: laundry
+  - service: esphome.ulanzi_add_screen
+    data:
+      icon_name: laundry
+      screen_time: 30
+      lifetime: 30
+      alarm: false
+      # yamllint disable-line rule:line-length
+      text: >
+        There
+        {%- if states("counter.laundry_queue") | int == 1 -%}
+          {{- " is 1 load " -}}
+        {%- else -%}
+          {{- " are " + states("counter.laundry_queue") + " loads " -}}
+        {%- endif -%}
+        of clothes waiting for the dryer

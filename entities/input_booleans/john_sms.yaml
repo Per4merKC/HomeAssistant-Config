@@ -1,0 +1,5 @@
+---
+john_sms:
+  name: John SMS
+  initial: true
+  icon: mdi:message-text

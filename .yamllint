@@ -1,0 +1,13 @@
+---
+extends: default
+
+ignore: |
+  blueprints/
+  custom_components/alexa_media/
+  custom_components/bhyve/
+  custom_components/browser_mod/
+  custom_components/fullykiosk/
+  custom_components/yahoofinance/
+  custom_components/smartthinq_sensors/
+  esphome/
+  themes/

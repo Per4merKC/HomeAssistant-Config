@@ -1,0 +1,8 @@
+---
+sensor:
+  name: "Shopping List Items"
+  unit_of_measurement: "items"
+  unique_id: "5532e4e6-3140-11ee-be56-0242ac120002"
+  # yamllint disable-line rule:line-length
+  command: "jq '[.[] | select(.complete==false) | .name] | length' .shopping_list.json"
+  scan_interval: 300

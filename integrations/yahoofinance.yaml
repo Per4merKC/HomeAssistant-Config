@@ -1,0 +1,9 @@
+---
+yahoofinance:
+  symbols:
+    - TMUS
+    - AAPL
+    - XRT
+    - MGC
+    - SCHD
+    - ICLN

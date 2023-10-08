@@ -1,0 +1,21 @@
+---
+id: "00031"
+alias: Update Stock Ticker Symbols
+mode: single
+trigger:
+  platform: time_pattern
+  minutes: "/30"
+condition:
+  condition: and
+  conditions:
+    - condition: time
+      after: "08:00:00"
+      before: "16:00:00"
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+action:
+  service: yahoofinance.refresh_symbols

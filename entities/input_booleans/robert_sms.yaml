@@ -1,0 +1,5 @@
+---
+robert_sms:
+  name: Robert SMS
+  initial: true
+  icon: mdi:message-text

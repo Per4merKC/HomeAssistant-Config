@@ -1,0 +1,8 @@
+---
+bp_medicine_counter:
+  name: BP Medicine Count
+  initial: 30
+  restore: true
+  step: 1
+  minimum: 0
+  icon: mdi:heart-pulse

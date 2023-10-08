@@ -1,0 +1,22 @@
+---
+id: "00035"
+alias: "Sink Light Bright Long Pressed"
+mode: restart
+trigger:
+  device_id: 394ce620875b50a4c229ded2746f81da
+  domain: zha
+  platform: device
+  type: remote_button_long_press
+  subtype: dim_up
+action:
+  - repeat:
+      while: '{{ true }}'
+      sequence:
+        - service: light.turn_on
+          data:
+            # yamllint disable-line rule:line-length
+            brightness: '{{ [[state_attr("light.sink_light","brightness")+10, 1] | max, 255] | min }}'
+            transition: 0.25
+            entity_id: "light.sink_light"
+        - delay:
+            milliseconds: 250

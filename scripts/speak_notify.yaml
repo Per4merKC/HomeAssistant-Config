@@ -1,0 +1,29 @@
+---
+speak_notify:
+  sequence:
+    - service: notify.alexa_media_living_room_dot
+      data_template:
+        message: >
+          <speak>
+            German:
+            <voice name='Hans'>
+              <lang xml:lang="de-DE">
+                Warum spielst du die beleidigte Leberwurst?
+              </lang>
+            </voice>
+            French:
+            <voice name="Mathieu">
+              <lang xml:lang="fr-FR">
+                Quand on a pas ce que l'on aime, il faut aimer ce que l'on a.
+              </lang>
+            </voice>
+            Japanese:
+            <voice name="Mizuki">
+              <lang xml:lang="ja-JP">
+                おたずねしてもいいですか
+              </lang>
+            </voice>
+          </speak>
+        data:
+          method: speak
+          type: tts

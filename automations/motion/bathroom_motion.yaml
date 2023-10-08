@@ -1,0 +1,59 @@
+---
+id: "00032"
+alias: Bathroom Motion Lights
+mode: restart
+trigger:
+  platform: state
+  entity_id: binary_sensor.bathroom_motion_detection
+  to: "on"
+action:
+  - choose:
+      - conditions:
+          - condition: and
+            conditions:
+              - condition: not
+                conditions:
+                  - condition: state
+                    entity_id: input_boolean.john_bed
+                    state: "off"
+                    for: 00:05:00
+              - condition: time
+                after: "22:00"
+                before: 05:00
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: light.bathroom_sink_4
+            data:
+              color_temp: 454
+              brightness: 10
+              transition: 5
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: sun
+                before: sunrise
+              - condition: sun
+                after: sunset
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: light.sink_light
+            data:
+              color_temp: 389
+              brightness: 75
+              transition: 5
+    default:
+      - service: light.turn_on
+        target:
+          entity_id: light.sink_light
+        data:
+          brightness: 255
+          color_temp: 300
+          transition: 5
+  - delay: "00:03:00"
+  - service: light.turn_off
+    target:
+      entity_id: light.sink_light
+    data:
+      transition: 5

@@ -1,0 +1,63 @@
+# Generic ignores
+__pycache__
+._*
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.log.*
+*.pickle
+*.pyc
+*.token
+
+# Directory (contents) ignores
+.cloud
+.storage
+deps
+
+# Specific file ignores
+._.DS_Store
+.config_entries.json
+.DS_Store
+.homekit.state
+.ios.conf
+.pip_progress
+.shopping_list.json
+.tradfri_psk.conf
+.uuid
+*.tile.conf
+core
+google_calendars.yaml
+html5_push_registrations.conf
+ip_bans.yaml
+known_devices.yaml
+options.xml
+OZW_Log.txt
+pyozw.sqlite
+secrets.yaml
+zwcfg_*
+zwscene.xml
+
+# ESPHome ignores
+esphome/secrets.yaml
+esphome/**/
+
+# Ignore add-on files
+aircast.xml
+airsonos.xml
+notebooks
+
+# Custom Components
+custom_components/
+
+# Ignore files created by IDE's
+.vscode
+.theia
+
+# Ignore TTS Generated Files
+tts/*
+
+# Specific keeps
+!.gitkeep
+!/.stubs
+!/.stubs/secrets.yaml

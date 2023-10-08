@@ -1,0 +1,11 @@
+---
+id: "00022"
+alias: Laundry Active
+trigger:
+  platform: numeric_state
+  entity_id: sensor.laundry_power_electric_consumed_w
+  above: 3000
+action:
+  - service: light.turn_on
+    target:
+      entity_id: light.tree_light

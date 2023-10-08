@@ -1,0 +1,7 @@
+---
+name: ios_all
+platform: group
+services:
+  - service: mobile_app_robert_iphone
+  - service: mobile_app_john_iphone
+  - service: mobile_app_johns_macbook_pro

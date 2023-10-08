@@ -1,0 +1,195 @@
+---
+id: "00004"
+alias: JE Daily Meds Taken
+trigger:
+  - platform: event
+    id: t_00004_ios
+    event_type: ios.notification_action_fired
+    event_data:
+      actionName: BP_TABLET_TAKEN
+    context:
+      user_id:
+        - 58f909a7060b4eabb036e244d0369894
+  - platform: device
+    id: t_00004_button
+    device_id: 99d88e062470eadce3e5ff19acd21f62
+    domain: zha
+    type: remote_button_short_press
+    subtype: turn_off
+action:
+  - service: counter.decrement
+    data: {}
+    target:
+      entity_id:
+        - counter.bp_medicine_counter
+        - counter.cholesterol_counter
+        - counter.seed_probiotic_counter
+        - counter.wb_medicine_counter
+  - service: input_boolean.turn_on
+    entity_id: input_boolean.bp_medicine
+  - service: script.text_notify_john
+    data_template:
+      title: "Thank You!"
+      message: >
+        {{
+          [
+            "Every dose you take brings you closer to good health.",
+            "Fist bump, bro! 👊",
+            "Good Job!",
+            "I believe in you! Taking your medicine as helps you heal.",
+            "I'm proud of you for taking your medicine.",
+            "Remember, each pill is a step toward feeling your best.",
+            "Thank you for taking your medicine today!",
+            "Thanks for taking care of your your 🧠, 🩸, and 💖",
+            "Way to go!",
+            "You're showing strength by taking your medicine consistently.",
+            "You've got this! It's a great step toward feeling better.",
+            "Your commitment to your health is inspiring.",
+            "Your future-self thanks you!",
+            "Your medicine is like a superhero that fights off illness."
+          ] | random
+        }}
+      data: {}
+  - condition: trigger
+    id: t_00004_button
+  - service: notify.alexa_media
+    data:
+      # yamllint disable-line rule:line-length
+      message: <audio src="soundbank://soundlibrary/computers/beeps_tones/beeps_tones_09"/>
+      target: media_player.bathroom_flex
+      data:
+        type: tts
+
+  # Blood Pressure
+  - if:
+      - condition: numeric_state
+        entity_id: counter.bp_medicine_counter
+        below: 5
+    then:
+      - if:
+          - condition: trigger
+            id: t_00004_button
+        then:
+          - service: notify.alexa_media
+            data:
+              message: >
+                Your blood pressure prescription is low with
+                {% if int(states("counter.bp_medicine_counter")) == 1 -%}
+                  {{  states("counter.bp_medicine_counter") }} dose left.
+                {%- else -%}
+                  {{  states("counter.bp_medicine_counter") }} doses left.
+                {%- endif %}
+              target: media_player.bathroom_flex
+              data:
+                type: announce
+      - service: notify.persistent_notification
+        data:
+          title: 🩸 Prescription Low
+          message: >
+            Your blood pressure prescription is low with
+            {% if int(states("counter.bp_medicine_counter")) == 1 -%}
+              {{  states("counter.bp_medicine_counter") }} dose left.
+            {%- else -%}
+              {{  states("counter.bp_medicine_counter") }} doses left.
+            {%- endif %}
+
+  # Cholesterol
+  - if:
+      - condition: numeric_state
+        entity_id: counter.cholesterol_counter
+        below: 5
+    then:
+      - if:
+          - condition: trigger
+            id: t_00004_button
+        then:
+          - service: notify.alexa_media
+            data:
+              message: >
+                Your cholesterol prescription is low with
+                {% if int(states("counter.cholesterol_counter")) == 1 -%}
+                  {{  states("counter.cholesterol_counter") }} dose left.
+                {%- else -%}
+                  {{  states("counter.cholesterol_counter") }} doses left.
+                {%- endif %}
+              target: media_player.bathroom_flex
+              data:
+                type: announce
+      - service: notify.persistent_notification
+        data:
+          title: 💊 Prescription Low
+          message: >
+            Your cholesterol prescription is low with
+            {% if int(states("counter.cholesterol_counter")) == 1 -%}
+              {{  states("counter.cholesterol_counter") }} dose left.
+            {%- else -%}
+              {{  states("counter.cholesterol_counter") }} doses left.
+            {%- endif %}
+
+  # Probiotic
+  - if:
+      - condition: numeric_state
+        entity_id: counter.seed_probiotic_counter
+        below: 10
+    then:
+      - if:
+          - condition: trigger
+            id: t_00004_button
+        then:
+          - service: notify.alexa_media
+            data:
+              message: >
+                Your probiotic supplement is low with
+                {% if (int(states("counter.seed_probiotic_counter"))/2) == 1 -%}
+                  {{  int(states("counter.seed_probiotic_counter"))/2 }}
+                  dose left.
+                {%- else -%}
+                  {{  int(states("counter.seed_probiotic_counter"))/2 }}
+                  doses left.
+                {%- endif %}
+              target: media_player.bathroom_flex
+              data:
+                type: announce
+      - service: notify.persistent_notification
+        data:
+          title: 💩 Supplement Low
+          message: >
+            Your probiotic supplement prescription is low with
+            {% if int(states("counter.seed_probiotic_counter")) == 1 -%}
+              {{  states("counter.seed_probiotic_counter") }} dose left.
+            {%- else -%}
+              {{  states("counter.seed_probiotic_counter") }} doses left.
+            {%- endif %}
+
+  # Wellbutrin
+  - if:
+      - condition: numeric_state
+        entity_id: counter.wb_medicine_counter
+        below: 5
+    then:
+      - if:
+          - condition: trigger
+            id: t_00004_button
+        then:
+          - service: notify.alexa_media
+            data:
+              message: >
+                Your blood pressure prescription is low with
+                {% if int(states("counter.wb_medicine_counter")) == 1 -%}
+                  {{  states("counter.wb_medicine_counter") }} dose left.
+                {%- else -%}
+                  {{  states("counter.wb_medicine_counter") }} doses left.
+                {%- endif %}
+              target: media_player.bathroom_flex
+              data:
+                type: announce
+      - service: notify.persistent_notification
+        data:
+          title: 🧠 Prescription Low
+          message: >
+            Your wellbutrin prescription is low with
+            {% if int(states("counter.wb_medicine_counter")) == 1 -%}
+              {{  states("counter.wb_medicine_counter") }} dose left.
+            {%- else -%}
+              {{  states("counter.wb_medicine_counter") }} doses left.
+            {%- endif %}

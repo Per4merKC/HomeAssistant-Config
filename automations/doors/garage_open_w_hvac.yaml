@@ -1,0 +1,32 @@
+---
+id: "00011"
+alias: HVAC on and Garage Door Open Long
+trigger:
+  - entity_id: binary_sensor.garage_door
+    platform: state
+    from: "off"
+    to: "on"
+    for:
+      minutes: 10
+condition:
+  condition: or
+  conditions:
+    - condition: and
+      conditions:
+        - condition: template
+          value_template: "{{ states.climate.thermostat.state == 'heat'}}"
+        - condition: template
+          # yamllint disable-line rule:line-length
+          value_template: "{{ states.weather.honey_haus.attributes.temperature | float < states.climate.thermostat.attributes.temperature | float }}"
+    - condition: and
+      conditions:
+        - condition: template
+          value_template: "{{ states.climate.thermostat.state == 'cool'}}"
+        - condition: template
+          # yamllint disable-line rule:line-length
+          value_template: "{{ states.weather.honey_haus.attributes.temperature | float > states.climate.thermostat.attributes.temperature | float }}"
+action:
+  - data:
+      message: Garage door open and HVAC is running
+      title: HVAC Alert
+    service: script.text_notify_john

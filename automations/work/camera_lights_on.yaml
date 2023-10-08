@@ -1,0 +1,15 @@
+---
+id: "00026"
+alias: Camera Lights On
+mode: single
+trigger:
+  platform: state
+  entity_id: binary_sensor.johns_macbook_pro_camera_in_use
+  to: "on"
+condition:
+  condition: state
+  entity_id: device_tracker.johns_macbook_pro
+  state: home
+action:
+  service: light.turn_on
+  entity_id: light.elgato_ring_light

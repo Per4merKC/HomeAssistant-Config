@@ -1,0 +1,18 @@
+---
+id: "00038"
+alias: "Sink Light Left Pressed"
+mode: restart
+trigger:
+  device_id: 394ce620875b50a4c229ded2746f81da
+  domain: zha
+  platform: device
+  type: remote_button_short_press
+  subtype: left
+action:
+  - service: light.turn_on
+    data:
+      # yamllint disable-line rule:line-length
+      color_temp: '{{ [state_attr("light.sink_light","color_temp")|int - 50, 1]|max }}'
+      transition: 0.25
+    target:
+      entity_id: light.sink_light

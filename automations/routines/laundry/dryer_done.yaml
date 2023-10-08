@@ -1,0 +1,19 @@
+---
+id: "00030"
+alias: Dryer Done
+trigger:
+  platform: numeric_state
+  entity_id: sensor.dryer_hem_power
+  below: 3
+  for:
+    minutes: 2
+action:
+  - service: light.turn_off
+    target:
+      entity_id: light.fairy_lights
+  - service: counter.decrement
+    target:
+      entity_id: counter.laundry_queue
+  - service: esphome.ulanzi_del_screen
+    data:
+      icon_name: laundry

@@ -1,0 +1,7 @@
+---
+name: T-Mobile
+latitude: 38.91557963389569
+longitude: -94.65879321098328
+icon: mdi:cellphone-cog
+passive: false
+radius: 58

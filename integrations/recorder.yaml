@@ -1,0 +1,12 @@
+---
+recorder:
+  # yamllint disable-line rule:line-length
+  db_url: mysql://homeassistant:priGz#v*aU#iM6]k2~@core-mariadb/homeassistant?charset=utf8
+  purge_keep_days: 10
+  exclude:
+    domains:
+      - updater
+      - weblink
+      - sun
+    entities:
+      - sensor.local_time

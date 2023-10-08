@@ -1,0 +1,6 @@
+---
+sensor:
+  name: Lines of Code
+  unique_id: "da9f5d52-0941-11ee-be56-0242ac120002"
+  command: "find /config -name '*.yaml' | xargs cat | wc -l"
+  scan_interval: 20000

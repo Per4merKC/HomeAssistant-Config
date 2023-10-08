@@ -1,0 +1,315 @@
+substitutions:
+  devicename: ulanzi
+  matrix_pin: GPIO32 
+  buzzer_pin: GPIO15
+  battery_pin: GPIO34 
+  ldr_pin: GPIO35 
+  left_button_pin: GPIO26 
+  mid_button_pin: GPIO27 
+  right_button_pin: GPIO14 
+  scl_pin: GPIO22 
+  sda_pin: GPIO21 
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/lubeda/EsphoMaTrix
+    refresh: 60s 
+    components: [ ehmtx ]   
+
+esphome:
+  comment: "Ulanzi TC001"
+  name: $devicename 
+  on_boot:
+    then:
+      - ds1307.read_time:
+  
+esp32:
+  board: esp32dev
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+web_server:
+  auth:
+    username: !secret web_server_username
+    password: !secret web_server_password
+  port: 8080
+
+font: 
+  # adapt the filename to your local settings
+  - file: mateine.ttf
+    id: default_font
+    size: 16
+    glyphs:  |
+      !?"%‰()+*=,-_.:°µ²³0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnÖÄÜöäüopqrstuvwxyz€$@<>/
+
+ehmtx:
+  id: rgb8x32
+  time_component: ehmtx_time
+  matrix_component: ehmtx_display
+  clock_time: 5           # duration to display the clock after this time the date is display until next "show_screen"
+  clock_interval: 60      # show the clock at least each x seconds
+  screen_time: 9          # duration to display a screen or a clock/date sequence
+  date_format: "%m/%d"    # defaults "%d.%m." (use "%m.%d." for the US)
+  time_format: "%I:%M%p"    # defaults "%H:%M" (use "%I:%M%p" for the US)
+  show_dow: false         # draw the day indicator on the bottom of the screen, defaults to true
+  show_date: true         # show the date for show_screen - show_clock seconds otherwise only shows the clock for show_screen seconds, defaults to true
+  week_start_monday: false # default monday is first day of week, false = sunday
+  yoffset: 8              # the text is aligned BASELINE_LEFT, the baseline defaults to 6
+  xoffset: 1              # the text is aligned BASELINE_LEFT, the left defaults to 1
+  scroll_interval: 80    # the interval in ms to scroll the text (default=80), should be a multiple of the update_interval from the display (default: 16ms)
+  frame_interval: 192     # the interval in ms to display the next anim frame (default=192), should be a multiple of the update_interval from the display (default: 16ms)
+  font_id: default_font
+  icons: 
+    - id: ha
+      lameid: 7956
+    - id: tempc
+      lameid: 2422
+    - id: plug
+      lameid: 403
+    - id: humidity
+      lameid: 51764
+    - id: laundry
+      lameid: 54961
+    - id: co2
+      lameid: 30662
+    - id: umbrella
+      lameid: 41619
+    - id: weather_clear_night
+      lameid: 53383
+    - id: weather_cloudy
+      frame_duration: 192
+      lameid: 25991
+    - id: weather_exceptional
+      lameid: 16754
+    - id: weather_fog
+      lameid: 52167
+    - id: weather_hail
+      lameid: 53288
+    - id: weather_lightning
+      lameid: 23713
+    - id: weather_lightning_rainy
+      lameid: 49299
+    - id: weather_partlycloudy
+      frame_duration: 210
+      lameid: 22160
+    - id: weather_pouring
+      lameid: 49300
+    - id: weather_rainy
+      lameid: 26565
+    - id: weather_snowy
+      lameid: 2289
+    - id: weather_snowy_rainy
+      lameid: 49301
+    - id: weather_sunny
+      lameid: 11201
+    - id: weather_windy
+      lameid: 15618
+    - id: weather_windy_variant
+      lameid: 15618
+    - id: weather_cloudy_night
+      lameid: 12195
+
+binary_sensor:
+  - platform: status
+    name: "$devicename Status"
+  - platform: gpio
+    pin:
+      number: $left_button_pin
+      inverted: true
+    name: "$devicename left button"
+    on_press:
+      then:
+        - number.decrement: screen_brightness
+  - platform: gpio
+    pin: 
+      inverted: true
+      number: $mid_button_pin
+      mode: INPUT_PULLUP
+    name: "$devicename middle button"
+    on_press:
+      then:
+        - switch.toggle: displaycontrol
+  - platform: gpio
+    pin: 
+      number: $right_button_pin
+      inverted: true
+    name: "$devicename right button"
+    on_press:
+      then:
+        - number.increment: screen_brightness
+# example to switch to next screen
+#        lambda: |-
+#          id(rgb8x32)->skip_screen();
+logger:
+  level: INFO
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret esphome_encryption_key
+  services:
+    - service: alarm
+      variables:
+        icon_name: string
+        text: string
+      then:
+        lambda: |-
+          id(rgb8x32)->add_screen(icon_name,text,7,20,true);
+          id(rgb8x32)->force_screen(icon_name);
+    - service: brightness
+      variables:
+        brightness: int
+      then:
+        lambda: |-
+          id(rgb8x32)->set_brightness(brightness);
+    - service: icons
+      then:
+        lambda: |-
+          id(rgb8x32)->show_all_icons();
+    - service: skip_screen
+      then:
+        lambda: |-
+          id(rgb8x32)->skip_screen();
+#    - service: tuneplay
+#      variables:
+#        tune: string
+#       then:
+#        - rtttl.play:
+#            rtttl: !lambda 'return tune;'
+
+number:
+  - platform: template
+    name: "$devicename brightness"
+    id: screen_brightness
+    min_value: 0
+    max_value: 255
+    update_interval: 1s
+    step: 25
+    lambda: |-
+      return id(rgb8x32)->get_brightness();
+    set_action:
+      lambda: |-
+        id(rgb8x32)->set_brightness(x);
+
+switch:
+  - platform: template
+    name: "$devicename Display"
+    id: displaycontrol
+    icon: "mdi:power"
+    restore_mode: ALWAYS_ON
+    lambda: |-
+      return id(rgb8x32)->show_display;
+    turn_on_action:
+      lambda: |-
+        id(rgb8x32)->set_display_on();
+    turn_off_action:
+      lambda: |-
+        id(rgb8x32)->set_display_off();
+
+sensor:
+  - platform: sht3xd
+    temperature:
+      name: "$devicename Temperature"
+    humidity:
+      name: "$devicename Humidity"
+    update_interval: 60s
+  - platform: adc
+    pin: $battery_pin
+    name: "$devicename Battery"
+    id: battery_voltage
+    update_interval: 10s
+    device_class: battery
+    accuracy_decimals: 0
+    attenuation: auto
+    filters:
+      - sliding_window_moving_average:
+          window_size: 15
+          send_every: 15
+          send_first_at: 1
+      - multiply: 1.6
+      - lambda: |-
+          return ((x - 3) / 0.69 * 100.00);
+    unit_of_measurement: '%'
+  - platform: adc
+    id: light_sensor
+    name: "$devicename Illuminance"
+    pin: $ldr_pin
+    update_interval: 10s
+    attenuation: auto
+    unit_of_measurement: lx
+    accuracy_decimals: 0
+    filters:
+      - lambda: |-
+          return (x / 10000.0) * 2000000.0 - 15 ;
+    
+output:
+  - platform: ledc
+    pin: $buzzer_pin
+    id: rtttl_out
+
+rtttl:
+  output: rtttl_out
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: true
+  id: bus_a
+
+light:
+  - platform: neopixelbus
+    id: ehmtx_light
+    type: GRB
+    variant: WS2812
+    pin: $matrix_pin
+    num_leds: 256
+    color_correct: [30%, 30%, 30%]
+    name: "$devicename Light"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      lambda: |-
+         id(ehmtx_display)->set_enabled(false);
+    on_turn_off:
+       lambda: |-
+         id(ehmtx_display)->set_enabled(true);
+
+time:
+  - platform: homeassistant
+    on_time_sync:
+      then:
+        ds1307.write_time:
+  - platform: ds1307
+    update_interval: never
+    id: ehmtx_time
+  
+display:
+  - platform: addressable_light
+    id: ehmtx_display
+    addressable_light_id: ehmtx_light
+    width: 32
+    height: 8
+    pixel_mapper: |-
+      if (y % 2 == 0) {
+        return (y * 32) + x;
+      }
+      return (y * 32) + (31 - x);
+    rotation: 0°
+    update_interval: 16ms
+    auto_clear_enabled: true
+    lambda: |-
+      id(rgb8x32)->tick();
+      id(rgb8x32)->draw();
+
+animation:
+  - id: animation_black
+    file: "black.gif"
+
+image:
+  - id: image_black
+    file: "black.gif"

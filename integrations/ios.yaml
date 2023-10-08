@@ -1,0 +1,30 @@
+---
+ios:
+  push:
+    categories:
+      - name: BP Medicine
+        identifier: "bp_med"
+        actions:
+          - identifier: "BP_TABLET_TAKEN"
+            title: "BP Tablet Taken"
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false
+          - identifier: "BP_TABLET_SNOOZE"
+            title: "BP Tablet Snooze"
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false
+      - name: Metformin Medicine
+        identifier: "mf_med"
+        actions:
+          - identifier: "MF_TABLET_TAKEN"
+            title: "Metformin Taken"
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false
+          - identifier: "MF_TABLET_SNOOZE"
+            title: "Metformin Snooze"
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false

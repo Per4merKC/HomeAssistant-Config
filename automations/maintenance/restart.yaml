@@ -1,0 +1,10 @@
+---
+id: "00024"
+alias: Home-Assistant Restart
+mode: single
+trigger:
+  platform: homeassistant
+  event: start
+action:
+  service: group.reload
+  data: {}

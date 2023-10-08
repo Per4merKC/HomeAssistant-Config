@@ -1,0 +1,13 @@
+---
+id: "00053"
+alias: Ulanzi Recharge Stop
+description: "Turn off power to recharge Ulanzi display"
+mode: single
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.ulanzi_battery
+    above: 95.0
+action:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.ulanzi_power_source

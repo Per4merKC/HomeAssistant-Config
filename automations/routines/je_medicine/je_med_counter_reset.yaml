@@ -1,0 +1,81 @@
+---
+id: "00044"
+alias: JE Medicine Counter Reset
+trigger:
+  platform: device
+  device_id: 99d88e062470eadce3e5ff19acd21f62
+  domain: zha
+  type: remote_button_long_release
+  subtype: dim_up
+action:
+  - if:
+      - condition: numeric_state
+        entity_id: counter.bp_medicine_counter
+        below: 5
+    then:
+      - service: counter.reset
+        data: {}
+        target:
+          entity_id:
+            - counter.bp_medicine_counter
+      - service: notify.alexa_media
+        data:
+          message: >
+            I have reset your blood pressure medicine counter.
+          target: media_player.bathroom_flex
+          data:
+            type: announce
+
+  - if:
+      - condition: numeric_state
+        entity_id: counter.cholesterol_counter
+        below: 5
+    then:
+      - service: counter.reset
+        data: {}
+        target:
+          entity_id:
+            - counter.cholesterol_counter
+      - service: notify.alexa_media
+        data:
+          message: >
+            I have reset your cholesterol medicine counter.
+          target: media_player.bathroom_flex
+          data:
+            type: announce
+
+  - if:
+      - condition: numeric_state
+        entity_id: counter.wb_medicine_counter
+        below: 5
+    then:
+      - service: counter.reset
+        data: {}
+        target:
+          entity_id:
+            - counter.wb_medicine_counter
+      - service: notify.alexa_media
+        data:
+          message: >
+            I have reset your anxiety medicine counter.
+          target: media_player.bathroom_flex
+          data:
+            type: announce
+
+  - if:
+      - condition: numeric_state
+        entity_id: counter.seed_probiotic
+        below: 10
+    then:
+      - service: counter.reset
+        data: {}
+        target:
+          entity_id:
+            - counter.seed_probiotic
+      - service: notify.alexa_media
+        data:
+          message: >
+            I have reset your probiotic counter.
+          target: media_player.bathroom_flex
+          data:
+            type: announce

@@ -1,0 +1,16 @@
+---
+id: "00036"
+alias: "Sink Light Dim Pressed"
+mode: restart
+trigger:
+  device_id: 394ce620875b50a4c229ded2746f81da
+  domain: zha
+  platform: device
+  type: remote_button_short_press
+  subtype: dim_down
+action:
+  - service: light.turn_on
+    data:
+      brightness_step_pct: -10
+    target:
+      entity_id: light.sink_light

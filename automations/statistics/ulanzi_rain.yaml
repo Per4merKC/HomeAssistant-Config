@@ -1,0 +1,37 @@
+---
+id: "00054"
+alias: Ulanzi Rain
+description: shows the local rain data
+trigger:
+  - platform: state
+    entity_id: sensor.netatmo_netatmo_indoor_rain_gauge_rain
+variables:
+  rain_now: >-
+    {{
+      states("sensor.netatmo_netatmo_indoor_rain_gauge_rain")
+      | float(2)
+    }}
+  rain_day: >-
+    {{
+      states("sensor.netatmo_netatmo_indoor_rain_gauge_rain_today")
+      | float(2)
+    }}
+action:
+  - service: esphome.ulanzi_del_screen
+    data:
+      icon_name: umbrella
+  - service: esphome.ulanzi_add_screen
+    data:
+      icon_name: umbrella
+      screen_time: 30
+      lifetime: 30
+      alarm: false
+      text: >-
+        {% if rain_now > 0 %}
+          Current Rain: {{ rain_now }}
+          {{
+            state_attr("sensor.netatmo_netatmo_indoor_rain_gauge_rain",
+            "unit_of_measurement")
+          }} in
+        {% endif %}
+        Total Rain: {{ rain_day }} in

@@ -1,0 +1,13 @@
+---
+id: "00052"
+alias: Ulanzi Recharge Start
+description: "Turn on power to recharge Ulanzi display"
+mode: single
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.ulanzi_battery
+    below: 5.0
+action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.ulanzi_power_source

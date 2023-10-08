@@ -1,0 +1,15 @@
+---
+platform: template
+sensors:
+  living_room_smoke_status:
+    unique_id: 3b857d69-7805-4272-b2cf-0b9eadea4a87
+    friendly_name: Living Room Smoke Detector
+    device_class: smoke
+    # yamllint disable rule:line-length
+    value_template: >-
+      {% if is_state('sensor.basement_smoke_alarm_level', '255') and is_state('sensor.basement_smoke_alarm_type', '1') %}
+        On
+      {% else %}
+        Off
+      {% endif %}
+    # yamllint enable rule:line-length

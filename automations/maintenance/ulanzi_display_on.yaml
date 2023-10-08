@@ -1,0 +1,20 @@
+---
+id: "00056"
+alias: Ulanzi Display On
+description: "Turn on the Ulanzi display"
+mode: single
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.withings_in_bed_john
+      - binary_sensor.withings_in_bed_robert
+    to: "off"
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+condition:
+  - condition: time
+    after: "05:00:00"
+action:
+  - service: esphome.ulanzi_display_on

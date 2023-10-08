@@ -1,0 +1,11 @@
+---
+sensor:
+  - name: RB Fat Mass
+    unit_of_measurement: "lbs"
+    state: >-
+      {{
+        (states('sensor.withings_fat_mass_kg_robert')
+        | float(0) * 2.20462262185)
+        | round(2, default=0)
+      }}
+    icon: "mdi:weight-pound"

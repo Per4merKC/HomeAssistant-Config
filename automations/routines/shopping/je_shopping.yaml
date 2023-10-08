@@ -1,0 +1,43 @@
+---
+id: "00048"
+alias: "JE Shopping at Store"
+description: "JE is at store shopping, the shopping list"
+mode: single
+trigger:
+  - platform: zone
+    entity_id: person.john
+    event: enter
+    zone: zone.aldi_row
+  - platform: zone
+    entity_id: person.john
+    zone: zone.costco
+    event: enter
+  - platform: zone
+    entity_id: person.john
+    zone: zone.hy_vee
+    event: enter
+  - platform: zone
+    entity_id: person.john
+    zone: zone.trader_joe_s
+    event: enter
+condition:
+  - condition: numeric_state
+    entity_id: sensor.shopping_list_items
+    above: 0
+action:
+  - service: notify.ios_john
+    data:
+      title: Shopping List
+      data:
+        actions:
+          - action: "URI"
+            title: "Open Shopping List"
+            uri: "/shopping-list"
+      message: >
+        There
+        {% if int(states("sensor.shopping_list_items")) == 1 -%}
+        is 1 item
+        {%- else -%}
+        are {{ states("sensor.shopping_list_items") }} items
+        {%- endif %}
+        on the shopping list.

@@ -1,0 +1,16 @@
+---
+homeassistant:
+  country: US
+  currency: USD
+  elevation: 283
+  external_url: https://hive.honeyhaus.dev
+  internal_url: http://192.168.86.30:8123
+  language: en
+  latitude: !secret ha_lat
+  longitude: !secret ha_lon
+  name: Honey Haus
+  packages: !include_dir_named integrations
+  temperature_unit: F
+  time_zone: America/Chicago
+  unit_system: imperial
+default_config:

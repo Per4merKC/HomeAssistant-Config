@@ -1,0 +1,3 @@
+---
+shell_command:
+  reload_ikea: !secret ikea_reload_url

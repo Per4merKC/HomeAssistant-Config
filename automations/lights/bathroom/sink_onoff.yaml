@@ -1,0 +1,13 @@
+---
+id: "00040"
+alias: "Sink Light On-Off"
+trigger:
+  device_id: 394ce620875b50a4c229ded2746f81da
+  domain: zha
+  platform: device
+  type: remote_button_short_press
+  subtype: turn_on
+action:
+  service: light.toggle
+  target:
+    entity_id: light.sink_light

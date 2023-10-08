@@ -1,0 +1,13 @@
+---
+id: "00057"
+alias: Kindle Fire Recharge Start
+description: "Turn on power to recharge Kindle Fire Tablet"
+mode: single
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.fire_tablet_battery
+    below: 5.0
+action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.tablet_power

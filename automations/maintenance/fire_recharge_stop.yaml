@@ -1,0 +1,13 @@
+---
+id: "00058"
+alias: Kindle Fire Recharge Stop
+description: "Turn off power to recharge Kindle Fire tablet"
+mode: single
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.fire_tablet_battery
+    above: 95.0
+action:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.tablet_power

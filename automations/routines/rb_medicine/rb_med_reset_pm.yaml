@@ -1,0 +1,9 @@
+---
+id: "00017"
+alias: Metformin Reset PM
+trigger:
+  - platform: time
+    at: "18:25:00"
+action:
+  - service: input_boolean.turn_off
+    entity_id: input_boolean.mf_medicine

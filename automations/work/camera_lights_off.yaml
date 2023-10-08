@@ -1,0 +1,15 @@
+---
+id: "00027"
+alias: Camera Lights Off
+mode: single
+trigger:
+  platform: state
+  entity_id: binary_sensor.johns_macbook_pro_camera_in_use
+  to: "off"
+condition:
+  condition: state
+  entity_id: device_tracker.johns_macbook_pro
+  state: home
+action:
+  service: light.turn_off
+  entity_id: light.elgato_ring_light

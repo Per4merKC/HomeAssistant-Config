@@ -1,0 +1,26 @@
+---
+id: "00015"
+alias: Metformin Remind Me Later
+trigger:
+  platform: event
+  event_type: ios.notification_action_fired
+  event_data:
+    actionName: MF_TABLET_SNOOZE
+action:
+  - service: script.text_notify_robert
+    data:
+      title: "💤 Snooze"
+      message: "Ok. I will remind you in a few hours..."
+      data: {}
+  - service: automation.turn_off
+    entity_id: automation.metformin_am_reminder
+  - service: automation.turn_off
+    entity_id: automation.metformin_pm_reminder
+  - delay:
+      hours: 3
+      minutes: 0
+      seconds: 0
+  - service: automation.turn_on
+    entity_id: automation.metformin_am_reminder
+  - service: automation.turn_on
+    entity_id: automation.metformin_pm_reminder

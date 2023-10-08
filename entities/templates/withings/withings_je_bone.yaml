@@ -1,0 +1,11 @@
+---
+sensor:
+  - name: JE Bone Mass
+    unit_of_measurement: "lbs"
+    state: >-
+      {{
+        (states('sensor.withings_bone_mass_kg_john')
+        | float(0) * 2.20462262185)
+        | round(2, default=0)
+      }}
+    icon: "mdi:weight-pound"

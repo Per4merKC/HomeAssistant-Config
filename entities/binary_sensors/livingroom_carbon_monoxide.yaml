@@ -1,0 +1,15 @@
+---
+platform: template
+sensors:
+  living_room_carbon_monoxide_status:
+    unique_id: 63c9d4a3-0181-456a-af28-54508e5bbb34
+    friendly_name: Living Room Carbon Monoxide Detector
+    device_class: carbon_monoxide
+    # yamllint disable rule:line-length
+    value_template: >-
+      {% if is_state('sensor.basement_smoke_alarm_level', '255') and is_state('sensor.basement_smoke_alarm_type', '2') %}
+        On
+      {% else %}
+        Off
+      {% endif %}
+    # yamllint enable rule:line-length

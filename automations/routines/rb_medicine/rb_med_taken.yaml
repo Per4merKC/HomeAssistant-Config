@@ -1,0 +1,34 @@
+---
+id: "00016"
+alias: Metformin Taken
+trigger:
+  platform: event
+  event_type: ios.notification_action_fired
+  event_data:
+    actionName: MF_TABLET_TAKEN
+action:
+  - service: script.text_notify_robert
+    data_template:
+      title: "Thank You!"
+      message: >
+        {{
+          [
+            "Every dose you take brings you closer to good health.",
+            "Fist bump, bro! 👊",
+            "Good Job!",
+            "I believe in you! Taking your medicine as helps you heal.",
+            "I'm proud of you for taking your medicine.",
+            "Remember, each pill is a step toward feeling your best.",
+            "Thank you for taking your medicine today!",
+            "Way to go!",
+            "You're showing strength by taking your medicine consistently.",
+            "You've got this! It's a great step toward feeling better.",
+            "Your commitment to your health is inspiring.",
+            "Your future-self thanks you!",
+            "Your medicine is like a superhero that fights off illness."
+          ] | random
+        }}
+      data: {}
+  - service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.mf_medicine

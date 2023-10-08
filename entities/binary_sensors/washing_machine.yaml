@@ -1,0 +1,6 @@
+---
+platform: threshold
+entity_id: sensor.laundry_power_electric_consumed_w
+upper: 3000
+name: Wash Active
+device_class: power

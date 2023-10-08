@@ -1,0 +1,51 @@
+---
+id: "00046"
+alias: Ulanzi Weather
+description: shows the local weatherdata with the icon based on cloud service
+trigger:
+  - platform: state
+    entity_id: weather.honey_haus
+variables:
+  air_temp: >-
+    {{ state_attr('weather.honey_haus', 'temperature') }}
+    {{ state_attr('weather.honey_haus', 'temperature_unit') }}
+  humid_info: >-
+    {{ state_attr('weather.honey_haus', 'humidity') }}%
+  wind_dir: >-
+    {% set direction = [
+      'N',
+      'NNE',
+      'NE',
+      'ENE',
+      'E',
+      'ESE',
+      'SE',
+      'SSE',
+      'S',
+      'SSW',
+      'SW',
+      'WSW',
+      'W',
+      'WNW',
+      'NW',
+      'NNW',
+      'N'
+    ] %}
+    {% set degree = state_attr('weather.honey_haus', 'wind_bearing')|float(0) %}
+    {{ direction[ (( degree + 11.25) / 22.5) | int] }}
+  # yamllint disable-line rule:line-length
+  wind_info: >-
+    {{ state_attr('weather.honey_haus', 'wind_speed') | round }}
+    {{ state_attr('weather.honey_haus', 'wind_speed_unit') }}
+action:
+  - service: esphome.ulanzi_del_screen
+    data:
+      icon_name: weather_*
+  - service: esphome.ulanzi_add_screen
+    data:
+      icon_name: weather_{{ states('weather.honey_haus') | replace('-','_')}}
+      screen_time: 30
+      lifetime: 30
+      alarm: false
+      # yamllint disable-line rule:line-length
+      text: "Temp: {{ air_temp }} Humidity: {{ humid_info }} Wind: {{ wind_dir }} {{ wind_info }}"

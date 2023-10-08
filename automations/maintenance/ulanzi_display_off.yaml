@@ -1,0 +1,21 @@
+---
+id: "00055"
+alias: Ulanzi Display Off
+description: "Turn off the Ulanzi display"
+mode: single
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.withings_in_bed_john
+      - binary_sensor.withings_in_bed_robert
+    to: "on"
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+condition:
+  - condition: sun
+    after: sunset
+    before: sunrise
+action:
+  - service: esphome.ulanzi_display_off

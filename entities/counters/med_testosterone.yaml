@@ -1,0 +1,8 @@
+---
+test_medicine_counter:
+  name: Testosterone Medicine Count
+  initial: 30
+  restore: true
+  step: 1
+  minimum: 0
+  icon: mdi:needle

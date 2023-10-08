@@ -1,0 +1,28 @@
+---
+id: "00041"
+alias: "Sink Light On-Off Long"
+description: Currently not working
+mode: restart
+trigger:
+  device_id: 394ce620875b50a4c229ded2746f81da
+  domain: zha
+  platform: device
+  type: remote_button_long_press
+  subtype: turn_on
+action:
+  - service: light.turn_on
+    data:
+      color_temp: 153
+      brightness: 255
+    target:
+      entity_id: light.sink_light
+  - service: automation.turn_off
+    data:
+      stop_actions: true
+    target:
+      entity_id: automation.bathroom_motion_lights
+  - delay:
+      minutes: 30
+  - service: automation.turn_on
+    target:
+      entity_id: automation.bathroom_motion_lights
