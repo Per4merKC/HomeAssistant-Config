@@ -1,8 +1,0 @@
----
-seed_probiotic_counter:
-  name: Seed Probiotic
-  initial: 60
-  restore: true
-  step: 2
-  minimum: 0
-  icon: mdi:emoticon-poop

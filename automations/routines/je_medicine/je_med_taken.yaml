@@ -23,7 +23,6 @@ action:
       entity_id:
         - counter.bp_medicine_counter
         - counter.cholesterol_counter
-        - counter.seed_probiotic_counter
         - counter.wb_medicine_counter
   - service: input_boolean.turn_on
     entity_id: input_boolean.bp_medicine
@@ -124,41 +123,6 @@ action:
               {{  states("counter.cholesterol_counter") }} dose left.
             {%- else -%}
               {{  states("counter.cholesterol_counter") }} doses left.
-            {%- endif %}
-
-  # Probiotic
-  - if:
-      - condition: numeric_state
-        entity_id: counter.seed_probiotic_counter
-        below: 10
-    then:
-      - if:
-          - condition: trigger
-            id: t_00004_button
-        then:
-          - service: notify.alexa_media
-            data:
-              message: >
-                Your probiotic supplement is low with
-                {% if (int(states("counter.seed_probiotic_counter"))/2) == 1 -%}
-                  {{  int(states("counter.seed_probiotic_counter"))/2 }}
-                  dose left.
-                {%- else -%}
-                  {{  int(states("counter.seed_probiotic_counter"))/2 }}
-                  doses left.
-                {%- endif %}
-              target: media_player.bathroom_flex
-              data:
-                type: announce
-      - service: notify.persistent_notification
-        data:
-          title: 💩 Supplement Low
-          message: >
-            Your probiotic supplement prescription is low with
-            {% if int(states("counter.seed_probiotic_counter")) == 1 -%}
-              {{  states("counter.seed_probiotic_counter") }} dose left.
-            {%- else -%}
-              {{  states("counter.seed_probiotic_counter") }} doses left.
             {%- endif %}
 
   # Wellbutrin
