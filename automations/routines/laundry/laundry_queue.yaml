@@ -10,13 +10,10 @@ condition:
     conditions:
       - condition: numeric_state
         entity_id: counter.laundry_queue
-        above: "0"
-      - condition: numeric_state
-        entity_id: counter.laundry_queue
-        below: "2"
+        above: 0
       - condition: state
-        entity_id: binary_sensor.dryer_active
-        state: "off"
+        entity_id: binary_sensor.dryer_dry_completed
+        state: "on"
 action:
   - service: notify.alexa_media
     data:
