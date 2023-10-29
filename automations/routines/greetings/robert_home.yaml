@@ -1,0 +1,45 @@
+---
+id: "00059"
+alias: Welcome Robert Home
+mode: single
+trigger:
+  - platform: zone
+    entity_id: person.robert
+    zone: zone.home
+    event: enter
+action:
+  - service: esphome.ulanzi_add_screen
+    data:
+      alarm: false
+      icon_name: ha
+      text: Welcome home, Robert!
+      lifetime: 3
+      screen_time: 30
+  - wait_for_trigger:
+      - platform: state
+        entity_id: binary_sensor.front_door
+        to: "on"
+  - service: notify.alexa_media
+    data:
+      title: Welcome Home Robert
+      # yamllint disable rule:line-length
+      message: >-
+        {{
+          [
+            "Welcome home, Robert. Your sanctuary awaits your return.",
+            "It is a pleasure to see you back, ready to conquer the world, as always.",
+            "Your presence, like the arc reactor, powers our home with warmth and light. Welcome back.",
+            "Home, sweet home. Your castle, your domain - welcome, Robert.",
+            "The prodigal hero returns! Your home is honored by your presence.",
+            "It's good to have you back, where your genius and heart belong.",
+            "The house has missed its commander. Welcome back to your headquarters.",
+            "Welcome back, Robert. Your abode is once again complete.",
+            "The world can rest easy now that you're back in your fortress of brilliance.",
+            "Welcome home, where your dreams and inventions come to life."
+          ] | random
+        }}
+      # yamllint enable rule:line-length
+      target:
+        - media_player.living_room_dot
+      data:
+        type: announce

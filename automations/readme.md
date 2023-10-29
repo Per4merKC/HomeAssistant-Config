@@ -61,5 +61,7 @@
 | 00056 | ulanzi_display_on | Turn off the Ulanzi Display | maintenance |
 | 00057 | fire_recharge_start | Begin chargeing session for Kindle Fire Tablet | maintenance |
 | 00058 | fire_recharge_stop | End chargeing session for Kindle Fire Tablet | maintenance |
+| 00059 | robert_home | Welcome Robert Home | routines/greetings |
+| 00060 | john_home | Welcome John Home | routines/greetings |
 | 1667096445728 | UI | Update OpenUV every 30 minutes during the daytime | maintenance |
 | 1658054420994 | UI | Lights Out Received | routines |

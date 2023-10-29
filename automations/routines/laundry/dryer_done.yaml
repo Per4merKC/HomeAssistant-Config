@@ -2,11 +2,9 @@
 id: "00030"
 alias: Dryer Done
 trigger:
-  platform: numeric_state
-  entity_id: sensor.dryer_hem_power
-  below: 3
-  for:
-    minutes: 2
+  platform: state
+  entity_id: binary_sensor.dryer_dry_completed
+  to: "on"
 action:
   - service: light.turn_off
     target:

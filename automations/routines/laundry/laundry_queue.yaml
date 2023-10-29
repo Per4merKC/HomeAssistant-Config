@@ -21,18 +21,30 @@ action:
   - service: notify.alexa_media
     data:
       title: Laundry Queue
+      # yamllint disable rule:line-length
       message: >-
         {{
           [
-            "Wet laundry needs to be moved to the dryer",
-            "There are wet clothes in the washing machine",
+            "Attention, laundry superhero! The wet garments need a new home in the dryer.",
             "Don't forget about the wet laundry",
-            "Your clothes are getting stinky. Move them to the dryer",
-            "Time to cycle the wash",
+            "Don't leave your clothes hanging, they've got drying dreams!",
+            "Don't let your socks stage a damp rebellion. Dryer time!",
+            "Hark! The dryer awaits, and the wet clothes demand an audience.",
+            "Laundry delay: your shirts are contemplating a wet T-shirt contest. Move them to the dryer!",
+            "Put the laundry in the dryer, or you'll be naked at work tomorrow",
+            "Sir, your clothes are ready for their world tour. Time to move them to the dryer!",
             "The laundry is finished, don't let it mildew",
-            "Put the laundry in the dryer, or you'll be naked at work tomorrow"
+            "The washing machine is getting lonely. It's time for a dryer date!",
+            "The washing machine's whispering secrets, time to uncover them in the dryer.",
+            "There are wet clothes in the washing machine",
+            "Time to cycle the wash",
+            "Wet laundry needs to be moved to the dryer",
+            "Your clothes are getting stinky. Move them to the dryer",
+            "Your clothes are staging a sit-in protest in the washing machine. Relocate them to the dryer, stat!",
+            "Your laundry is experiencing FOMO: Fear Of Missing Out on the dryer party!"
           ] | random
         }}
+      # yamllint enable rule:line-length
       target:
         - media_player.bathroom_flex
         - media_player.bedroom_dot
