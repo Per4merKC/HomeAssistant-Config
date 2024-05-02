@@ -10,7 +10,23 @@ action:
   - service: script.text_notify_robert
     data:
       title: "💤 Snooze"
-      message: "Ok. I will remind you in a few hours..."
+      # yamllint disable rule:line-length
+      message: >
+        {{
+          [
+            "Putting the 'do not disturb' sign on medicine reminders for 180 minutes.",
+            "Sending my motivation on a four-hour siesta.",
+            "Temporarily hibernating my to-do list for a solid quad-hour.",
+            "Initiating a four-hour hiatus from adulting - catch you on the flip side!",
+            "Pressing the 'snooze' button on life for the duration of an afternoon nap.",
+            "Granting myself a PhD in procrastination for the next 180 minutes.",
+            "Launching Operation: Sleep Mode for the next four hours - over and out!",
+            "Bidding farewell to responsibility until the clock strikes four hours from now.",
+            "Entering stealth mode for a tactical four-hour recharge.",
+            'Officially taking a break from reminders... see you in 3 hours!'
+          ] | random
+        }}
+      # yamllint enable rule:line-length
       data: {}
   - service: automation.turn_off
     entity_id: automation.metformin_am_reminder

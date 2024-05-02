@@ -1,0 +1,135 @@
+---
+id: "00061"
+alias: "Sports Scores"
+mode: single
+trigger:
+  - platform: state
+    id: WE_SCORED
+    entity_id:
+      - sensor.chiefs_tracker
+      - sensor.mun_tracker
+      - sensor.royals_tracker
+      - sensor.sporting_tracker
+    attribute: team_score
+  - platform: state
+    id: THEY_SCORED
+    entity_id:
+      - sensor.chiefs_tracker
+      - sensor.mun_tracker
+      - sensor.royals_tracker
+      - sensor.sporting_tracker
+    attribute: opponent_score
+action:
+  - variables:
+      team_color_1: "{{ trigger.to_state.attributes.team_colors[0] }}"
+      team_color_2: "{{ trigger.to_state.attributes.team_colors[1] }}"
+      team_score: "{{ trigger.to_state.attributes.team_score | int }}"
+      opponent_color_1: "{{ trigger.to_state.attributes.opponent_colors[0] }}"
+      opponent_color_2: "{{ trigger.to_state.attributes.opponent_colors[1] }}"
+      opponent_score: "{{ trigger.to_state.attributes.opponent_score | int }}"
+      # yamllint disable rule:line-length
+      sport_icon: >-
+        {% set icon_key = trigger.to_state.attributes.sport %}
+        {% set icon_values =
+          {
+            "baseball": "[0, 0, 16777215, 16777215, 16777215, 16777215, 0, 0, 0, 15207436, 16777215, 16777215, 16777215, 16777215, 15207436, 0, 16777215, 16777215, 15207436, 16777215, 16777215, 15207436, 16777215, 16777215, 16777215, 16777215, 15207436, 16777215, 16777215, 15207436, 16777215, 16777215, 16777215, 16777215, 15207436, 16777215, 16777215, 15207436, 16777215, 16777215, 16777215, 16777215, 15207436, 16777215, 16777215, 15207436, 16777215, 16777215, 0, 15207436, 16777215, 16777215, 16777215, 16777215, 15207436, 0, 0, 0, 16777215, 16777215, 16777215, 16777215, 0, 0]",
+            "football": "[0, 0, 0, 0, 8673828, 8673828, 16580348, 8673828, 0, 0, 6045212, 8673828, 8673828, 8673828, 8673828, 16580348, 0, 6045212, 8673828, 8673828, 8673828, 16580348, 8673828, 8673828, 0, 8673828, 8673828, 8673828, 16580348, 8673828, 8673828, 8673828, 8673828, 8673828, 8673828, 16580348, 8673828, 8673828, 6045212, 0, 8673828, 8673828, 16580348, 8673828, 8673828, 8673828, 6045212, 0, 16580348, 8673828, 8673828, 8673828, 6045212, 6045212, 0, 0, 8673828, 16580348, 6045212, 6045212, 0, 0, 0, 0]",
+            "soccer": "[0, 0, 13421772, 16777215, 16777215, 13421772, 0, 0, 0, 4473924, 4473924, 16777215, 16777215, 16777215, 13487565, 0, 13421772, 4473924, 4408131, 16777215, 3552822, 3552822, 13421772, 4473924, 14474460, 16777215, 16777215, 4473924, 4473924, 3552822, 3552822, 14474460, 13421772, 16711422, 16777215, 4473924, 4539717, 4473924, 4473924, 13421772, 2829099, 13421772, 16777215, 16777215, 4473924, 4473924, 13421772, 13421772, 0, 13355979, 4473924, 4473924, 16777215, 16777215, 2829099, 0, 0, 0, 2829099, 4473924, 13421772, 11776947, 0, 0]"
+          }
+        %}
+        {{ icon_values.get(icon_key, "[0,0,0,0,0,0,0,0]") }}
+      # yamllint enable rule:line-length
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - WE_SCORED
+        sequence:
+          - service: scene.create
+            metadata: {}
+            data:
+              scene_id: before_score_update
+              snapshot_entities:
+                - light.east_lamp
+                - light.west_lamp
+          - repeat:
+              count: 5
+              sequence:
+                - parallel:
+                    - service: light.turn_on
+                      data:
+                        rgb_color:
+                          - "{{ team_color_1[1:3] | int(0, 16) }}"
+                          - "{{ team_color_1[3:5] | int(0, 16) }}"
+                          - "{{ team_color_1[-2:] | int(0, 16) }}"
+                        brightness_pct: 100
+                      target:
+                        entity_id:
+                          - light.east_lamp
+                    - service: light.turn_on
+                      data:
+                        rgb_color:
+                          - "{{ team_color_2[1:3] | int(0, 16) }}"
+                          - "{{ team_color_2[3:5] | int(0, 16) }}"
+                          - "{{ team_color_2[-2:] | int(0, 16) }}"
+                        brightness_pct: 100
+                      target:
+                        entity_id:
+                          - light.west_lamp
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - parallel:
+                    - service: light.turn_on
+                      data:
+                        rgb_color:
+                          - "{{ team_color_2[1:3] | int(0, 16) }}"
+                          - "{{ team_color_2[3:5] | int(0, 16) }}"
+                          - "{{ team_color_2[-2:] | int(0, 16) }}"
+                        brightness_pct: 100
+                      target:
+                        entity_id:
+                          - light.east_lamp
+                    - service: light.turn_on
+                      data:
+                        rgb_color:
+                          - "{{ team_color_1[1:3] | int(0, 16) }}"
+                          - "{{ team_color_1[3:5] | int(0, 16) }}"
+                          - "{{ team_color_1[-2:] | int(0, 16) }}"
+                        brightness_pct: 100
+                      target:
+                        entity_id:
+                          - light.west_lamp
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+  - service: mqtt.publish
+    data:
+      qos: 0
+      # yamllint disable rule:line-length
+      topic: awtrix_4200c8/custom/{{ trigger.to_state.attributes.sport }}_{{ trigger.to_state.attributes.team_abbr }}
+      payload: |-
+        {
+          "draw": [
+            {"df": [0, 0, 12, 8, "{{ team_color_1 }}"]},
+            {"dl": [1, 0, 1, 7, "{{ team_color_2 }}"]},
+            {"dt": [3, 1, "{{ '%02d' | format(team_score) }}",[255, 255, 255]]},
+            {"db": [12, 0, 8, 8, {{ sport_icon }}]},
+            {"df": [20, 0, 12, 8, "{{ opponent_color_1 }}"]},
+            {"dl": [30, 0, 30, 7, "{{ opponent_color_2 }}"]},
+            {"dt": [22, 1, "{{ '%02d' | format(opponent_score) }}",[255,255,255]]}
+          ],
+          "duration": 10
+        }
+    # yamllint enable rule:line-length
+  - service: scene.turn_on
+    target:
+      entity_id: scene.before_score_update
+  - service: scene.delete
+    target:
+      entity_id:
+        scene.before_score_update

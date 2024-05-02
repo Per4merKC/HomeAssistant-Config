@@ -20,5 +20,16 @@ action:
       title: "Medicine Alert!"
       message: "Please take your daily medicine!"
       data:
-        push:
-          category: "bp_med"
+        actions:
+          - action: "BP_TABLET_TAKEN"
+            title: "BP Tablet Taken"
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false
+            icon: "sfsymbols:pills"
+          - action: "BP_TABLET_SNOOZE"
+            title: "BP Tablet Snooze"
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false
+            icon: "sfsymbols:powersleep"

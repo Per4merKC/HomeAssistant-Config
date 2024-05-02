@@ -1,7 +1,7 @@
 ---
 speak_notify:
   sequence:
-    - service: notify.alexa_media_living_room_dot
+    - service: notify.alexa_media_computer_room_spot
       data_template:
         message: >
           <speak>

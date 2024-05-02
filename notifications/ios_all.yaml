@@ -4,4 +4,5 @@ platform: group
 services:
   - service: mobile_app_robert_iphone
   - service: mobile_app_john_iphone
+  - service: mobile_app_per4mer_s_ipad
   - service: mobile_app_johns_macbook_pro

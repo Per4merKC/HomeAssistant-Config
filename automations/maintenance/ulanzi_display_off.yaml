@@ -18,4 +18,6 @@ condition:
     after: sunset
     before: sunrise
 action:
-  - service: esphome.ulanzi_display_off
+  - service: light.turn_off
+    target:
+      entity_id: light.awtrix_4200c8_matrix

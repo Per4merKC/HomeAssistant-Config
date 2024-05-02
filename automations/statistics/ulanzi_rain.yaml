@@ -20,18 +20,24 @@ action:
   - service: esphome.ulanzi_del_screen
     data:
       icon_name: umbrella
-  - service: esphome.ulanzi_add_screen
+      mode: 5
+  - service: esphome.ulanzi_icon_screen
     data:
       icon_name: umbrella
       screen_time: 30
       lifetime: 30
-      alarm: false
+      default_font: true
+      r: 255
+      g: 255
+      b: 255
       text: >-
         {% if rain_now > 0 %}
           Current Rain: {{ rain_now }}
           {{
-            state_attr("sensor.netatmo_netatmo_indoor_rain_gauge_rain",
-            "unit_of_measurement")
+            state_attr(
+              "sensor.netatmo_netatmo_indoor_rain_gauge_rain",
+              "unit_of_measurement"
+            )
           }} in
         {% endif %}
         Total Rain: {{ rain_day }} in

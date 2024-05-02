@@ -1,15 +1,41 @@
 ---
 text_notify_all:
+  alias: "Notify All via IOS"
+  description: "Notify John and Robert if allowed"
+  fields:
+    title:
+      description: "The title for the message"
+      example: "Alert!"
+    message:
+      description: "The full message for the notificaiton"
+      example: "Look at this..."
+    data:
+      description: "Additional data needed for the notification"
+      example: "ACTIONS"
   icon: mdi:forum
   sequence:
-    - condition: state
-      entity_id: input_boolean.john_sms
-      state: "on"
-    - service: notify.ios_john
-      data_template:
-        title: >
-          {{ title }}
-        message: >
-          {{ message }}
-        data: >
-          {{ data }}
+    - parallel:
+        - sequence:
+            - condition: state
+              entity_id: input_boolean.john_sms
+              state: "on"
+            - service: notify.ios_john
+              data_template:
+                title: >
+                  {{ title }}
+                message: >
+                  {{ message }}
+                data: >
+                  {{ data }}
+        - sequence:
+            - condition: state
+              entity_id: input_boolean.robert_sms
+              state: "on"
+            - service: notify.ios_robert
+              data_template:
+                title: >
+                  {{ title }}
+                message: >
+                  {{ message }}
+                data: >
+                  {{ data }}

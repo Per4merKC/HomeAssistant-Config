@@ -63,5 +63,8 @@
 | 00058 | fire_recharge_stop | End chargeing session for Kindle Fire Tablet | maintenance |
 | 00059 | robert_home | Welcome Robert Home | routines/greetings |
 | 00060 | john_home | Welcome John Home | routines/greetings |
+| 00061 | sporting_score | Flash lights for Sporting KC Score |statistics |
 | 1667096445728 | UI | Update OpenUV every 30 minutes during the daytime | maintenance |
 | 1658054420994 | UI | Lights Out Received | routines |
+62 = network download
+63 = network upload

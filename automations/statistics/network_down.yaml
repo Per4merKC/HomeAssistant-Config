@@ -1,0 +1,30 @@
+---
+id: "00062"
+alias: "Network Download Speed"
+description: ""
+mode: single
+trigger:
+  - platform: time_pattern
+    minutes: "20"
+condition:
+  - condition: state
+    entity_id: light.awtrix_4200c8_matrix
+    state: "on"
+action:
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      topic: awtrix_4200c8/custom/speedtest_down
+      # yamllint disable rule:line-length
+      payload_template: |-
+        {
+            "text": "Network DOWN speed: {{ '%.0f' | format(state_attr('sensor.speedtest_download', 'bytes_received')/1000000)  }} mb/s",
+            "textCase": 1,
+            "icon": "download",
+            "repeat": 2,
+            "duration": 5,
+            "stack": 0
+        }
+      # yamllint enable rule:line-length
+      qos: 0
+      retain: false

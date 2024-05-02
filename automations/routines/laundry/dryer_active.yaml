@@ -3,8 +3,8 @@ id: "00029"
 alias: Dryer Active
 trigger:
   platform: state
-  entity_id: binary_sensor.dryer_dry_completed
-  to: "off"
+  entity_id: binary_sensor.dryer
+  to: "on"
 action:
   - service: light.turn_on
     target:

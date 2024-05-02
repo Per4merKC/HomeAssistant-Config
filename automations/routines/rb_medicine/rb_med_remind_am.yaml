@@ -18,7 +18,18 @@ action:
   - service: script.text_notify_robert
     data:
       title: "Metformin Alert!"
-      message: "Please take your morning Metformin!"
+      message: "Please take your morning medicine!"
       data:
-        push:
-          category: "mf_med"
+        actions:
+          - action: "MF_TABLET_TAKEN"
+            title: "Medicine Taken"
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false
+            icon: "sfsymbols:pills"
+          - action: "MF_TABLET_SNOOZE"
+            title: "Snooze 4 hrs."
+            activationMode: "background"
+            authenticationRequired: false
+            destructive: false
+            icon: "sfsymbols:powersleep"

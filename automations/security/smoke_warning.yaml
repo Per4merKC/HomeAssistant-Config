@@ -15,6 +15,7 @@ condition: []
 action:
   service: notify.ios_all
   data:
+    title: WARNING!
     message: >
       Smoke detected in the
       {% if area_name(trigger.entity_id) == none -%}
@@ -23,7 +24,6 @@ action:
         area_name(trigger.entity_id)
       {%- endif  -%}
       !!
-    title: WARNING!
     data:
       persistant: true
       push:

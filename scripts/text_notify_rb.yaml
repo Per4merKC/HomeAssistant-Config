@@ -5,7 +5,7 @@ text_notify_robert:
     - condition: state
       entity_id: input_boolean.robert_sms
       state: "on"
-    - service: notify.mobile_app_robert_iphone
+    - service: notify.ios_robert
       data_template:
         title: >
           {{ title }}

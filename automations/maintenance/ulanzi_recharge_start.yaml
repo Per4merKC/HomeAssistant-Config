@@ -5,8 +5,8 @@ description: "Turn on power to recharge Ulanzi display"
 mode: single
 trigger:
   - platform: numeric_state
-    entity_id: sensor.ulanzi_battery
-    below: 5.0
+    entity_id: sensor.awtrix_4200c8_battery
+    below: 10.0
 action:
   - service: switch.turn_on
     target:

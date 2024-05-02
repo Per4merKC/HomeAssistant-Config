@@ -1,5 +1,17 @@
 ---
 text_notify_john:
+  alias: "Notify John via IOS"
+  description: "If John has notifications enabled, sends message"
+  fields:
+    title:
+      description: "The title for the message"
+      example: "Alert!"
+    message:
+      description: "The full message for the notificaiton"
+      example: "Look at this..."
+    data:
+      description: "Additional data needed for the notification"
+      example: "ACTIONS"
   icon: mdi:message-text
   sequence:
     - condition: state

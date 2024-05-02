@@ -2,6 +2,6 @@
 name: ios_john
 platform: group
 services:
-  - service: mobile_app_johns_macbook_pro
+  - service: mobile_app_johns_macbook_pro_2
   - service: mobile_app_john_iphone
   - service: mobile_app_per4mer_s_ipad

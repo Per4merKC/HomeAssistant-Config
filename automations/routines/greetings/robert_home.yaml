@@ -8,13 +8,16 @@ trigger:
     zone: zone.home
     event: enter
 action:
-  - service: esphome.ulanzi_add_screen
+  - service: esphome.ulanzi_icon_screen
     data:
-      alarm: false
-      icon_name: ha
+      default_font: true
+      icon_name: home_assistant
       text: Welcome home, Robert!
-      lifetime: 3
-      screen_time: 30
+      lifetime: 30
+      screen_time: 15
+      r: 128
+      g: 128
+      b: 128
   - wait_for_trigger:
       - platform: state
         entity_id: binary_sensor.front_door

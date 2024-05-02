@@ -23,6 +23,7 @@ action:
       entity_id:
         - counter.bp_medicine_counter
         - counter.cholesterol_counter
+        - counter.ttx_medicine_counter
         - counter.wb_medicine_counter
   - service: input_boolean.turn_on
     entity_id: input_boolean.bp_medicine
@@ -123,6 +124,39 @@ action:
               {{  states("counter.cholesterol_counter") }} dose left.
             {%- else -%}
               {{  states("counter.cholesterol_counter") }} doses left.
+            {%- endif %}
+
+  # Trintellix
+  - if:
+      - condition: numeric_state
+        entity_id: counter.ttx_medicine_counter
+        below: 5
+    then:
+      - if:
+          - condition: trigger
+            id: t_00004_button
+        then:
+          - service: notify.alexa_media
+            data:
+              message: >
+                Your blood pressure prescription is low with
+                {% if int(states("counter.ttx_medicine_counter")) == 1 -%}
+                  {{  states("counter.ttx_medicine_counter") }} dose left.
+                {%- else -%}
+                  {{  states("counter.ttx_medicine_counter") }} doses left.
+                {%- endif %}
+              target: media_player.bathroom_flex
+              data:
+                type: announce
+      - service: notify.persistent_notification
+        data:
+          title: 🗣 Prescription Low
+          message: >
+            Your trintellix prescription is low with
+            {% if int(states("counter.ttx_medicine_counter")) == 1 -%}
+              {{  states("counter.ttx_medicine_counter") }} dose left.
+            {%- else -%}
+              {{  states("counter.ttx_medicine_counter") }} doses left.
             {%- endif %}
 
   # Wellbutrin

@@ -13,7 +13,7 @@ trigger:
   from: "off"
 condition: []
 action:
-  service: notify.ios_all
+  service: script.text_notify_all
   data:
     message: >
       Carbon monoxide has been detected in the

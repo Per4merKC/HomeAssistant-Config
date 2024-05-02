@@ -9,4 +9,8 @@ recorder:
       - weblink
       - sun
     entities:
+      - sensor.chiefs_tracker
       - sensor.local_time
+      - sensor.mun_tracker
+      - sensor.royals_tracker
+      - sensor.sporting_tracker
