@@ -16,28 +16,35 @@ variables:
       states("sensor.netatmo_netatmo_indoor_rain_gauge_rain_today")
       | float(2)
     }}
+  rain_text: >-
+    {% if rain_now > 0 %}
+      Current Rain: {{ rain_now }}
+      {{
+        state_attr(
+          "sensor.netatmo_netatmo_indoor_rain_gauge_rain",
+          "unit_of_measurement"
+        )
+      }}
+    {% endif %}
+    Total Rain: {{ rain_day }} {{
+        state_attr(
+          "sensor.netatmo_netatmo_indoor_rain_gauge_rain",
+          "unit_of_measurement"
+        )
+      }}
 action:
-  - service: esphome.ulanzi_del_screen
+  - service: mqtt.publish
+    metadata: {}
     data:
-      icon_name: umbrella
-      mode: 5
-  - service: esphome.ulanzi_icon_screen
-    data:
-      icon_name: umbrella
-      screen_time: 30
-      lifetime: 30
-      default_font: true
-      r: 255
-      g: 255
-      b: 255
-      text: >-
-        {% if rain_now > 0 %}
-          Current Rain: {{ rain_now }}
-          {{
-            state_attr(
-              "sensor.netatmo_netatmo_indoor_rain_gauge_rain",
-              "unit_of_measurement"
-            )
-          }} in
-        {% endif %}
-        Total Rain: {{ rain_day }} in
+      qos: 0
+      retain: false
+      topic: awtrix_4200c8/custom/netatmo_rain
+      payload: |-
+        {
+          "text": "{{ rain_text }}!",
+          "icon": "41619",
+          "repeat": 5,
+          "duration": 10,
+          "overlay": "rain"
+        }
+

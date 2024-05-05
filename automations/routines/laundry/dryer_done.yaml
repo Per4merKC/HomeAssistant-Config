@@ -21,9 +21,10 @@ action:
               seconds: 10
               milliseconds: 0
           - service: scene.turn_on
-            metadata: {}
             target:
               entity_id: scene.before_dry
+            data:
+              transition: 5
       - service: counter.decrement
         target:
           entity_id: counter.laundry_queue
@@ -34,10 +35,17 @@ action:
           qos: 0
           retain: false
           topic: awtrix_4200c8/custom/dryerstate
+          payload: {}
+      - service: mqtt.publish
+        metadata: {}
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/notify
           payload: |-
             {
               "text": "Dryer is done!",
-              "icon": "26675",
+              "icon": "48497",
               "rainbow": true,
               "repeat": 5,
               "duration": 10

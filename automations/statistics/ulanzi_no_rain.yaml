@@ -1,0 +1,43 @@
+---
+id: "000"
+alias: Ulanzi No Rain
+description: shows the local rain data
+# No change for 30 minutes
+trigger:
+  platform: state
+  entity_id:
+    - sensor.netatmo_netatmo_indoor_rain_gauge_rain
+  for:
+    hours: 0
+    minutes: 30
+    seconds: 0
+variables:
+  rain_day: >-
+    {{ 
+      states("sensor.netatmo_netatmo_indoor_rain_gauge_rain_today") 
+      | float(2) 
+    }}
+  rain_text: >-
+    Total Rain: {{ rain_day }}
+    {{
+        state_attr(
+          "sensor.netatmo_netatmo_indoor_rain_gauge_rain",
+          "unit_of_measurement"
+        )
+    }}
+action:
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_4200c8/custom/netatmo_rain
+      payload: |-
+        {
+          "text": "{{ rain_text }}!",
+          "icon": "41619",
+          "repeat": 5,
+          "duration": 10,
+          "overlay": "clear"
+        }
+
