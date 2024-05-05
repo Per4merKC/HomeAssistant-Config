@@ -69,5 +69,5 @@
 | 00064 | je_med_reset_pm | Reset the bp medicine flag for the input_boolean.je_medicine to off | routines/je_medicine |
 | 00065 | je_med_remind_pm| Send the evening reminder to take BP medicine | routines/je_medicine |
 | 00066 | finance_stock_ticker | Display changed stock prices on AWTRIX | routines/statistics |
-| 1667096445728 | UI | Update OpenUV every 30 minutes during the daytime | maintenance |
-| 1658054420994 | UI | Lights Out Received | routines |
+| 00067 | ulanzi_no_rain | Update the total rain message on AWTRIX and turn off overlay | routines/statistics |
+| 00068 | instagram_followers | Display Instagram followers on AWTRIX | routines/statistics |

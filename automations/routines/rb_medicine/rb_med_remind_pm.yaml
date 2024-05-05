@@ -1,6 +1,6 @@
 ---
 id: "00018"
-alias: Metformin PM Reminder
+alias: RB Medicine PM Reminder
 initial_state: true
 trigger:
   - platform: time_pattern

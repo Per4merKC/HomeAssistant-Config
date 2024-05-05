@@ -1,0 +1,5 @@
+---
+dishes_clean:
+  name: Dishes Clean
+  initial: true
+  icon: mdi:silverware-clean

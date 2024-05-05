@@ -1,6 +1,6 @@
 ---
 id: "00017"
-alias: Metformin Reset PM
+alias: RB Medicine Reset PM
 trigger:
   - platform: time
     at: "18:25:00"

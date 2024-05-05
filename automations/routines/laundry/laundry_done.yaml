@@ -41,7 +41,7 @@ action:
         qos: 0
         retain: false
         topic: awtrix_4200c8/custom/washerstate
-        payload: {}
+        payload: "{}"
     - service: mqtt.publish
       data:
         qos: 0
@@ -52,8 +52,7 @@ action:
             "text": "Washing machine is finished!",
             "icon": "24504",
             "rainbow": true,
-            "repeat": 5,
-            "duration": 10
+            "duration": 60
           }
   - service: scene.delete
     target:

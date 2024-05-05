@@ -1,6 +1,10 @@
 ---
-platform: threshold
-entity_id: sensor.dryer_hem_power
-upper: 3
-name: Dryer Active
-device_class: power
+platform: template
+sensors:
+  dryer:
+    unique_id: 7a577039-c704-4e8c-8464-559a1f25b031
+    friendly_name: Clothes Dryer Running
+    device_class: running
+    value_template: >-
+      {{ states("sensor.clothes_dryer", "run_state") }}
+    icon_template: mdi:tumble-dryer

@@ -35,7 +35,7 @@ action:
           qos: 0
           retain: false
           topic: awtrix_4200c8/custom/dryerstate
-          payload: {}
+          payload: "{}"
       - service: mqtt.publish
         metadata: {}
         data:
@@ -47,8 +47,7 @@ action:
               "text": "Dryer is done!",
               "icon": "48497",
               "rainbow": true,
-              "repeat": 5,
-              "duration": 10
+              "duration": 60
             }
   - service: scene.delete
     metadata: {}

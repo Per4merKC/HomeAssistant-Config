@@ -1,0 +1,6 @@
+---
+platform: threshold
+entity_id: sensor.dryer_hem_power
+upper: 3
+name: Dryer Active
+device_class: power

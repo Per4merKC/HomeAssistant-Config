@@ -16,22 +16,8 @@ variables:
       states("sensor.netatmo_netatmo_indoor_rain_gauge_rain_today")
       | float(2)
     }}
-  rain_text: >-
-    {% if rain_now > 0 %}
-      Current Rain: {{ rain_now }}
-      {{
-        state_attr(
-          "sensor.netatmo_netatmo_indoor_rain_gauge_rain",
-          "unit_of_measurement"
-        )
-      }}
-    {% endif %}
-    Total Rain: {{ rain_day }} {{
-        state_attr(
-          "sensor.netatmo_netatmo_indoor_rain_gauge_rain",
-          "unit_of_measurement"
-        )
-      }}
+  # yamllint disable-line rule:line-length
+  rain_text: "{% if rain_now > 0 %}Current Rain: {{ rain_now }} in {% endif %}Total Rain: {{ rain_day }} in"
 action:
   - service: mqtt.publish
     metadata: {}
@@ -41,10 +27,9 @@ action:
       topic: awtrix_4200c8/custom/netatmo_rain
       payload: |-
         {
-          "text": "{{ rain_text }}!",
+          "text": "{{ rain_text }}",
           "icon": "41619",
           "repeat": 5,
           "duration": 10,
           "overlay": "rain"
         }
-

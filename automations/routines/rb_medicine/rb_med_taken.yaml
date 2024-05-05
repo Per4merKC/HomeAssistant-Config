@@ -1,6 +1,6 @@
 ---
 id: "00016"
-alias: Metformin Taken
+alias: RB Medicine Taken
 trigger:
   platform: event
   event_type: ios.notification_action_fired
@@ -31,4 +31,4 @@ action:
       data: {}
   - service: input_boolean.turn_on
     target:
-      entity_id: input_boolean.mf_medicine
+      entity_id: input_boolean.rb_medicine
