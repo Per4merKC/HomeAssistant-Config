@@ -1,0 +1,42 @@
+---
+id: "00066"
+alias: Stock Ticker
+description: "Display stock prices on AWTRIX"
+mode: single
+trigger:
+  - platform: state
+    entity_id:
+      - sensor.yahoofinance_aapl
+      - sensor.yahoofinance_icln
+      - sensor.yahoofinance_schd
+      - sensor.yahoofinance_xrt
+      - sensor.yahoofinance_tmus
+      - sensor.yahoofinance_mgc
+    attribute: regularMarketPrice
+condition: []
+action:
+  - variables:
+      stock_symbol: "{{ trigger.to_state.attributes.symbol }}"
+      stock_currency: "{{ trigger.to_state.attributes.currencySymbol }}"
+      stock_price: "{{ trigger.to_state.attributes.regularMarketPrice }}"
+      stock_icon: >-
+        {% set icon_key = trigger.to_state.attributes.trending %}
+        {% set icon_values =
+          {
+            "up": "120",
+            "down": "124"
+          }
+        %}
+        {{ icon_values.get(icon_key, "507") }}
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_4200c8/custom/stock_{{ stock_symbol | lower }}
+      payload_template: >-
+        {
+          "text": "{{ stock_symbol }} - {{ stock_currency }}{{ stock_price }}",
+          "icon": "{{ stock_icon }}",
+          "duration": 10
+        }

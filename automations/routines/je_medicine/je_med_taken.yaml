@@ -6,7 +6,7 @@ trigger:
     id: t_00004_ios
     event_type: ios.notification_action_fired
     event_data:
-      actionName: BP_TABLET_TAKEN
+      actionName: JE_MEDS_TAKEN
     context:
       user_id:
         - 58f909a7060b4eabb036e244d0369894
@@ -17,16 +17,31 @@ trigger:
     type: remote_button_short_press
     subtype: turn_off
 action:
-  - service: counter.decrement
-    data: {}
-    target:
-      entity_id:
-        - counter.bp_medicine_counter
-        - counter.cholesterol_counter
-        - counter.ttx_medicine_counter
-        - counter.wb_medicine_counter
+  - if:
+      - alias: "Before 18:15"
+        condition: time
+        before: "18:15:00"
+    then:
+      - alias: "Decrement JE AM Meds"
+        service: counter.decrement
+        data: {}
+        target:
+          entity_id:
+            - counter.bp_medicine_counter
+            - counter.cholesterol_counter
+            - counter.kcitrate_counter
+            - counter.ttx_medicine_counter
+            - counter.wb_medicine_counter
+    else:
+      - alias: "Decrement JE PM Meds"
+        service: counter.decrement
+        data: {}
+        target:
+          entity_id:
+            - counter.bp_medicine_counter
+            - counter.kcitrate_counter
   - service: input_boolean.turn_on
-    entity_id: input_boolean.bp_medicine
+    entity_id: input_boolean.je_medicine
   - service: script.text_notify_john
     data_template:
       title: "Thank You!"
@@ -126,6 +141,42 @@ action:
               {{  states("counter.cholesterol_counter") }} doses left.
             {%- endif %}
 
+  # Potassium Citrate
+  - if:
+      - condition: numeric_state
+        entity_id: counter.kcitrate_medicine_counter
+        below: 10
+    then:
+      - if:
+          - condition: trigger
+            id: t_00004_button
+        then:
+          - service: notify.alexa_media
+            data:
+              # yamllint disable rule:line-length
+              message: >
+                Your potassium citrate prescription is low with
+                {% if int(states("counter.kcitrate_medicine_counter")/2) == 1 -%}
+                  {{  int(states("counter.kcitrate_medicine_counter")/2) }} dose left.
+                {%- else -%}
+                  {{  int(states("counter.kcitrate_medicine_counter")/2) }} doses left.
+                {%- endif %}
+              # yamllint enable rule:line-length
+              target: media_player.bathroom_flex
+              data:
+                type: announce
+      - service: notify.persistent_notification
+        data:
+          title: 💊 Prescription Low
+          # yamllint disable rule:line-length
+          message: >
+            Your potassium citrate prescription is low with
+            {% if int(states("counter.kcitrate_medicine_counter")/2) == 1 -%}
+              {{  int(states("counter.kcitrate_medicine_counter")/2) }} dose left.
+            {%- else -%}
+              {{  int(states("counter.kcitrate_medicine_counter")/2) }} doses left.
+            {%- endif %}
+          # yamllint enable rule:line-length
   # Trintellix
   - if:
       - condition: numeric_state

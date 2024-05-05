@@ -1,0 +1,8 @@
+---
+kcitrate_medicine_counter:
+  name: Potassium Citrate Count
+  initial: 90
+  restore: true
+  step: 2
+  minimum: 0
+  icon: mdi:pill-multiple

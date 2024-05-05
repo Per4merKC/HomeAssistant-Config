@@ -1,6 +1,6 @@
 ---
 id: "00002"
-alias: JE Medicine Reminder
+alias: JE Medicine Reminder AM
 initial_state: true
 trigger:
   - platform: time_pattern
@@ -10,25 +10,25 @@ condition:
   - condition: and
     conditions:
       - condition: state
-        entity_id: input_boolean.bp_medicine
+        entity_id: input_boolean.je_medicine
         state: "off"
       - condition: time
         after: "06:30:00"
 action:
   - service: script.text_notify_john
     data:
-      title: "Medicine Alert!"
+      title: "Medication Alert!"
       message: "Please take your daily medicine!"
       data:
         actions:
-          - action: "BP_TABLET_TAKEN"
-            title: "BP Tablet Taken"
+          - action: "JE_MEDS_TAKEN"
+            title: "Medication Taken"
             activationMode: "background"
             authenticationRequired: false
             destructive: false
             icon: "sfsymbols:pills"
-          - action: "BP_TABLET_SNOOZE"
-            title: "BP Tablet Snooze"
+          - action: "JE_MEDS_SNOOZE"
+            title: "Snooze 3 hrs."
             activationMode: "background"
             authenticationRequired: false
             destructive: false

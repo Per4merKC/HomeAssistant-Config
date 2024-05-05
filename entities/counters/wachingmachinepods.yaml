@@ -1,0 +1,8 @@
+---
+washing_machine_pods:
+  name: Washing Machine Pods
+  initial: 24
+  restore: true
+  step: 1
+  minimum: 0
+  icon: mdi:google-podcast

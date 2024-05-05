@@ -6,12 +6,43 @@ trigger:
   entity_id: binary_sensor.dryer
   to: "off"
 action:
-  - service: light.turn_off
+  - parallel:
+      - sequence:
+          - service: light.turn_on
+            metadata: {}
+            data:
+              brightness_pct: 100
+              effect: Fireworks
+            target:
+              entity_id: light.west_lamp
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 10
+              milliseconds: 0
+          - service: scene.turn_on
+            metadata: {}
+            target:
+              entity_id: scene.before_dry
+      - service: counter.decrement
+        target:
+          entity_id: counter.laundry_queue
+        data: {}
+      - service: mqtt.publish
+        metadata: {}
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/custom/dryerstate
+          payload: |-
+            {
+              "text": "Dryer is done!",
+              "icon": "26675",
+              "rainbow": true,
+              "repeat": 5,
+              "duration": 10
+            }
+  - service: scene.delete
+    metadata: {}
     target:
-      entity_id: light.fairy_lights
-  - service: counter.decrement
-    target:
-      entity_id: counter.laundry_queue
-  - service: esphome.ulanzi_del_screen
-    data:
-      icon_name: laundry
+      entity_id: scene.before_dry

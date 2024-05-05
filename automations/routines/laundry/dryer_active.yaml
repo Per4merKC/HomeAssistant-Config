@@ -6,12 +6,28 @@ trigger:
   entity_id: binary_sensor.dryer
   to: "on"
 action:
+  - service: scene.create
+    metadata: {}
+    data:
+      scene_id: before_dry
+      snapshot_entities:
+        - light.west_lamp
   - service: light.turn_on
     target:
-      entity_id: light.fairy_lights
+      entity_id: light.west_lamp
     data:
-      rgb_color:
-        - 255
-        - 65
-        - 12
+      color_temp: 255
       transition: 5
+      brightness_pct: 50
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_4200c8/custom/dryerstate
+      payload: >-
+        {
+          "text": "Dryer is running...",
+          "icon": "24504",
+          "duration": 10
+        }

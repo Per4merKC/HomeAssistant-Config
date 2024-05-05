@@ -4,8 +4,8 @@
 
 | Number | File | Description | Folder |
 |-------:|:-----|:------------|:-------|
-| 00001 | je_med_reset | Reset the bp medicine flag for the input_boolean.je_medicine to off | routines/je_medicine |
-| 00002 | je_med_remind | Send the reminder to take BP medicine | routines/je_medicine |
+| 00001 | je_med_reset_am | Reset the bp medicine flag for the input_boolean.je_medicine to off | routines/je_medicine |
+| 00002 | je_med_remind_am| Send the morning reminder to take BP medicine | routines/je_medicine |
 | 00003 | je_med_later | User choose to remind later, wait... | routines/je_medicine |
 | 00004 | je_med_taken | User said they took the medicine; set boolean_input.bp_medicine to on | routintes/bp_medicine |
 | 00005 | bedtime | Webhook from IFTTT with payload from Withings Sleep indicating if user is in bed; sets input_boolean.john_bed | routines/john_bed |
@@ -64,7 +64,10 @@
 | 00059 | robert_home | Welcome Robert Home | routines/greetings |
 | 00060 | john_home | Welcome John Home | routines/greetings |
 | 00061 | sporting_score | Flash lights for Sporting KC Score |statistics |
+| 00062 | network_down | Update Awtrix Display with network download speed |statistics |
+| 00063 | network_up | Update Awtrix Display with network upload speed |statistics |
+| 00064 | je_med_reset_pm | Reset the bp medicine flag for the input_boolean.je_medicine to off | routines/je_medicine |
+| 00065 | je_med_remind_pm| Send the evening reminder to take BP medicine | routines/je_medicine |
+| 00066 | finance_stock_ticker | Display changed stock prices on AWTRIX | routines/statistics |
 | 1667096445728 | UI | Update OpenUV every 30 minutes during the daytime | maintenance |
 | 1658054420994 | UI | Lights Out Received | routines |
-62 = network download
-63 = network upload

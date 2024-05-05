@@ -12,8 +12,8 @@ condition:
         entity_id: counter.laundry_queue
         above: 0
       - condition: state
-        entity_id: binary_sensor.dryer_dry_completed
-        state: "on"
+        entity_id: binary_sensor.dryer
+        state: "off"
 action:
   - variables:
       # yamllint disable-line rule:line-length
@@ -37,7 +37,7 @@ action:
             "Don't leave your clothes hanging, they've got drying dreams!",
             "Don't let your socks stage a damp rebellion. Dryer time!",
             "Hark! The dryer awaits, and the wet clothes demand an audience.",
-            "Laundry delay: your shirts are contemplating a wet T-shirt contest. Move them to the dryer!",
+            "Laundry delay... your shirts are contemplating a wet T-shirt contest. Move them to the dryer!",
             "Put the laundry in the dryer, or you'll be naked at work tomorrow",
             "Sir, your clothes are ready for their world tour. Time to move them to the dryer!",
             "The laundry is finished, don't let it mildew",
@@ -70,6 +70,6 @@ action:
           "icon": 54961,
           "text": "{{ ulanzi_message }}",
           "rainbow": true,
-          "duration": 10
+          "duration": 60
         }
       topic: awtrix_4200c8/notify

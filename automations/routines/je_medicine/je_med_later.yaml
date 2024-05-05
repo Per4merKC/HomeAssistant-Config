@@ -5,7 +5,7 @@ trigger:
   platform: event
   event_type: ios.notification_action_fired
   event_data:
-    actionName: BP_TABLET_SNOOZE
+    actionName: JE_MEDS_SNOOZE
 action:
   - service: script.text_notify_john
     data:
@@ -29,7 +29,7 @@ action:
       # yamllint enable rule:line-length
       data: {}
   - service: automation.turn_off
-    entity_id: automation.bp_medicine_reminder
+    entity_id: automation.je_medicine_reminder
   - delay:
       hours: 3
       minutes: 0

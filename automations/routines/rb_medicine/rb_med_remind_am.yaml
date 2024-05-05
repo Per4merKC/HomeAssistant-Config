@@ -10,25 +10,25 @@ condition:
   - condition: and
     conditions:
       - condition: state
-        entity_id: input_boolean.mf_medicine
+        entity_id: input_boolean.rb_medicine
         state: "off"
       - condition: time
         after: "08:00:00"
 action:
   - service: script.text_notify_robert
     data:
-      title: "Metformin Alert!"
+      title: "Medication Alert!"
       message: "Please take your morning medicine!"
       data:
         actions:
-          - action: "MF_TABLET_TAKEN"
+          - action: "RB_MEDS_TAKEN"
             title: "Medicine Taken"
             activationMode: "background"
             authenticationRequired: false
             destructive: false
             icon: "sfsymbols:pills"
-          - action: "MF_TABLET_SNOOZE"
-            title: "Snooze 4 hrs."
+          - action: "RB_MEDS_SNOOZE"
+            title: "Snooze 3 hrs."
             activationMode: "background"
             authenticationRequired: false
             destructive: false

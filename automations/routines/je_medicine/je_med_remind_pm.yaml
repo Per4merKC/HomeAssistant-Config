@@ -1,6 +1,6 @@
 ---
-id: "00018"
-alias: Metformin PM Reminder
+id: "00065"
+alias: JE Medicine Reminder PM
 initial_state: true
 trigger:
   - platform: time_pattern
@@ -10,25 +10,25 @@ condition:
   - condition: and
     conditions:
       - condition: state
-        entity_id: input_boolean.rb_medicine
+        entity_id: input_boolean.je_medicine
         state: "off"
       - condition: time
         after: "18:30:00"
 action:
-  - service: script.text_notify_robert
+  - service: script.text_notify_john
     data:
       title: "Medication Alert!"
-      message: "Please take your evening medicine!"
+      message: "Please take your daily medicine!"
       data:
         actions:
-          - action: "MF_TABLET_TAKEN"
-            title: "Medicine Taken"
+          - action: "JE_MEDS_TAKEN"
+            title: "Medication Taken"
             activationMode: "background"
             authenticationRequired: false
             destructive: false
             icon: "sfsymbols:pills"
-          - action: "MF_TABLET_SNOOZE"
-            title: "Snooze 3 hrs."
+          - action: "JE_MEDS_SNOOZE"
+            title: "Snooze Medication"
             activationMode: "background"
             authenticationRequired: false
             destructive: false

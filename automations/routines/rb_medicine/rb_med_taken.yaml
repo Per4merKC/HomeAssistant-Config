@@ -5,7 +5,7 @@ trigger:
   platform: event
   event_type: ios.notification_action_fired
   event_data:
-    actionName: MF_TABLET_TAKEN
+    actionName: RB_MEDS_TAKEN
 action:
   - service: script.text_notify_robert
     data_template:

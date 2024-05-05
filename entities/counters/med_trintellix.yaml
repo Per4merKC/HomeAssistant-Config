@@ -1,0 +1,8 @@
+---
+ttx_medicine_counter:
+  name: Trintellix Medicine Counter
+  initial: 30
+  restore: true
+  step: 1
+  minimum: 0
+  icon: mdi:head-snowflake-outline

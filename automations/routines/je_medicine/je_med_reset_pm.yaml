@@ -1,9 +1,9 @@
 ---
-id: "00017"
-alias: Metformin Reset PM
+id: "00064"
+alias: JE Medicine Reset PM
 trigger:
   - platform: time
     at: "18:25:00"
 action:
   - service: input_boolean.turn_off
-    entity_id: input_boolean.rb_medicine
+    entity_id: input_boolean.je_medicine
