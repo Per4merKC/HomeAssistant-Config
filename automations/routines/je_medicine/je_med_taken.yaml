@@ -177,6 +177,7 @@ action:
               {{  int(states("counter.kcitrate_medicine_counter")/2) }} doses left.
             {%- endif %}
           # yamllint enable rule:line-length
+
   # Trintellix
   - if:
       - condition: numeric_state
@@ -190,7 +191,7 @@ action:
           - service: notify.alexa_media
             data:
               message: >
-                Your blood pressure prescription is low with
+                Your Trintellix prescription is low with
                 {% if int(states("counter.ttx_medicine_counter")) == 1 -%}
                   {{  states("counter.ttx_medicine_counter") }} dose left.
                 {%- else -%}
@@ -223,7 +224,7 @@ action:
           - service: notify.alexa_media
             data:
               message: >
-                Your blood pressure prescription is low with
+                Your Wellbutrin prescription is low with
                 {% if int(states("counter.wb_medicine_counter")) == 1 -%}
                   {{  states("counter.wb_medicine_counter") }} dose left.
                 {%- else -%}

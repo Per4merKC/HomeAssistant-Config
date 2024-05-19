@@ -16,27 +16,31 @@ trigger:
 condition: []
 action:
   - variables:
-      stock_symbol: "{{ trigger.to_state.attributes.symbol }}"
-      stock_currency: "{{ trigger.to_state.attributes.currencySymbol }}"
-      stock_price: "{{ trigger.to_state.attributes.regularMarketPrice }}"
-      stock_icon: >-
-        {% set icon_key = trigger.to_state.attributes.trending %}
-        {% set icon_values =
-          {
-            "up": "120",
-            "down": "124"
-          }
-        %}
-        {{ icon_values.get(icon_key, "507") }}
-  - service: mqtt.publish
-    metadata: {}
-    data:
-      qos: 0
-      retain: false
-      topic: awtrix_4200c8/custom/stock_{{ stock_symbol | lower }}
-      payload_template: >-
-        {
-          "text": "{{ stock_symbol }} - {{ stock_currency }}{{ stock_price }}",
-          "icon": "{{ stock_icon }}",
-          "duration": 10
-        }
+      # take out the space from the join on the next line before production
+      entity_list: >
+        {{ states.sensor | selectattr('entity_id', 'search', '^sensor\\.yahoofinance') | map(attribute='entity_id') | join(', ') }}
+  - repeat:
+      count: "{{ entity_list.split(',') | length }}"
+      sequence:
+        - variables:
+            stock_icon: >-
+              {% set icon_key = state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'trending') %}
+              {% set icon_values =
+                {
+                  "up": "120",
+                  "down": "124"
+                }
+              %}
+              {{ icon_values.get(icon_key, '507') }}
+
+        - service: mqtt.publish
+          data:
+            qos: 0
+            # yamllint disable rule:line-length
+            topic: awtrix_4200c8/custom/yahoofinance_{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'symbol') }}
+            payload_template: |-
+              {
+                "text": "{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'friendly_name') }} ({{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'symbol') }}) - {{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'currencySymbol')  }}{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'regularMarketPrice')  }}" ,
+                "icon": "{{ stock_icon }}"
+              }
+            # yamllint enable rule:line-length
