@@ -1,6 +1,7 @@
 ---
 id: "00011"
 alias: HVAC on and Garage Door Open Long
+initial_state: false
 trigger:
   - entity_id: binary_sensor.garage_door
     platform: state

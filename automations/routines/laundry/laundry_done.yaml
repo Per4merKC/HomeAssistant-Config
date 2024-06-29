@@ -9,51 +9,51 @@ trigger:
     minutes: 2
 action:
   - parallel:
-    - sequence:
-        - service: light.turn_on
-          data:
-            brightness_pct: 100
-            effect: Fireworks
-          target:
-            entity_id: light.east_lamp
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 10
-            milliseconds: 0
-        - service: scene.turn_on
-          target:
-            entity_id: scene.before_wash
-          data:
-            transition: 5
-    - service: counter.increment
-      target:
-        entity_id: counter.laundry_queue
-    - service: notify.alexa_media_living_room_dot
-      data:
-        message: >-
-          The washing machine is finished. Please move the clothes to the dryer to
-          prevent mildew.
+      - sequence:
+          - service: light.turn_on
+            data:
+              brightness_pct: 100
+              effect: Fireworks
+            target:
+              entity_id: light.east_lamp
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 10
+              milliseconds: 0
+          - service: scene.turn_on
+            target:
+              entity_id: scene.before_wash
+            data:
+              transition: 5
+      - service: counter.increment
+        target:
+          entity_id: counter.laundry_queue
+      - service: notify.alexa_media_living_room_dot
         data:
-          type: tts
-    - service: mqtt.publish
-      data:
-        qos: 0
-        retain: false
-        topic: awtrix_4200c8/custom/washerstate
-        payload: "{}"
-    - service: mqtt.publish
-      data:
-        qos: 0
-        retain: false
-        topic: awtrix_4200c8/notify
-        payload: |-
-          {
-            "text": "Washing machine is finished!",
-            "icon": "24504",
-            "rainbow": true,
-            "duration": 60
-          }
+          message: >-
+            The washing machine is finished. Please move the clothes
+            to the dryer to prevent mildew.
+          data:
+            type: tts
+      - service: mqtt.publish
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/custom/washerstate
+          payload: "{}"
+      - service: mqtt.publish
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/notify
+          payload: |-
+            {
+              "text": "Washing machine is finished!",
+              "icon": "24504",
+              "rainbow": true,
+              "duration": 60
+            }
   - service: scene.delete
     target:
       entity_id: scene.before_wash

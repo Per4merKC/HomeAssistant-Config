@@ -4,14 +4,30 @@ text_notify_john:
   description: "If John has notifications enabled, sends message"
   fields:
     title:
+      name: "title"
       description: "The title for the message"
       example: "Alert!"
+      required: true
+      selector:
+        text:
+          type: text
+          multiline: false
     message:
+      name: "Message"
       description: "The full message for the notificaiton"
       example: "Look at this..."
+      required: true
+      selector:
+        text:
+          type: text
+          multiline: true
     data:
+      name: "Data"
+      default: {}
       description: "Additional data needed for the notification"
-      example: "ACTIONS"
+      required: true
+      selector:
+        object: {}
   icon: mdi:message-text
   sequence:
     - condition: state

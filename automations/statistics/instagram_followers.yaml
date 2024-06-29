@@ -1,21 +1,21 @@
 ---
-id: '00068'
-alias: 'AWTRIX: Monitoring Instagram'
-description: 'Display Instagram followers'
+id: "00068"
+alias: "AWTRIX: Monitoring Instagram"
+description: "Display Instagram followers"
 trigger:
-- platform: time_pattern
-  minutes: /2
+  - platform: time_pattern
+    minutes: /2
 condition: []
 action:
-- service: mqtt.publish
-  data:
-    qos: '0'
-    retain: false
-    topic: awtrix_4200c8/custom/instagram
-    payload_template: |-
-      {
-        "icon": "52162",
-        "text": "{{ states('sensor.instagram_followers') }}",
-        "duration": 5
-      }
+  - service: mqtt.publish
+    data:
+      qos: "0"
+      retain: false
+      topic: awtrix_4200c8/custom/instagram
+      payload_template: |-
+        {
+          "icon": "52162",
+          "text": "{{ states('sensor.instagram_followers') }}",
+          "duration": 5
+        }
 mode: single

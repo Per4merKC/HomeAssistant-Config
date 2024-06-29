@@ -14,6 +14,8 @@ condition:
         state: "off"
       - condition: time
         after: "06:30:00"
+      - condition: time
+        before: "18:30:00"
 action:
   - service: script.text_notify_john
     data:

@@ -1,0 +1,57 @@
+---
+id: "00070"
+alias: JE Weight Change
+mode: single
+trigger:
+  - platform: state
+    entity_id:
+      - sensor.withings_weight_kg_john
+condition:
+  - condition: state
+    entity_id: input_boolean.house_visitors
+    state: "off"
+action:
+  - variables:
+      weight: "{{ trigger.to_state.state }}"
+      # yamllint disable-line rule:line-length
+      weight_delta: "{{ int(trigger.from_state.state) - int(trigger.to_state.state) }}"
+  - if:
+      - condition: template
+        value_template: |-
+          {{ (weight_delta | int) >= 0 }}
+    then:
+      - service: mqtt.publish
+        metadata: {}
+        data:
+          topic: awtrix_4200c8/custom/JE_Weight
+          # yamllint disable rule:line-length
+          payload_template: |-
+            {
+              "text": "JE: {{ trigger.to_state.state | int }} (down {{ weight_delta }})",
+              "textCase": 2,
+              "icon": "27742",
+              "repeat": 2,
+              "duration": 5,
+              "stack": 0
+            }
+          # yamllint enable rule:line-length
+          qos: 0
+          retain: false
+    else:
+      - service: mqtt.publish
+        metadata: {}
+        data:
+          topic: awtrix_4200c8/custom/JE_Weight
+          # yamllint disable rule:line-length
+          payload_template: |-
+            {
+              "text": "JE: {{ trigger.to_state.state | int }} (up {{ weight_delta | abs }})",
+              "textCase": 2,
+              "icon": "27742",
+              "repeat": 2,
+              "duration": 5,
+              "stack": 0
+            }
+          # yamllint enable rule:line-length
+          qos: 0
+          retain: false

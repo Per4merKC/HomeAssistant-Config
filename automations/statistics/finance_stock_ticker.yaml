@@ -18,13 +18,17 @@ action:
   - variables:
       # take out the space from the join on the next line before production
       entity_list: >
-        {{ states.sensor | selectattr('entity_id', 'search', '^sensor\\.yahoofinance') | map(attribute='entity_id') | join(', ') }}
+        {{ states.sensor
+        | selectattr('entity_id', 'search', '^sensor\\.yahoofinance')
+        | map(attribute='entity_id') | join(', ') }}
   - repeat:
       count: "{{ entity_list.split(',') | length }}"
       sequence:
         - variables:
+            # yamllint disable rule:line-length
             stock_icon: >-
-              {% set icon_key = state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'trending') %}
+              {% set icon_key = state_attr(entity_list.split(',')[repeat.index - 1]
+              | trim, 'trending') %}
               {% set icon_values =
                 {
                   "up": "120",
@@ -32,7 +36,7 @@ action:
                 }
               %}
               {{ icon_values.get(icon_key, '507') }}
-
+            # yamllint enable rule:line-length
         - service: mqtt.publish
           data:
             qos: 0

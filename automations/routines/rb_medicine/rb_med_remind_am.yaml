@@ -1,6 +1,6 @@
 ---
 id: "00014"
-alias: RB Medicine AM Reminder
+alias: RB Medicine Reminder AM
 initial_state: true
 trigger:
   - platform: time_pattern
@@ -14,6 +14,8 @@ condition:
         state: "off"
       - condition: time
         after: "08:00:00"
+      - condition: time
+        before: "18:30:00"
 action:
   - service: script.text_notify_robert
     data:

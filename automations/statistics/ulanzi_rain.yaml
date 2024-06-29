@@ -4,32 +4,58 @@ alias: Ulanzi Rain
 description: shows the local rain data
 trigger:
   - platform: state
-    entity_id: sensor.netatmo_netatmo_indoor_rain_gauge_rain
+    entity_id:
+      - sensor.netatmo_netatmo_outdoor_rain_guage_rain
+      - sensor.netatmo_netatmo_outdoor_rain_guage_rain_last_hour
+      - sensor.netatmo_netatmo_outdoor_rain_guage_rain_today
 variables:
+  rain_overlay: >-
+    {%- if states("sensor.netatmo_netatmo_outdoor_rain_guage_rain") > 0 -%}
+    rain
+    {%- else -%}
+    clear
+    {%- endif -%}
   rain_now: >-
     {{
-      states("sensor.netatmo_netatmo_indoor_rain_gauge_rain")
+      states("sensor.netatmo_netatmo_outdoor_rain_guage_rain")
       | float(2)
     }}
   rain_day: >-
     {{
-      states("sensor.netatmo_netatmo_indoor_rain_gauge_rain_today")
+      states("sensor.netatmo_netatmo_outdoor_rain_guage_rain_today")
       | float(2)
     }}
   # yamllint disable-line rule:line-length
-  rain_text: "{% if rain_now > 0 %}Current Rain: {{ rain_now }} in {% endif %}Total Rain: {{ rain_day }} in"
+  rain_text: >-
+    {%- if rain_now > 0 -%}
+      Current Rain: {{ rain_now }} in.
+    {%- endif -%}
+    Total Rain Today: {{ rain_day }} in.
 action:
-  - service: mqtt.publish
-    metadata: {}
-    data:
-      qos: 0
-      retain: false
-      topic: awtrix_4200c8/custom/netatmo_rain
-      payload: |-
-        {
-          "text": "{{ rain_text }}",
-          "icon": "41619",
-          "repeat": 5,
-          "duration": 10,
-          "overlay": "rain"
-        }
+  - if:
+      - condition: numeric_state
+        entity_id: sensor.netatmo_netatmo_outdoor_rain_guage_rain_today
+        above: 0
+    then:
+      - service: mqtt.publish
+        metadata: {}
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/custom/netatmo_rain
+          payload: |-
+            {
+              "text": "{{ rain_text }}",
+              "icon": "41619",
+              "repeat": 5,
+              "duration": 10,
+              "overlay": "{{ rain_overlay }}"
+            }
+    else:
+      - service: mqtt.publish
+        metadata: {}
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/custom/netatmo_rain
+          payload: {}

@@ -1,0 +1,26 @@
+---
+id: "00071"
+alias: JE Hide Health Display
+description: "Remove display of JE Health data on AWTRIX"
+mode: single
+trigger:
+  - platform: state
+    entity_id:
+      - input_boolean.house_visitors
+    from: "off"
+    to: "on"
+action:
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_4200c8/custom/JE_BP
+      payload: "{}"
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_4200c8/custom/JE_Weight
+      payload: "{}"

@@ -2,20 +2,19 @@
 id: "00067"
 alias: Ulanzi No Rain
 description: shows the local rain data
+initial_state: false
 # No change for 30 minutes
 trigger:
   platform: state
   entity_id:
-    - sensor.netatmo_netatmo_indoor_rain_gauge_rain
-  for:
-    hours: 0
-    minutes: 30
-    seconds: 0
+    - sensor.netatmo_netatmo_outdoor_rain_guage_rain
+    - sensor.netatmo_netatmo_outdoor_rain_guage_rain_last_hour
+    - sensor.netatmo_netatmo_outdoor_rain_guage_rain_today
 variables:
   rain_day: >-
-    {{ 
-      states("sensor.netatmo_netatmo_indoor_rain_gauge_rain_today") 
-      | float(2) 
+    {{
+      states("sensor.netatmo_netatmo_indoor_rain_gauge_rain_today")
+      | float(2)
     }}
   rain_text: "Total Rain: {{ rain_day }} in"
 action:

@@ -27,6 +27,7 @@ action:
         data: {}
         target:
           entity_id:
+            - counter.ana_medicine_counter
             - counter.bp_medicine_counter
             - counter.cholesterol_counter
             - counter.kcitrate_medicine_counter
@@ -74,6 +75,39 @@ action:
       target: media_player.bathroom_flex
       data:
         type: tts
+
+  # Anastozole
+  - if:
+      - condition: numeric_state
+        entity_id: counter.ana_medicine_counter
+        below: 5
+    then:
+      - if:
+          - condition: trigger
+            id: t_00004_button
+        then:
+          - service: notify.alexa_media
+            data:
+              message: >
+                Your blood pressure prescription is low with
+                {% if int(states("counter.bp_medicine_counter")) == 1 -%}
+                  {{  states("counter.bp_medicine_counter") }} dose left.
+                {%- else -%}
+                  {{  states("counter.bp_medicine_counter") }} doses left.
+                {%- endif %}
+              target: media_player.bathroom_flex
+              data:
+                type: announce
+      - service: notify.persistent_notification
+        data:
+          title: 🩸 Prescription Low
+          message: >
+            Your blood pressure prescription is low with
+            {% if int(states("counter.bp_medicine_counter")) == 1 -%}
+              {{  states("counter.bp_medicine_counter") }} dose left.
+            {%- else -%}
+              {{  states("counter.bp_medicine_counter") }} doses left.
+            {%- endif %}
 
   # Blood Pressure
   - if:
@@ -145,7 +179,7 @@ action:
   - if:
       - condition: numeric_state
         entity_id: counter.kcitrate_medicine_counter
-        below: 10
+        below: 20  # double tablets per dose
     then:
       - if:
           - condition: trigger

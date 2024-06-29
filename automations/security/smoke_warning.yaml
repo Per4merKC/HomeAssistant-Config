@@ -10,7 +10,7 @@ trigger:
     - binary_sensor.garage_smoke_v2_smoke_detected
     - binary_sensor.hallway_smoke_smoke_detected
     - binary_sensor.livingroom_smoke_smoke_detected
-  from: "off"
+  to: "on"
 condition: []
 action:
   service: notify.ios_all

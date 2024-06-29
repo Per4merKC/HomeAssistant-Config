@@ -1,6 +1,7 @@
 ---
 id: "00003"
 alias: JE Remind Me Later
+mode: restart
 trigger:
   platform: event
   event_type: ios.notification_action_fired
@@ -15,24 +16,30 @@ action:
         {{
           [
             "Putting the 'do not disturb' sign on my medication reminders for the next 180 minutes.",
-            "Sending my motivation on a four-hour siesta.",
+            "Sending my motivation on a three-hour siesta.",
             "Temporarily hibernating my to-do list for a solid quad-hour.",
-            "Initiating a four-hour hiatus from adulting - catch you on the flip side!",
+            "Initiating a three-hour hiatus from adulting - catch you on the flip side!",
             "Pressing the 'snooze' button on life for the duration of an afternoon nap.",
             "Granting myself a PhD in procrastination for the next 180 minutes.",
-            "Launching Operation: Sleep Mode for the next four hours - over and out!",
-            "Bidding farewell to responsibility until the clock strikes four hours from now.",
-            "Entering stealth mode for a tactical four-hour recharge.",
+            "Launching Operation: Sleep Mode for the next three hours - over and out!",
+            "Bidding farewell to responsibility until the clock strikes three hours from now.",
+            "Entering stealth mode for a tactical three-hour recharge.",
             'Officially taking a break from reminders... see you in 3 hours!'
           ] | random
         }}
       # yamllint enable rule:line-length
       data: {}
   - service: automation.turn_off
-    entity_id: automation.je_medicine_reminder
+    target:
+      entity_id:
+        - automation.je_medicine_reminder_am
+        - automation.je_medicine_reminder_pm
   - delay:
       hours: 3
       minutes: 0
       seconds: 0
   - service: automation.turn_on
-    entity_id: automation.bp_medicine_reminder
+    target:
+      entity_id:
+        - automation.je_medicine_reminder_am
+        - automation.je_medicine_reminder_pm

@@ -1,0 +1,34 @@
+---
+id: "00069"
+alias: JE BP
+description: "Carrot or Stick for John's Weight Change"
+mode: single
+trigger:
+  - platform: state
+    entity_id:
+      - sensor.withings_diastolic_blood_pressure_mmhg_john
+      - sensor.withings_systolic_blood_pressure_mmhg_john
+condition:
+  - condition: state
+    entity_id: input_boolean.house_visitors
+    state: "off"
+action:
+  - variables:
+      # yamllint disable-line rule:line-length
+      bp_top: "{{ states('sensor.withings_systolic_blood_pressure_mmhg_john') }}"
+      # yamllint disable-line rule:line-length
+      bp_bottom: "{{ states('sensor.withings_diastolic_blood_pressure_mmhg_john') }}"
+  - service: mqtt.publish
+    data:
+      topic: awtrix_4200c8/custom/JE_BP
+      payload_template: |-
+        {
+          "text": "JE: {{ bp_top }}/{{ bp_bottom }}",
+          "textCase": 2,
+          "icon": "331",
+          "repeat": 2,
+          "duration": 5,
+          "stack": 0
+        }
+      qos: 0
+      retain: false

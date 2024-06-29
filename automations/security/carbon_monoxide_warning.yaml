@@ -10,7 +10,7 @@ trigger:
     - binary_sensor.garage_smoke_v2_carbon_monoxide_detected
     - binary_sensor.hallway_carbon_monoxide_status
     - binary_sensor.living_room_carbon_monoxide_status
-  from: "off"
+  to: "on"
 condition: []
 action:
   service: script.text_notify_all

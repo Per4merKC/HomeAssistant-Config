@@ -1,5 +1,32 @@
 ---
 text_notify_robert:
+  fields:
+    title:
+      name: "title"
+      description: "The title for the message"
+      example: "Alert!"
+      required: true
+      selector:
+        text:
+          type: text
+          multiline: false
+    message:
+      name: "Message"
+      description: "The full message for the notificaiton"
+      example: "Look at this..."
+      required: true
+      selector:
+        text:
+          type: text
+          multiline: true
+    data:
+      name: "Data"
+      default: {}
+      description: "Additional data needed for the notification"
+      example: "subtitle: More Info..."
+      required: false
+      selector:
+        object:
   icon: mdi:message-text
   sequence:
     - condition: state

@@ -1,0 +1,41 @@
+---
+id: "00072"
+alias: JE Travel Time
+description: "Display time to drive to work based on Waze"
+mode: single
+trigger:
+  - platform: time_pattern
+    minutes: /10
+condition:
+  - condition: state
+    entity_id: binary_sensor.workday_sensor_2
+    state: "on"
+action:
+  - if:
+      - condition: time
+        after: "05:00:00"
+        before: "10:00:00"
+    then:
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/je_work_travel
+          # yamllint disable rule:line-length
+          payload_template: |-
+            {
+              "text": "{{ states('sensor.home_to_work_travel')|int | timestamp_custom("%M:%S") }}",
+              "textCase": 2,
+              "icon": "31456",
+              "repeat": 2,
+              "duration": 5,
+              "stack": 0
+            }
+          # yamllint enable rule:line-length
+          qos: 0
+          retain: false
+    else:
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/je_work_travel
+          qos: 0
+          retain: false
+          payload: "{}"

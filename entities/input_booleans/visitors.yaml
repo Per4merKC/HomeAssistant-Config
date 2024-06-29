@@ -1,0 +1,5 @@
+---
+house_visitors:
+  name: House Visitors
+  initial: false
+  icon: mdi:bag-suitcase

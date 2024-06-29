@@ -9,12 +9,13 @@ esphome:
   name_add_mac_suffix: false
   friendly_name: "EP1 Den"
 
+ota:
+  platform: esphome
+  password: !secret ota_password    
+
 api:
   encryption:
     key: !secret esphome_encryption_key
-
-ota:
-  password: !secret ota_password
 
 wifi:
   ssid: !secret wifi_ssid

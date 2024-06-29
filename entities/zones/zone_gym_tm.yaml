@@ -1,7 +1,7 @@
 ---
 name: T-Mobile Gym
-latitude: 38.91641232314421
-longitude: -94.65884283185007
+latitude: 38.9163309328966
+longitude: -94.65930819511415
 icon: mdi:dumbbell
 passive: false
-radius: 32.087709964864935
+radius: 29

@@ -1,6 +1,6 @@
 ---
 id: "00044"
-alias: JE Medicine Counter Reset
+alias: JE Medicine Counters Reset
 trigger:
   platform: device
   device_id: 99d88e062470eadce3e5ff19acd21f62

@@ -71,3 +71,6 @@
 | 00066 | finance_stock_ticker | Display changed stock prices on AWTRIX | routines/statistics |
 | 00067 | ulanzi_no_rain | Update the total rain message on AWTRIX and turn off overlay | routines/statistics |
 | 00068 | instagram_followers | Display Instagram followers on AWTRIX | routines/statistics |
+| 00069 | je_pressure | Display BP Numbers on AWTRIX | routines/je_health |
+| 00070 | je_weight | Display Weight on AWTRIX | routines/je_health |
+| 00071 | je_hide_health | Remove display of JE Health data on AWTRIX | routines/je_health |
