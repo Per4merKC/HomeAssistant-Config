@@ -1,7 +1,5 @@
 ---
 text_notify_john:
-  alias: "Notify John via IOS"
-  description: "If John has notifications enabled, sends message"
   fields:
     title:
       name: "title"
@@ -25,9 +23,10 @@ text_notify_john:
       name: "Data"
       default: {}
       description: "Additional data needed for the notification"
-      required: true
+      example: "subtitle: More Info..."
+      required: false
       selector:
-        object: {}
+        object:
   icon: mdi:message-text
   sequence:
     - condition: state
