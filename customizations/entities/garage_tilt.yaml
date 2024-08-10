@@ -1,3 +1,0 @@
----
-binary_sensor.garage_door:
-  device_class: garage_door

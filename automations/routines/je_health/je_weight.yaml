@@ -25,7 +25,7 @@ action:
         data:
           topic: awtrix_4200c8/custom/JE_Weight
           # yamllint disable rule:line-length
-          payload_template: |-
+          payload: |-
             {
               "text": "JE: {{ trigger.to_state.state | int }} (down {{ weight_delta }})",
               "textCase": 2,
@@ -43,7 +43,7 @@ action:
         data:
           topic: awtrix_4200c8/custom/JE_Weight
           # yamllint disable rule:line-length
-          payload_template: |-
+          payload: |-
             {
               "text": "JE: {{ trigger.to_state.state | int }} (up {{ weight_delta | abs }})",
               "textCase": 2,

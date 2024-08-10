@@ -12,7 +12,7 @@ action:
       qos: "0"
       retain: false
       topic: awtrix_4200c8/custom/instagram
-      payload_template: |-
+      payload: |-
         {
           "icon": "52162",
           "text": "{{ states('sensor.instagram_followers') }}",

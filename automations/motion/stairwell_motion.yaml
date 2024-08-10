@@ -4,11 +4,10 @@ alias: Stairwell Motion
 mode: restart
 max_exceeded: silent
 trigger:
-  type: motion
-  platform: device
-  device_id: 0fa6549078e1f67cdde0e705b2e0f20b
-  entity_id: binary_sensor.stairwell_motion
   domain: binary_sensor
+  entity_id: binary_sensor.stairwell_motion
+  platform: device
+  type: motion
 action:
   - service: light.turn_on
     data:
@@ -18,27 +17,8 @@ action:
       entity_id:
         - light.laundry_light
         - light.stairwell_light
-  - wait_for_trigger:
-      - type: no_motion
-        platform: device
-        device_id: 85f9d072b21917ee56ddcacebbc07eff
-        entity_id: binary_sensor.laundry_motion_detection
-        domain: binary_sensor
-        for:
-          hours: 0
-          minutes: 5
-          seconds: 0
-          milliseconds: 0
-      - type: no_motion
-        platform: device
-        device_id: 0fa6549078e1f67cdde0e705b2e0f20b
-        entity_id: binary_sensor.stairwell_motion
-        domain: binary_sensor
-        for:
-          hours: 0
-          minutes: 5
-          seconds: 0
-          milliseconds: 0
+  - delay:
+      minutes: 5
   - service: light.turn_off
     data:
       transition: 15

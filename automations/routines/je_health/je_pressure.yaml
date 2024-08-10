@@ -21,7 +21,7 @@ action:
   - service: mqtt.publish
     data:
       topic: awtrix_4200c8/custom/JE_BP
-      payload_template: |-
+      payload: |-
         {
           "text": "JE: {{ bp_top }}/{{ bp_bottom }}",
           "textCase": 2,

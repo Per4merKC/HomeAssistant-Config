@@ -1,0 +1,198 @@
+---
+# HARDWARE
+esphome:
+  name: jarvis-display
+  friendly_name: Jarvis Display
+  on_boot: 
+    priority: 200
+    then:
+      - display.page.show: pg_main
+  #     lambda: |-
+  #       id(my_ota).set_auth_password("950ab9aab37a99aa6eb18758e673f2a7");
+      
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+    version: recommended
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: y
+      CONFIG_ESP32S3_DATA_CACHE_64KB: y
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
+      CONFIG_SPIRAM_RODATA: y
+
+i2c:
+  sda: GPIO08
+  scl: GPIO09
+  scan: True
+  id: bus_a
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+display:
+  - platform: rpi_dpi_rgb
+    id: jarvis_display
+    auto_clear_enabled: false
+    color_order: RGB
+    pclk_frequency: 16MHz
+    dimensions:
+      width: 800
+      height: 480
+    de_pin:
+      number: 5
+    hsync_pin:
+      number: 46
+      ignore_strapping_warning: true
+    vsync_pin:
+      number: 3
+      ignore_strapping_warning: true
+    pclk_pin: 7
+    hsync_back_porch: 30
+    hsync_front_porch: 210
+    hsync_pulse_width: 30
+    vsync_back_porch: 4
+    vsync_front_porch: 4
+    vsync_pulse_width: 4
+    data_pins:
+      red:
+        - 1         #r3
+        - 2         #r4
+        - 42        #r5
+        - 41        #r6
+        - 40        #r7
+      blue:
+        - 14        #b3
+        - 38        #b4
+        - 18        #b5
+        - 17        #b6
+        - 10        #b7
+      green:
+        - 39        #g2
+        - 0         #g3
+        - 45        #g4
+        - 48        #g5
+        - 47        #g6
+        - 21        #g7
+    pages:
+      - id: pg_main
+        lambda: |-
+          auto x = (it.get_width() / 2);
+          auto y = (it.get_height() / 2);
+          it.print(0, 10, id(roboto_h1), "Main Page");
+          it.strftime(0, 60, id(roboto_body), "%Y-%m-%d %H:%M", id(homeassistant_time).now());
+          it.image(x, y, id(img_ha), ImageAlign::CENTER, id(color_teal), COLOR_OFF);
+      - id: pg_control
+        lambda: |-
+          auto x = (it.get_width() / 2) - 100;
+          auto y = (it.get_height() / 2) - 100;
+          it.print(0, 10, id(roboto_h1), "Control Page");
+          it.strftime(0, 60, id(roboto_body), "%Y-%m-%d %H:%M", id(homeassistant_time).now());
+          it.image(x, y, id(img_controller), ImageAlign::TOP_LEFT, id(color_orange), COLOR_OFF);
+      - id: pg_options
+        lambda: |-
+          auto x = (it.get_width() / 2) - 100;
+          auto y = (it.get_height() / 2) - 100;
+          it.print(0, 10, id(roboto_h1), "Settings Page");
+          it.strftime(0, 60, id(roboto_body), "%Y-%m-%d %H:%M", id(homeassistant_time).now());
+          it.image(x, y, id(img_settings), ImageAlign::TOP_LEFT, id(color_teal), COLOR_OFF);
+
+touchscreen:
+  platform: gt911
+  id: my_touch
+  interrupt_pin: GPIO4
+  on_touch:
+    - lambda: |-
+          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
+              touch.x,
+              touch.y,
+              touch.x_raw,
+              touch.y_raw
+              );
+
+# SOFTWARE
+api:
+  encryption:
+    key: !secret esphome_encryption_key
+    # key: "AGl/kx/7qEyR7hsu4XoP2JRQnpkS5yWB1y+Uv0HtOT0="
+
+captive_portal:
+
+color:
+  - id: color_blue
+    red_int: 0
+    green_int: 0
+    blue_int: 255
+    white_int: 0
+  - id: color_teal
+    red_int: 0
+    green_int: 255
+    blue_int: 255
+    white_int: 0
+  - id: color_orange
+    red_int: 243
+    green_int: 156
+    blue_int: 18
+    white_int: 0
+
+font:
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 900
+    id: roboto_h1
+    size: 40
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 900
+    id: roboto_body
+    size: 20
+
+image:
+  - file: mdi:home-assistant
+    id: img_ha
+    resize: 200x200
+  - file: mdi:controller
+    id: img_controller
+    resize: 200x200
+  - file: mdi:cogs
+    id: img_settings
+    resize: 200x200
+
+interval:
+  - interval: 15s
+    then:
+      lambda: |-
+        id(jarvis_display).clear();
+        id(jarvis_display).show_next_page();
+
+logger:
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+    # id: my_ota
+    # password: "5a75b9f51977a4c86483d8f1b8c9b405"
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+web_server:
+  auth:
+    username: !secret web_server_username
+    password: !secret web_server_password
+  include_internal: True
+  port: 8080
+  version: 3
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Jarvis-Display Fallback Hotspot"
+    password: !secret ap_password
+
+    

@@ -1,5 +1,5 @@
 ---
-id: "000072"
+id: "00007"
 alias: Door Open - HVAC Running
 initial_state: true
 trigger:
@@ -34,7 +34,7 @@ action:
     data_template:
       title: HVAC Notice!
       message: >-
-        The {{ state_attr('trigger.entity_id', 'friendly_name') }} has been
+        The {{ state_attr('trigger.to_state', 'friendly_name') }} has been
         open for 5 minutes while the HVAC is on.
         It's {{
           (
@@ -42,7 +42,10 @@ action:
             -
             (states('sensor.outside_temperature', 'state') | int)
           ) | abs
-        }} degrees different outside than the set temperature!
+        }} degrees different outside than the set 
+        {{
+          (states('climate.thermostat', 'state'))
+        }} temperature!
       data:
         subtitle: >-
-          {{ state_attr('trigger.entity_id', 'friendly_name') }} Left Open!
+          {{ state_attr('trigger.to_state', 'friendly_name') }} Left Open!

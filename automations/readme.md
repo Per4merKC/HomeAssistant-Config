@@ -1,6 +1,6 @@
 # Script Listing
 
-## Next Available Number: 00057
+## Next Available Number: 00008, 00009, 00010, 00011, 00021, 00072
 
 | Number | File | Description | Folder |
 |-------:|:-----|:------------|:-------|
@@ -9,12 +9,12 @@
 | 00003 | je_med_later | User choose to remind later, wait... | routines/je_medicine |
 | 00004 | je_med_taken | User said they took the medicine; set boolean_input.bp_medicine to on | routintes/bp_medicine |
 | 00005 | bedtime | Webhook from IFTTT with payload from Withings Sleep indicating if user is in bed; sets input_boolean.john_bed | routines/john_bed |
-| 00006 | front_opened | Front door was opened but nobody is home | doors |
-| 00007 | front_open_w_hvac | Front door was opened; HVAC is running and outside temperagure exceeds range of HVAC | doors |
-| 00008 | back_opened | Back door was opened but nobody is home | doors |
-| 00009 | back_open_w_hvac | Back door was opened; HVAC is running and outside temperagure exceeds range of HVAC | doors |
-| 00010 | garage_opened | Garage door was opened but nobody is home | doors |
-| 00011 | garage_open_w_hvac | Garage door was opened; HVAC is running and outside temperagure exceeds range of HVAC | doors |
+| 00006 | door_opened_not_home | Front door, back door, or garage door was opened but nobody is home | doors |
+| 00007 | door_open_w_hvac | Front door, back door, or garage door left open for more than 5 minutes while HVAC is running and outside temperature is more than 5 degrees than the HVAC setting | door |
+| 00008 |  |  |  |
+| 00009 |  |  |  |
+| 00010 |  |  |  |
+| 00011 |  |  |  |
 | 00012 | arrive_night | Arrive home at night | doors |
 | 00013 | mf_med_reset_am | Reset the bp medicine flag for the input_boolean.mf_medicine to off | routines/mf_medicine |
 | 00014 | mf_med_remind_am | Send the AM reminder to take Metformin | routines/mf_medicine |
@@ -24,7 +24,7 @@
 | 00018 | mf_med_remind_pm | Send the PM reminder to take Metformin | routines/mf_medicine |
 | 00019 | power_reset | Reset the total power meters on the zwave power meter | statistics |
 | 00020 | stairwell_motion | Motion in stairwell, activate lights | motion |
-| 00021 | laundry_motion | Motion in laundry room, activate lights | motion |
+| 00021 |  |  |  |
 | 00022 | laundry_active | Washing machine is in use and using electricity | routines/laundry |
 | 00023 | laundry_done | Washing machine is not in use and not using electricity | routines/laundry |
 | 00024 | restart | Restart Home-Assistant | maintenance |

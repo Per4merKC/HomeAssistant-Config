@@ -1,0 +1,26 @@
+---
+id: "00006"
+alias: Door Opened - Not Home
+trigger:
+  - entity_id:
+      - binary_sensor.front_door
+      - binary_sensor.back_door
+      - binary_sensor.garage_door
+    platform: state
+    from: "off"
+    to: "on"
+condition:
+  - condition: state
+    entity_id: device_tracker.robert_iphone
+    state: not_home
+  - condition: state
+    entity_id: device_tracker.john_iphone
+    state: not_home
+action:
+  - data:
+      title: Intruder?!
+      message: >-
+        The {{
+          states('trigger.to_state', 'friendly_name')
+        }} was opened and noone appears to be home!
+    service: script.text_notify_all

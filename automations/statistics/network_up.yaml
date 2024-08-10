@@ -12,19 +12,17 @@ condition:
     state: "on"
 action:
   - service: mqtt.publish
-    metadata: {}
     data:
-      topic: awtrix_4200c8/custom/speedtest_up
       # yamllint disable rule:line-length
-      payload_template: |-
+      payload: |-
         {
-          "text": "Network UP speed: {{ '%.0f' | format(state_attr('sensor.speedtest_upload', 'bytes_sent')/1000000)  }} mb/s",
-          "textCase": 1,
+          "duration": 10,
           "icon": "upload",
-          "repeat": 2,
-          "duration": 5,
-          "stack": 0
+          "text": "Upload speed is {{ '%.0f' | format(state_attr('sensor.speedtest_upload', 'bytes_sent')/1000000)  }} Mbs  /s",
+          "textCase": 2,
+          "textOffset": 33
         }
       # yamllint enable rule:line-length
       qos: 0
       retain: false
+      topic: awtrix_4200c8/custom/speedtest_up

@@ -1,0 +1,45 @@
+---
+id: "00067"
+alias: Ulanzi Raining Now
+description: Shows that it is currently raining
+trigger:
+  entity_id:
+    - sensor.netatmo_netatmo_outdoor_rain_guage_rain
+    - sensor.netatmo_netatmo_outdoor_rain_guage_rain_last_hour
+  platform: state
+variables:
+  rain_rate: >-
+    {{
+      states(
+        "sensor.netatmo_netatmo_indoor_rain_gauge_rain_last_hour",
+        rounded=true,
+        with_unit=true
+      )
+    }}
+  rain_text: "Raining {{ rain_day }}/hour"
+action:
+  - if:
+      - condition: numeric_state
+        above: 0
+        entity_id: sensor.netatmo_netatmo_outdoor_rain_guage_rain
+    then:
+      - service: mqtt.publish
+        data:
+          payload: |-
+            {
+              "duration": 10,
+              "icon": "41619",
+              "overlay": "rain",
+              "text": "{{ rain_text }}",
+              "textOffset": 33
+            }
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/custom/raining_now
+    else:
+      - service: mqtt.publish
+        data:
+          payload: {}
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/custom/raining_now

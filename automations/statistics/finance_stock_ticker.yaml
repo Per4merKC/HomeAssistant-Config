@@ -42,9 +42,11 @@ action:
             qos: 0
             # yamllint disable rule:line-length
             topic: awtrix_4200c8/custom/yahoofinance_{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'symbol') }}
-            payload_template: |-
+            payload: |-
               {
-                "text": "{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'friendly_name') }} ({{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'symbol') }}) - {{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'currencySymbol')  }}{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'regularMarketPrice')  }}" ,
-                "icon": "{{ stock_icon }}"
+                "duration": 10,
+                "icon": "{{ stock_icon }}",
+                "text": "{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'friendly_name') }} ({{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'symbol') }}) - {{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'currencySymbol')  }}{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'regularMarketPrice')  }}",
+                "textOffset": 33
               }
             # yamllint enable rule:line-length

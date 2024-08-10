@@ -34,28 +34,27 @@ variables:
 action:
   - if:
       - condition: numeric_state
-        entity_id: sensor.netatmo_netatmo_outdoor_rain_guage_rain_today
         above: 0
+        entity_id: sensor.netatmo_netatmo_outdoor_rain_guage_rain_today
     then:
       - service: mqtt.publish
         metadata: {}
         data:
-          qos: 0
-          retain: false
-          topic: awtrix_4200c8/custom/netatmo_rain
           payload: |-
             {
-              "text": "{{ rain_text }}",
-              "icon": "41619",
-              "repeat": 5,
               "duration": 10,
-              "overlay": "{{ rain_overlay }}"
+              "icon": "41619",
+              "overlay": "{{ rain_overlay }}",
+              "text": "{{ rain_text }}",
+              "textOffset": 33
             }
-    else:
-      - service: mqtt.publish
-        metadata: {}
-        data:
           qos: 0
           retain: false
           topic: awtrix_4200c8/custom/netatmo_rain
+    else:
+      - service: mqtt.publish
+        data:
           payload: {}
+          qos: 0
+          retain: false
+          topic: awtrix_4200c8/custom/netatmo_rain

@@ -67,7 +67,7 @@ action:
     data:
       topic: awtrix_4200c8/custom/HA_Weather
       # yamllint disable rule:line-length
-      payload_template: |-
+      payload: |-
         {
           "text": "Temp: {{ air_temp }} Humid: {{ humid_info }} Wind: {{ wind_info }} ({{ wind_dir }})",
           "textCase": 1,

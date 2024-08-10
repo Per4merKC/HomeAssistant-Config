@@ -10,8 +10,8 @@ esphome:
   friendly_name: "EP1 Den"
 
 ota:
-  platform: esphome
-  password: !secret ota_password    
+  - platform: esphome
+    password: !secret ota_password 
 
 api:
   encryption:
