@@ -4,15 +4,15 @@ alias: Stairwell Motion
 mode: restart
 max_exceeded: silent
 trigger:
-  domain: binary_sensor
-  entity_id: binary_sensor.stairwell_motion
-  platform: device
-  type: motion
+  - platform: state
+    entity_id: binary_sensor.stairwell_motion
+    from: "off"
+    to: "on"
 action:
   - service: light.turn_on
     data:
-      brightness_pct: 100
       transition: 1
+      brightness_pct: 100
     target:
       entity_id:
         - light.laundry_light

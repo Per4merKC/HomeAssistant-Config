@@ -34,12 +34,10 @@ action:
               "textOffset": 33
             }
           qos: 0
-          retain: false
           topic: awtrix_4200c8/custom/raining_now
     else:
       - service: mqtt.publish
         data:
           payload: {}
           qos: 0
-          retain: false
           topic: awtrix_4200c8/custom/raining_now

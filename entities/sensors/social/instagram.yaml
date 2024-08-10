@@ -1,8 +1,7 @@
 ---
 platform: rest
 name: Instagram Followers
-# yamllint disable-line rule:line-length
-resource_template: "https://i.instagram.com/api/v1/users/web_profile_info/?username=per4merkc"
+resource_template: !secret ig_url
 method: GET
 headers:
   content-type: 'application/json'

@@ -6,5 +6,5 @@ trigger:
   platform: homeassistant
   event: start
 action:
-  service: group.reload
+  action: group.reload
   data: {}

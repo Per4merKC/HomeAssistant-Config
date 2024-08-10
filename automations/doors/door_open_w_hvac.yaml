@@ -14,27 +14,34 @@ trigger:
       minutes: 5
       seconds: 0
 condition:
-  - condition: and
+  - condition: or
     conditions:
-      - condition: or
+      - condition: and
         conditions:
+          - condition: template
+            value_template: >-
+              {{ ((states('sensor.outside_temperature', 'state') | float -
+                state_attr('climate.thermostat', 'temperature')  | float) > 5)
+              }}
           - condition: state
             entity_id: climate.thermostat
-            state: cool
+            state: "cool"
+      - condition: and
+        conditions:
+          - condition: template
+            value_template: >-
+              {{ ((states('sensor.outside_temperature', 'state') | float -
+                state_attr('climate.thermostat', 'temperature')  | float) < -5)
+              }}
           - condition: state
             entity_id: climate.thermostat
-            state: heat
-      - condition: template
-        value_template: >-
-          {{ ((states('sensor.outside_temperature', 'state') | float -
-          state_attr('climate.thermostat', 'temperature')  | float) | abs) > 5
-          }}
+            state: "heat"
 action:
-  - service: script.text_notify_all
+  - action: script.text_notify_all
     data_template:
       title: HVAC Notice!
       message: >-
-        The {{ state_attr('trigger.to_state', 'friendly_name') }} has been
+        The {{ trigger.to_state.attributes.friendly_name }} has been
         open for 5 minutes while the HVAC is on.
         It's {{
           (
@@ -42,10 +49,10 @@ action:
             -
             (states('sensor.outside_temperature', 'state') | int)
           ) | abs
-        }} degrees different outside than the set 
+        }} degrees different outside than the set
         {{
           (states('climate.thermostat', 'state'))
         }} temperature!
       data:
         subtitle: >-
-          {{ state_attr('trigger.to_state', 'friendly_name') }} Left Open!
+          {{ trigger.to_state.attributes.friendly_name }} Left Open!
