@@ -7,6 +7,7 @@ trigger:
     id: WE_SCORED
     entity_id:
       - sensor.chiefs_tracker
+      - sensor.current_tracker
       - sensor.mun_tracker
       - sensor.royals_tracker
       - sensor.sporting_tracker
@@ -15,6 +16,7 @@ trigger:
     id: THEY_SCORED
     entity_id:
       - sensor.chiefs_tracker
+      - sensor.current_tracker
       - sensor.mun_tracker
       - sensor.royals_tracker
       - sensor.sporting_tracker
