@@ -6,7 +6,7 @@ mode: single
 trigger:
   - platform: numeric_state
     entity_id: sensor.fire_tablet_battery
-    above: 95.0
+    above: 80.0
 action:
   - service: switch.turn_off
     target:
