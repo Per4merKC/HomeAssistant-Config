@@ -1,0 +1,26 @@
+---
+id: "00008"
+alias: Mouse Trap Alarm
+initial_state: true
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.mouse_trap_general_purpose
+    to: "on"
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+action:
+  - action: notify.persistent_notification
+    data:
+      message: Please empty the mousetrap as soon as possible
+      title: Mouse Trap Alert
+  - action: script.text_notify_all
+    data_template:
+      title: HVAC Notice!
+      message: >-
+        Please empty the mousetrap as soon possible.
+      data:
+        subtitle: >-
+          Mouse Trap Alert

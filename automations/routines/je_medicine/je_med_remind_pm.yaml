@@ -15,10 +15,18 @@ condition:
       - condition: time
         after: "18:30:00"
 action:
+  - action: conversation.process
+    data:
+      agent_id: conversation.openai_conversation
+      text: >-
+        Your objective is to get John to take their evening medications.
+        Your response should be two sentences or less. 
+    response_variable: response_var
+
   - service: script.text_notify_john
     data:
       title: "Medication Alert!"
-      message: "Please take your daily medicine!"
+      message: "{{ response_var.response.speech.plain.speech }}"
       data:
         actions:
           - action: "JE_MEDS_TAKEN"

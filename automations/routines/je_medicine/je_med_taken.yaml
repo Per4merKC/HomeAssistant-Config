@@ -17,6 +17,13 @@ trigger:
     type: remote_button_short_press
     subtype: turn_off
 action:
+  - action: conversation.process
+    data:
+      agent_id: conversation.openai_conversation
+      text: >-
+        You are GLaDOS and are acknologing that John has taken his medications.
+        Your response should be two sentences or less. 
+    response_variable: response_var
   - if:
       - alias: "Before 18:15"
         condition: time
@@ -46,25 +53,7 @@ action:
   - service: script.text_notify_john
     data_template:
       title: "Thank You!"
-      message: >
-        {{
-          [
-            "Every dose you take brings you closer to good health.",
-            "Fist bump, bro! 👊",
-            "Good Job!",
-            "I believe in you! Taking your medicine as helps you heal.",
-            "I'm proud of you for taking your medicine.",
-            "Remember, each pill is a step toward feeling your best.",
-            "Thank you for taking your medicine today!",
-            "Thanks for taking care of your your 🧠, 🩸, and 💖",
-            "Way to go!",
-            "You're showing strength by taking your medicine consistently.",
-            "You've got this! It's a great step toward feeling better.",
-            "Your commitment to your health is inspiring.",
-            "Your future-self thanks you!",
-            "Your medicine is like a superhero that fights off illness."
-          ] | random
-        }}
+      message: "{{ response_var.response.speech.plain.speech }}"
       data: {}
   - condition: trigger
     id: t_00004_button

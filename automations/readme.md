@@ -11,7 +11,7 @@
 | 00005 | bedtime | Webhook from IFTTT with payload from Withings Sleep indicating if user is in bed; sets input_boolean.john_bed | routines/john_bed |
 | 00006 | door_opened_not_home | Front door, back door, or garage door was opened but nobody is home | doors |
 | 00007 | door_open_w_hvac | Front door, back door, or garage door left open for more than 5 minutes while HVAC is running and outside temperature is more than 5 degrees than the HVAC setting | door |
-| 00008 |  |  |  |
+| 00008 | mousetrap | Mousetrap alert when triggered | security |
 | 00009 |  |  |  |
 | 00010 |  |  |  |
 | 00011 |  |  |  |
