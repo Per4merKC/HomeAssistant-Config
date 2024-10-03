@@ -56,6 +56,7 @@ custom_components/
 
 # Ignore TTS Generated Files
 tts/*
+www/alexa_tts/*
 
 # Specific keeps
 !.gitkeep
