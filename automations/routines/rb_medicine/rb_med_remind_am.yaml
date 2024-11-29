@@ -17,10 +17,18 @@ condition:
       - condition: time
         before: "18:30:00"
 action:
+  - action: conversation.process
+    data:
+      agent_id: conversation.chatgpt
+      text: >-
+        Your objective is to get Robert to take his morning medicines.
+        Your response should be two sentences or less and use dark
+        humor in the response.
+    response_variable: response_var
   - service: script.text_notify_robert
     data:
       title: "Medication Alert!"
-      message: "Please take your morning medicine!"
+      message: "{{ response_var.response.speech.plain.speech }}"
       data:
         actions:
           - action: "RB_MEDS_TAKEN"

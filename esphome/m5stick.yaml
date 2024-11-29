@@ -7,6 +7,9 @@ esphome:
   name: $devicename
   platform: ESP32
   board: m5stick-c
+  # on_boot:
+  #   - delay: 5s
+  #   - lvgl.page.show: main_page
   platformio_options:
     upload_speed: 115200
 
@@ -28,6 +31,7 @@ ota:
 
 web_server:
 
+
 external_components:
   - source: github://martydingo/esphome-axp192
     components: [axp192]
@@ -42,6 +46,13 @@ sensor:
     battery_level:
       name: "M5Stick Battery Level"
       id: "m5stick_batterylevel"
+
+  - platform: wifi_signal
+    name: ${upper_devicename} WiFi Signal
+    id: wifi_dbm
+
+  - platform: uptime
+    name: ${upper_devicename} Uptime
 
 binary_sensor:
   - platform: gpio
@@ -80,12 +91,6 @@ output:
     inverted: true
     id: builtin_led
 
-remote_transmitter:
-  - pin:
-      number: GPIO9
-    carrier_duty_percent: 50%
-    # id: internal
-
 spi:
   clk_pin: GPIO13
   mosi_pin: GPIO15
@@ -95,6 +100,10 @@ i2c:
      sda: GPIO21
      scl: GPIO22
      scan: True
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
 
 font:
   - file: "gfonts://Roboto"
@@ -108,13 +117,18 @@ font:
 display:
   - platform:  st7789v
     model: TTGO TDisplay 135x240
+    # id: assist_display
+    backlight_pin: no
     cs_pin: GPIO5
     dc_pin: GPIO23
     reset_pin: GPIO18
     rotation: 270
+    auto_clear_enabled: false
+    update_interval: never
     lambda: |-
       it.fill(id(m5_blue));
       it.print(80, 0, id(roboto_24), id(m5_white), TextAlign::TOP_CENTER, "M5Stick Test");
+      it.strftime(0, 60, id(roboto_12), id(m5_white), TextAlign::BASELINE_LEFT, "%H:%M", id(homeassistant_time).now());
 
 i2s_audio:
   id: bus_i2s
