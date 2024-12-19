@@ -3,10 +3,18 @@ substitutions:
   devicename: m5stick
   upper_devicename: M5StickC
 
+external_components:
+  - source: github://martydingo/esphome-axp192
+    components: [axp192]
+
+
+esp32:
+  board: m5stick-c
+  framework: 
+    type: esp-idf
+
 esphome:
   name: $devicename
-  platform: ESP32
-  board: m5stick-c
   # on_boot:
   #   - delay: 5s
   #   - lvgl.page.show: main_page
@@ -21,20 +29,18 @@ wifi:
     password: !secret ap_password
 
 api:
+  encryption:
+    key: !secret esphome_encryption_key
 
 captive_portal:
 
 logger:
 
 ota:
-  platform: esphome
+  - platform: esphome
+    password: !secret ota_password
 
 web_server:
-
-
-external_components:
-  - source: github://martydingo/esphome-axp192
-    components: [axp192]
 
 # AXP192 power management - must be present to initialize TFT power on
 sensor:
@@ -115,20 +121,26 @@ font:
 
 # 1.14 inch, 135*240 Colorful TFT LCD, ST7789v2
 display:
-  - platform:  st7789v
-    model: TTGO TDisplay 135x240
-    # id: assist_display
-    backlight_pin: no
+  - platform:  ili9xxx
+    model: st7789v
+    id: assist_display
+    dimensions:
+      height: 240
+      width: 135
+      offset_height: 40
+      offset_width: 52
+    # backlight_pin: no
     cs_pin: GPIO5
     dc_pin: GPIO23
     reset_pin: GPIO18
-    rotation: 270
+    rotation: 90
+    invert_colors: true
     auto_clear_enabled: false
     update_interval: never
-    lambda: |-
-      it.fill(id(m5_blue));
-      it.print(80, 0, id(roboto_24), id(m5_white), TextAlign::TOP_CENTER, "M5Stick Test");
-      it.strftime(0, 60, id(roboto_12), id(m5_white), TextAlign::BASELINE_LEFT, "%H:%M", id(homeassistant_time).now());
+    # lambda: |-
+    #   it.fill(id(m5_blue));
+    #   it.print(80, 0, id(roboto_24), id(m5_white), TextAlign::TOP_CENTER, "M5Stick");
+    #   it.strftime(0, 60, id(roboto_12), id(m5_white), TextAlign::BASELINE_LEFT, "%H:%M", id(homeassistant_time).now());
 
 i2s_audio:
   id: bus_i2s
@@ -143,6 +155,18 @@ microphone:
     pdm: true
     id: mic
 
+voice_assistant:
+  microphone: mic
+
+micro_wake_word:
+  vad:
+  models:
+    - model: hey_jarvis
+  on_wake_word_detected:
+    then:
+      - voice_assistant.start:
+          wake_word: !lambda return wake_word;
+
 color:
   - id: m5_white
     red_int: 255
@@ -156,3 +180,13 @@ color:
     red_int: 255
     green_int: 152
     blue_int: 0
+
+lvgl:
+  displays:
+    - assist_display
+  pages:
+    - id: welcome_page
+      widgets:
+        - label:
+            align: CENTER
+            text: "Honey Haus"

@@ -67,7 +67,8 @@ action:
         type: tts
 
   # Anastozole
-  - if:
+  - alias: Anastozole is Low
+    if:
       - condition: numeric_state
         entity_id: counter.ana_medicine_counter
         below: 5
@@ -79,28 +80,29 @@ action:
           - service: notify.alexa_media
             data:
               message: >
-                Your blood pressure prescription is low with
-                {% if int(states("counter.bp_medicine_counter")) == 1 -%}
-                  {{  states("counter.bp_medicine_counter") }} dose left.
+                Your Anastrozole prescription is low with
+                {% if int(states("counter.ana_medicine_counter")) == 1 -%}
+                  {{  states("counter.ana_medicine_counter") }} dose left.
                 {%- else -%}
-                  {{  states("counter.bp_medicine_counter") }} doses left.
+                  {{  states("counter.ana_medicine_counter") }} doses left.
                 {%- endif %}
               target: media_player.bathroom_flex
               data:
                 type: announce
       - service: notify.persistent_notification
         data:
-          title: 🩸 Prescription Low
+          title: ♂ Prescription Low
           message: >
-            Your blood pressure prescription is low with
-            {% if int(states("counter.bp_medicine_counter")) == 1 -%}
-              {{  states("counter.bp_medicine_counter") }} dose left.
+            Your Anastrozole prescription is low with
+            {% if int(states("counter.ana_medicine_counter")) == 1 -%}
+              {{  states("counter.ana_medicine_counter") }} dose left.
             {%- else -%}
-              {{  states("counter.bp_medicine_counter") }} doses left.
+              {{  states("counter.ana_medicine_counter") }} doses left.
             {%- endif %}
 
-  # Blood Pressure
-  - if:
+  # Blood Pressure (Losartan)
+  - alias: Losartan is Low
+    if:
       - condition: numeric_state
         entity_id: counter.bp_medicine_counter
         below: 5
@@ -132,8 +134,9 @@ action:
               {{  states("counter.bp_medicine_counter") }} doses left.
             {%- endif %}
 
-  # Cholesterol
-  - if:
+  # Cholesterol (Rosuvastatin)
+  - alias: Rosuvastatin is Low
+    if:
       - condition: numeric_state
         entity_id: counter.cholesterol_counter
         below: 5
@@ -166,7 +169,8 @@ action:
             {%- endif %}
 
   # Potassium Citrate
-  - if:
+  - alias: Potassium Citrate is Low
+    if:
       - condition: numeric_state
         entity_id: counter.kcitrate_medicine_counter
         below: 20  # double tablets per dose
@@ -203,7 +207,8 @@ action:
           # yamllint enable rule:line-length
 
   # Trintellix
-  - if:
+  - alias: Trintellix is Low
+    if:
       - condition: numeric_state
         entity_id: counter.ttx_medicine_counter
         below: 5
@@ -236,7 +241,8 @@ action:
             {%- endif %}
 
   # Wellbutrin
-  - if:
+  - alias: Wellbutrin is Low
+    if:
       - condition: numeric_state
         entity_id: counter.wb_medicine_counter
         below: 5

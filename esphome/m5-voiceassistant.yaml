@@ -1,0 +1,346 @@
+---
+substitutions:
+  devicename: m5-voiceassistant
+  upper_devicename: M5-VoiceAssistant
+  short_name: M5-VA-1
+
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret esphome_encryption_key
+
+axp192:
+  id: axp
+  address: 0x34
+  update_interval: 60s
+  charge_voltage: 4150mV
+  dcdc1_voltage: 3300mv
+  dcdc3_voltage: 1.5V
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO37
+      inverted: true
+    name: ${short_name} Front Button
+    on_press:
+      then:
+        - voice_assistant.start:
+            silence_detection: false
+    on_release:
+      then:
+        - voice_assistant.stop:
+
+  - platform: gpio
+    pin:
+      number: GPIO39
+      inverted: true
+    name: ${short_name} Top Button
+    on_click:
+      min_length: 50ms
+      max_length: 350ms
+      then:
+        - light.toggle: backlight
+
+  - platform: axp192
+    axp192_id: axp
+    type: charge_indicate
+    id: axp_charger
+    name: "${short_name} Charger"
+
+  - platform: axp192
+    axp192_id: axp
+    type: battery_present
+    id: axp_battery
+    name: "${short_name} Battery"
+
+  # - platform: axp192
+  #   axp192_id: axp
+  #   type: vbus_valid_irq
+  #   name: Invalid VBUS
+
+  # - platform: axp192
+  #   axp192_id: axp
+  #   type: low_charge_current_irq
+  #   name: Low Charge Current
+
+  # - platform: axp192
+  #   axp192_id: axp
+  #   type: acin_over_voltage_irq
+  #   name: Over Voltage
+
+captive_portal:
+
+color:
+  - id: m5_white
+    red_int: 255
+    green_int: 255
+    blue_int: 255
+  - id: m5_blue
+    red_int: 3
+    green_int: 169
+    blue_int: 244
+  - id: m5_orange
+    red_int: 255
+    green_int: 152
+    blue_int: 0
+
+# 1.14 inch, 135*240 Colorful TFT LCD, ST7789v2
+display:
+  - platform:  ili9xxx
+    model: st7789v
+    id: assist_display
+    dimensions:
+      height: 240
+      width: 135
+      offset_height: 40
+      offset_width: 52
+    # cklight_pin: no
+    cs_pin: GPIO5
+    dc_pin: GPIO23
+    reset_pin: GPIO18
+    rotation: 90
+    invert_colors: true
+    auto_clear_enabled: false
+    update_interval: never
+
+esp32:
+  board: m5stick-c
+    # framework:
+    #   type: esp-idf
+
+esphome:
+  name: $devicename
+  friendly_name: $upper_devicename
+  on_boot:
+    - delay: 5s
+    - lvgl.page.show: welcome_page
+  platformio_options:
+    upload_speed: 115200
+
+# external_components:
+#   - source: github://martydingo/esphome-axp192
+#     components: [axp192]
+
+# external_components:
+#   - source: github://pionizer/pionizer-axp192
+#     components: [axp192]
+
+external_components:
+  - source:
+      type: git
+      url: https://gitlab.com/geiseri/esphome_extras
+    components: [axp192]
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto_12
+    size: 12
+  - file: "gfonts://Roboto"
+    id: roboto_18
+    size: 18
+  - file: "gfonts://Roboto"
+    id: roboto_24
+    size: 24
+  - file: "gfonts://Roboto"
+    id: roboto_32
+    size: 32
+  - file: 
+      type: gfonts
+      family: Roboto
+      weight: 700
+    id: roboto_h2
+    size: 18
+  - file: 
+      type: gfonts
+      family: Roboto
+      weight: 700
+    id: roboto_h1
+    size: 24
+  - file: 
+      type: gfonts
+      family: Roboto
+      weight: 700
+    id: roboto_hero
+    size: 32
+
+globals:
+  - id: inactivity_counter
+    type: int
+    restore_value: no
+    initial_value: "10"
+
+i2c:
+   - id: bus_a
+     sda: GPIO21
+     scl: GPIO22
+     scan: True
+
+# i2s_audio:
+#   id: bus_i2s
+#   i2s_lrclk_pin: G26
+#   i2s_bclk_pin: G0
+
+i2s_audio:
+  - id: i2s_bus
+    i2s_lrclk_pin: GPIO0
+
+
+light:
+  - platform: monochromatic
+    output:  builtin_led
+    name: ${upper_devicename} Led
+    id: led1
+    effects:
+      - pulse:
+          name: "Slow Pulse"
+          transition_length: 250ms
+          update_interval: 250ms
+          min_brightness: 50%
+          max_brightness: 100%
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 100ms
+          update_interval: 100ms
+          min_brightness: 50%
+          max_brightness: 100%
+
+  - platform: monochromatic
+    output: axp_ldo2
+    name: "Backlight"
+    id: backlight
+    restore_mode: ALWAYS_ON
+
+# Enable logging
+logger:
+  logs:
+    i2s_audio: DEBUG
+
+lvgl:
+  displays:
+    - assist_display
+  # disp_bg_color: m5_blue
+  pages:
+    - id: welcome_page
+      bg_color: m5_blue
+      widgets:
+        - label:
+            align: CENTER
+            text_color: m5_white
+            text_font: roboto_hero
+            text: "Honey Haus"
+    - id: microphone_test
+      bg_color: m5_orange
+      # widgets:
+      #   - meter:
+      #       aligh: CENTER
+      #       height: 100%
+      #       weith: 100%
+      #       bg_opa: TRANSP
+      #       scales:
+      #         - range_from: 
+
+microphone:
+  - platform: i2s_audio
+    id: mic
+    adc_type: external
+    i2s_din_pin: GPIO34
+    i2s_audio_id: i2s_bus
+    pdm: true
+
+number:
+  - platform: template
+    name: "Microphone Gain"
+    id: microphone_gain
+    icon: mdi:microphone
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    unit_of_measurement: "dB"
+    optimistic: true
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+output:
+  - platform: ledc
+    pin: 10
+    inverted: true
+    id: builtin_led
+
+  - platform: axp192
+    axp192_id: axp
+    output: ldo2
+    id: axp_ldo2
+
+  - platform: ledc
+    pin:
+      number: GPIO02
+    inverted: false
+    id: buzzer
+
+spi:
+  clk_pin: GPIO13
+  mosi_pin: GPIO15
+
+# switch:
+#   - platform: axp192
+#     axp192_id: axp
+#     output: ldo2
+#     name: LD2
+
+web_server:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: $short_name Fallback Hotspot
+    password: !secret ap_password
+
+# AXP192 power management - must be present to initialize TFT power on
+sensor:
+  - platform: axp192
+    axp192_id: axp
+    type: battery_voltage
+    name: "Voltage"
+
+  - platform: axp192
+    axp192_id: axp
+    type: battery_charge_current
+    name: "Current"
+    filters:
+      - sliding_window_moving_average:
+          window_size: 15
+          send_every: 15
+
+  - platform: wifi_signal
+    name: ${upper_devicename} WiFi Signal
+    id: wifi_dbm
+
+  - platform: uptime
+    name: ${upper_devicename} Uptime
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+voice_assistant:
+  id: m5_va_1
+  microphone: mic
+  noise_suppression_level: 2
+  media_player: 
+  on_listening:
+    - light.turn_on:
+        id: led1
+        effect: "Slow Pulse"
+  on_stt_vad_end:
+    - light.turn_on:
+        id: led1
+        effect: "Fast Pulse"
+  on_end:
+    - delay: 100ms
+    - light.turn_off: led1

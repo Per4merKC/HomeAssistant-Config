@@ -50,6 +50,9 @@ notebooks
 # Custom Components
 custom_components/
 
+# ignore HACS integrations
+www/community/*
+
 # Ignore files created by IDE's
 .vscode
 .theia

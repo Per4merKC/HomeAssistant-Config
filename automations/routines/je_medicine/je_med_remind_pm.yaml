@@ -19,7 +19,7 @@ action:
     data:
       agent_id: conversation.chatgpt
       text: >-
-        Your objective is to get John to take their evening medications.
+        Your objective is to get John to take his evening medications.
         Your response should be two sentences or less and use dark
         humor in the response.
     response_variable: response_var

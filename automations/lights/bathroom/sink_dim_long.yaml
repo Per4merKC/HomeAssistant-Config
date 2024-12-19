@@ -1,6 +1,6 @@
 ---
 id: "00037"
-alias: "Sink Light Bright Long Pressed"
+alias: "Sink Light Dim Long Pressed"
 mode: restart
 trigger:
   device_id: 394ce620875b50a4c229ded2746f81da
