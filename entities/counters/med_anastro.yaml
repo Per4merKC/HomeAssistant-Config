@@ -1,8 +1,0 @@
----
-ana_medicine_counter:
-  name: Anastrozole Rx
-  initial: 90
-  restore: true
-  step: 1
-  minimum: 0
-  icon: mdi:peanut
