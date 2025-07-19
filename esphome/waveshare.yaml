@@ -116,6 +116,12 @@ font:
     id: roboto_body
     size: 20
 
+globals:
+  - id: random_int_var
+    type: int
+    restore_value: no
+    initial_value: '0'
+
 i2c:
   sda: GPIO08
   scl: GPIO09
@@ -132,18 +138,160 @@ image:
   - file: mdi:cogs
     id: img_settings
     resize: 200x200
+  - file: mdi:sun-wireless-outline
+    id: solar_power_icon
+    resize: 50x50
 
 logger:
+
+binary_sensor:
+  - platform: lvgl
+    widget: button
+    name: Button
+    on_press: # genrate a random number between -10 and +10 and update meter
+      then:
+        - lambda: |-
+            id(random_int_var) = (rand() % 20) - 10;
+        - lvgl.indicator.update:
+            id: power_meter_input
+            value: !lambda return id(random_int_var);
+        - lvgl.label.update:
+            id: power_kw
+            text:
+              format: "%dkW"
+              args: [ 'id(random_int_var)' ]
+
 
 lvgl:
   displays:
     - jarvis_display
-  pages:
-    - id: welcome_page
-      widgets:
+  # pages:
+  #   - id: welcome_page
+  #     widgets:
+  #       - label:
+  #           align: CENTER
+  #           text: "Honey Haus"
+  log_level: INFO
+  color_depth: 16
+  bg_color: 0
+  border_width: 0
+  outline_width: 0
+  shadow_width: 0
+  text_font: roboto_h1
+  align: center
+  style_definitions:
+    - id: meter_style
+      border_width: 0
+      outline_width: 0
+      align: center
+      bg_color: 0
+    - id: title_style
+      text_font: MONTSERRAT_40
+      align: center
+      text_color: 0xFFFFFF
+      bg_opa: TRANSP
+      bg_color: 0
+      radius: 4
+      pad_all: 2
+    - id: detail_style
+      text_font: MONTSERRAT_18
+      align: center
+      text_color: 0xFFFFFF
+      bg_opa: TRANSP
+      bg_color: 0
+      radius: 4
+      pad_all: 2
+  widgets:
+    - button: # Button
+        id: button
+        height: 100
+        width: 200
+        x: 20
+        y: 20
+        border_width: 0
+        outline_width: 0
+        align: TOP_LEFT
+        checkable: false
+        widgets:
         - label:
-            align: CENTER
-            text: "Honey Haus"
+            align: center
+            text: "Button"
+    - obj: # Meter
+        height: 240
+        width: 240
+        bg_color: 0
+        border_width: 0
+        outline_width: 0
+        shadow_width: 0
+        pad_all: 4
+        align: TOP_MID
+        widgets:
+          - meter: # Gradient color  arc
+              height: 100%
+              width: 100%
+              border_width: 0
+              outline_width: 0
+              align: center
+              bg_color: 0
+              scales:
+                angle_range: 180
+                range_to: 10
+                range_from: -10
+                ticks:
+                  count: 0
+                indicators:
+                  - line:
+                      id: power_meter_input
+                      width: 8
+                      color: 0xFFFFFF
+                      r_mod: 12
+                      value: 50
+                  - arc:
+                      color: 0xFF3000
+                      r_mod: 10
+                      width: 20
+                      start_value: -10
+                      end_value: 0
+                  - arc:
+                      color: 0x00FF00
+                      r_mod: 10
+                      width: 20
+                      start_value: 0
+                      end_value: 10
+          - arc: # black arc to erase middle part of meter indicator line
+              height: 160
+              width: 160
+              align: center
+              arc_color: 0x000000
+              arc_width: 150
+              start_angle: 0
+              end_angle: 360
+              indicator:
+                arc_width: 150
+                arc_color: 0x000000
+          - label: # gauge lower and higher range indicators
+              styles: detail_style
+              y: 8
+              x: -99
+              text: "-10"
+          - label:
+              styles: detail_style
+              y: 8
+              x: 99
+              text: "+10"
+          - label:  # value label
+              styles: title_style
+              id: power_kw
+              y: -10
+          - image:
+              src: solar_power_icon
+              id: img_solar_power
+              align: center
+              image_recolor: 0xFFFF00
+              image_recolor_opa: 100%
+              y: 50
+        
+
 
 ota:
   - platform: esphome
@@ -179,7 +327,6 @@ switch:
 #       mode:
 #         output: true
 #       inverted: false
-
 
 time:
   - platform: homeassistant

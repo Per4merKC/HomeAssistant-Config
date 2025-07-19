@@ -1,8 +1,8 @@
 ---
 substitutions:
-  devicename: m5-voiceassistant
-  upper_devicename: M5-VoiceAssistant
-  short_name: M5-VA-1
+  devicename: m5-va-1
+  upper_devicename: M5-VA-1
+  short_name: m5-va-1
 
 
 # Enable Home Assistant API
@@ -24,13 +24,11 @@ binary_sensor:
       number: GPIO37
       inverted: true
     name: ${short_name} Front Button
-    on_press:
+    on_click:
       then:
-        - voice_assistant.start:
-            silence_detection: false
-    on_release:
-      then:
-        - voice_assistant.stop:
+        - lvgl.page.next:
+            animation: OUT_LEFT
+            time: 300ms
 
   - platform: gpio
     pin:
@@ -54,21 +52,6 @@ binary_sensor:
     type: battery_present
     id: axp_battery
     name: "${short_name} Battery"
-
-  # - platform: axp192
-  #   axp192_id: axp
-  #   type: vbus_valid_irq
-  #   name: Invalid VBUS
-
-  # - platform: axp192
-  #   axp192_id: axp
-  #   type: low_charge_current_irq
-  #   name: Low Charge Current
-
-  # - platform: axp192
-  #   axp192_id: axp
-  #   type: acin_over_voltage_irq
-  #   name: Over Voltage
 
 captive_portal:
 
@@ -96,7 +79,6 @@ display:
       width: 135
       offset_height: 40
       offset_width: 52
-    # cklight_pin: no
     cs_pin: GPIO5
     dc_pin: GPIO23
     reset_pin: GPIO18
@@ -107,8 +89,10 @@ display:
 
 esp32:
   board: m5stick-c
-    # framework:
-    #   type: esp-idf
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+    version: recommended
 
 esphome:
   name: $devicename
@@ -117,7 +101,7 @@ esphome:
     - delay: 5s
     - lvgl.page.show: welcome_page
   platformio_options:
-    upload_speed: 115200
+    upload_speed: 921600
 
 # external_components:
 #   - source: github://martydingo/esphome-axp192
@@ -165,12 +149,6 @@ font:
     id: roboto_hero
     size: 32
 
-globals:
-  - id: inactivity_counter
-    type: int
-    restore_value: no
-    initial_value: "10"
-
 i2c:
    - id: bus_a
      sda: GPIO21
@@ -183,9 +161,10 @@ i2c:
 #   i2s_bclk_pin: G0
 
 i2s_audio:
-  - id: i2s_bus
-    i2s_lrclk_pin: GPIO0
-
+  - id: mic_adc
+    i2s_lrclk_pin:
+      number: GPIO0
+      ignore_strapping_warning: true
 
 light:
   - platform: monochromatic
@@ -220,7 +199,6 @@ logger:
 lvgl:
   displays:
     - assist_display
-  # disp_bg_color: m5_blue
   pages:
     - id: welcome_page
       bg_color: m5_blue
@@ -229,24 +207,54 @@ lvgl:
             align: CENTER
             text_color: m5_white
             text_font: roboto_hero
-            text: "Honey Haus"
+            text: "Honey Haus VA1"
     - id: microphone_test
       bg_color: m5_orange
-      # widgets:
-      #   - meter:
-      #       aligh: CENTER
-      #       height: 100%
-      #       weith: 100%
-      #       bg_opa: TRANSP
-      #       scales:
-      #         - range_from: 
+      widgets:
+        - meter:
+            align: CENTER
+            height: 100%
+            width: 100%
+            scales:
+              range_from: -10
+              range_to: 40
+              angle_range: 240
+              rotation: 150
+              ticks:
+                count: 51
+                length: 3
+                major:
+                  stride: 5
+                  length: 13
+                  label_gap: 13
+              indicators:
+                - line:
+                    id: sound_meter
+                    width: 2
+                    color: 0xFF0000
+                    r_mod: -4
+                - tick_style:
+                    start_value: -10
+                    end_value: 40
+                    color_start: 0x0000bd
+                    color_end: 0xbd0000
+    - id: ip_address_page
+      bg_color: m5_blue
+      widgets:
+        - label:
+            id: ip_address_label
+            align: CENTER
+            text_color: m5_white
+            text_font: roboto_24
+            text: "Getting IP..."
 
 microphone:
   - platform: i2s_audio
-    id: mic
+    id: echo_microphone
     adc_type: external
+    channel: left
+    i2s_audio_id: mic_adc
     i2s_din_pin: GPIO34
-    i2s_audio_id: i2s_bus
     pdm: true
 
 number:
@@ -300,6 +308,10 @@ wifi:
   ap:
     ssid: $short_name Fallback Hotspot
     password: !secret ap_password
+  manual_ip:
+    static_ip: 192.168.86.52
+    gateway: 192.168.86.1
+    subnet: 255.255.255.0
 
 # AXP192 power management - must be present to initialize TFT power on
 sensor:
@@ -324,23 +336,45 @@ sensor:
   - platform: uptime
     name: ${upper_devicename} Uptime
 
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      id: ip_address
+      name: "IP Address"
+      entity_category: diagnostic
+      on_value:
+        then:
+          - lvgl.label.update:
+              id: ip_address_label
+              text:
+                format: "%s"
+                args: ['id(ip_address).state.c_str()']
+    ssid:
+      id: ssid_name
+      name: "Connected SSID"
+      entity_category: diagnostic
+    mac_address:
+      id: mac_address
+      name: "Mac Address"
+      entity_category: diagnostic
+
 time:
   - platform: homeassistant
     id: homeassistant_time
 
-voice_assistant:
-  id: m5_va_1
-  microphone: mic
-  noise_suppression_level: 2
-  media_player: 
-  on_listening:
-    - light.turn_on:
-        id: led1
-        effect: "Slow Pulse"
-  on_stt_vad_end:
-    - light.turn_on:
-        id: led1
-        effect: "Fast Pulse"
-  on_end:
-    - delay: 100ms
-    - light.turn_off: led1
+# voice_assistant:
+#   id: m5_va_1
+#   microphone: mic
+#   noise_suppression_level: 2
+#   media_player: 
+#   on_listening:
+#     - light.turn_on:
+#         id: led1
+#         effect: "Slow Pulse"
+#   on_stt_vad_end:
+#     - light.turn_on:
+#         id: led1
+#         effect: "Fast Pulse"
+#   on_end:
+#     - delay: 100ms
+#     - light.turn_off: led1

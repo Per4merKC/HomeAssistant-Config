@@ -35,7 +35,6 @@ action:
         data: {}
         target:
           entity_id:
-            - counter.ana_medicine_counter
             - counter.bp_medicine_counter
             - counter.cholesterol_counter
             - counter.kcitrate_medicine_counter
@@ -65,40 +64,6 @@ action:
       target: media_player.bathroom_flex
       data:
         type: tts
-
-  # Anastozole
-  - alias: Anastozole is Low
-    if:
-      - condition: numeric_state
-        entity_id: counter.ana_medicine_counter
-        below: 5
-    then:
-      - if:
-          - condition: trigger
-            id: t_00004_button
-        then:
-          - service: notify.alexa_media
-            data:
-              message: >
-                Your Anastrozole prescription is low with
-                {% if int(states("counter.ana_medicine_counter")) == 1 -%}
-                  {{  states("counter.ana_medicine_counter") }} dose left.
-                {%- else -%}
-                  {{  states("counter.ana_medicine_counter") }} doses left.
-                {%- endif %}
-              target: media_player.bathroom_flex
-              data:
-                type: announce
-      - service: notify.persistent_notification
-        data:
-          title: ♂ Prescription Low
-          message: >
-            Your Anastrozole prescription is low with
-            {% if int(states("counter.ana_medicine_counter")) == 1 -%}
-              {{  states("counter.ana_medicine_counter") }} dose left.
-            {%- else -%}
-              {{  states("counter.ana_medicine_counter") }} doses left.
-            {%- endif %}
 
   # Blood Pressure (Losartan)
   - alias: Losartan is Low

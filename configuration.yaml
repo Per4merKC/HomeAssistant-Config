@@ -12,5 +12,4 @@ homeassistant:
   packages: !include_dir_named integrations
   temperature_unit: F
   time_zone: America/Chicago
-  unit_system: imperial
 default_config:
