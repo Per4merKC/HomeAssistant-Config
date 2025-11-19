@@ -65,3 +65,5 @@ www/alexa_tts/*
 !.gitkeep
 !/.stubs
 !/.stubs/secrets.yaml
+.ha_run.lock
+.HA_VERSION
