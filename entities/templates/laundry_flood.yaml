@@ -1,0 +1,9 @@
+---
+binary_sensor:
+  - default_entity_id: binary_sensor.laundry_flood
+    device_class: moisture
+    icon: mdi:water-alert
+    name: Laundry Flood Detected
+    state: >-
+      "{{ (states('sensor.flood_sensor_alarm_level') | int(0)) > 0 }}"
+    unique_id: 83c124c6-33fc-4ca6-b6a9-cad7b69130d9

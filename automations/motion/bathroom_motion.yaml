@@ -4,7 +4,9 @@ alias: Bathroom Motion Lights
 mode: restart
 trigger:
   platform: state
-  entity_id: binary_sensor.bathroom_motion_detection
+  entity_id: 
+    - binary_sensor.bathroom_motion_detection
+    - binary_sensor.ep1_bathroom_pir
   to: "on"
 action:
   - choose:

@@ -1,0 +1,9 @@
+---
+binary_sensor:
+  - default_entity_id: binary_sensor.dryer
+    device_class: running
+    icon: mdi:tumble-dryer
+    name: Clothes Dryer Running
+    state: >-
+      {{ states("sensor.clothes_dryer", "run_state") }}
+    unique_id: 7a577039-c704-4e8c-8464-559a1f25b031

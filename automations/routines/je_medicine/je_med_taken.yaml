@@ -1,6 +1,43 @@
 ---
 id: "00004"
 alias: JE Daily Meds Taken
+variables:
+  response_var: >
+    {{
+      [ 
+        "Meds complete — John achieves +10 stability and +5 adulting skill.",
+        "You took your meds! Your organs send their deepest gratitude.",
+        "Pill successfully swallowed — human operating system updated.",
+        "Meds onboard. Chaos denied entry… for now.",
+        "Great job taking your meds — your body just whispered ‘thank you.’",
+        "Mission accomplished: Pharmaceuticals deployed like tiny heroes.",
+        "You took your meds! Future John now has a fighting chance.",
+        "Meds taken — consider yourself officially less breakable.",
+        "Congrats! You just unlocked the achievement: Responsible Human.",
+        "Meds swallowed like a champion — hydration may now commence.",
+        "Boom. Meds handled. A standing ovation from your cells.",
+        "You took your meds — a brilliant tactical move against entropy.",
+        "Medication installed. Please allow 4–6 hours for awesomeness.",
+        "Meds secured — sleep easier knowing biology is obeying orders.",
+        "John: 1. Biochemical rebellion: 0.",
+        "Meds taken — the internal gremlins are disappointed.",
+        "Congratulations — you just fed the microscopic workforce.",
+        "Thank you for choosing Functionality™ — your meds are now active.",
+        "Just like that, you prevented a full-scale cellular uprising.",
+        "You took your meds — that’s the kind of hero we root for.",
+        "Meds down the hatch — you may now proceed to be amazing.",
+        "Pharmaceuticals applied. Consider yourself fortified.",
+        "Well done — your organs are celebrating with a tiny dance party.",
+        "You took your meds, John. Your mitochondria salute you.",
+        "Meds complete — and not a single dramatic choking scene.",
+        "Nice going — your health bar just got a little greener.",
+        "Meds taken — look at you being all responsible and stuff.",
+        "Your cells high-fived when that pill hit the stomach.",
+        "Meds complete — please enjoy the improved performance boost.",
+        "You took your meds! Your body approves this message.",
+        "Success! Chemistry has entered the chat and likes what it sees."
+      ] | random
+    }}
 trigger:
   - platform: event
     id: t_00004_ios
@@ -17,14 +54,6 @@ trigger:
     type: remote_button_short_press
     subtype: turn_off
 action:
-  - action: conversation.process
-    data:
-      agent_id: conversation.chatgpt
-      text: >-
-        You are GLaDOS and are acknologing that John has taken his medications.
-        Your response should be two sentences or less and use dark humor in
-        the response.
-    response_variable: response_var
   - if:
       - alias: "Before 18:15"
         condition: time
@@ -50,17 +79,18 @@ action:
             - counter.kcitrate_medicine_counter
   - service: input_boolean.turn_on
     entity_id: input_boolean.je_medicine
+
   - service: script.text_notify_john
     data_template:
       title: "Thank You!"
-      message: "{{ response_var.response.speech.plain.speech }}"
+      message: "{{ response_var }}"
       data: {}
   - condition: trigger
     id: t_00004_button
   - service: notify.alexa_media
     data:
       # yamllint disable-line rule:line-length
-      message: <audio src="soundbank://soundlibrary/computers/beeps_tones/beeps_tones_09"/> {{ response_var.response.speech.plain.speech }}
+      message: <audio src="soundbank://soundlibrary/computers/beeps_tones/beeps_tones_09"/> {{ response_var }}
       target: media_player.bathroom_flex
       data:
         type: tts
@@ -138,7 +168,7 @@ action:
     if:
       - condition: numeric_state
         entity_id: counter.kcitrate_medicine_counter
-        below: 20  # double tablets per dose
+        below: 20  # double tablets per dose 2x Per day
     then:
       - if:
           - condition: trigger

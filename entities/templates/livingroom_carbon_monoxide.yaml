@@ -1,0 +1,13 @@
+---
+binary_sensor:
+  - default_entity_id: binary_sensor.living_room_carbon_monoxide_status
+    device_class: carbon_monoxide
+    name: Living Room Carbon Monoxide Detector
+    state: >-
+      {% if is_state('sensor.basement_smoke_alarm_level', '255') 
+        and is_state('sensor.basement_smoke_alarm_type', '2') %}
+        On
+      {% else %}
+        Off
+      {% endif %}
+    unique_id: 63c9d4a3-0181-456a-af28-54508e5bbb34

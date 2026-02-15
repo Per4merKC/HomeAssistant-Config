@@ -1,6 +1,4 @@
 ---
 logger:
   logs:
-    homeassistant.components.ecovacs: debug
-    homeassistant.components.vacuum.ecovacs: debug
-    sucks: debug
+    homeassistant.components.counter: debug

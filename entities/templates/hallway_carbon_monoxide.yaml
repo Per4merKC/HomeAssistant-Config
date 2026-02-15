@@ -1,0 +1,13 @@
+---
+binary_sensor:
+- device_class: carbon_monoxide
+  default_entity_id: binary_sensor.hallway_carbon_monoxide_status
+  name: Hallway Carbon Monoxide
+  state: >-
+    {% if is_state('sensor.hallway_smoke_detector_alarmlevel', '255')
+      and is_state('sensor.hallway_smoke_detector_alarmtype', '2') %}
+      On
+    {% else %}
+      Off
+    {% endif %}
+  unique_id: c6b946ef-7fc3-4428-b765-3dcd46ac1bb6

@@ -1,8 +1,8 @@
 ---
 cholesterol_counter:
-  name: Cholesterol Rx
+  icon: mdi:prescription
   initial: 30
+  minimum: 0
+  name: Cholesterol Rx
   restore: true
   step: 1
-  minimum: 0
-  icon: mdi:prescription

@@ -15,19 +15,45 @@ condition:
       - condition: time
         after: "18:30:00"
 action:
-  - action: conversation.process
-    data:
-      agent_id: conversation.chatgpt
-      text: >-
-        Your objective is to get John to take his evening medications.
-        Your response should be two sentences or less and use dark
-        humor in the response.
-    response_variable: response_var
-
   - service: script.text_notify_john
     data:
       title: "Medication Alert!"
-      message: "{{ response_var.response.speech.plain.speech }}"
+      message: >
+        {{
+          [
+            "Evening meds time, John — because your body doesn't have a night shift crew.",
+            "Take your meds so your dreams don’t turn into a CGI horror movie.",
+            "Night meds: the sequel nobody asked for but everybody needs.",
+            "Your evening meds are basically tiny lullabies. Swallow them gently.",
+            "Take your meds — insomnia is not a personality trait.",
+            "Night meds activate: unlock peaceful sleep DLC.",
+            "Evening meds: because your cells need direction after 8pm.",
+            "Take your meds, John — the moon is watching.",
+            "Your meds are like vampires but healthy — they thrive at night.",
+            "Night meds time: tuck those pills in bed… inside you.",
+            "Take your meds so tomorrow isn’t sponsored by Regret™.",
+            "Evening meds: for when your body says ‘plot twist!’",
+            "John, the nighttime pharmaceutical council awaits your attendance.",
+            "Meds time — let’s not roll the dice on nighttime chaos.",
+            "Your evening meds want a sleepover — in your stomach.",
+            "Take your meds, John — Future You already wrote you a thank-you note.",
+            "Time to medicate like a responsible wizard.",
+            "Night meds: the bedtime story your organs understand.",
+            "Take your meds to avoid the ‘3 A.M. Brain Gremlins.’",
+            "Your night meds help shut down tomorrow's nonsense early.",
+            "Evening meds are like locking your doors — but for biology.",
+            "Swallow those meds before your brain remembers things you said in 2008.",
+            "Night meds: because Netflix isn’t the only thing you should binge responsibly.",
+            "Take your meds — it’s cheaper than nocturnal panic.",
+            "Your meds are begging to clock in for their night shift.",
+            "Evening meds keep your inner goblins from hosting a rave.",
+            "Take your meds or the nightmares win.",
+            "Meds time: hydrate, swallow, dominate sleep.",
+            "Night meds — the most adult thing you’ll do today.",
+            "Take your meds so your body doesn’t attempt ‘surprise science.’",
+            "Evening meds: because you deserve to respawn tomorrow with full health."
+          ] | random
+        }}
       data:
         actions:
           - action: "JE_MEDS_TAKEN"
