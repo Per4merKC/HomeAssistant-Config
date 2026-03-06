@@ -3,12 +3,13 @@ substitutions:
   name: ep1-den
 
 packages:
-  Everything_Smart_Technology.Everything_Presence_One: github://everythingsmarthome/presence-one/everything-presence-one.yaml@main
+  Everything_Smart_Technology.Everything_Presence_One: github://everythingsmarthome/everything-presence-one/everything-presence-one-rev1.3.yaml@main
 
 esphome:
   name: ${name}
   name_add_mac_suffix: false
   friendly_name: "EP1 Den"
+  compile_process_limit: 1
 
 ota:
   - platform: esphome

@@ -3,10 +3,10 @@ id: "00032"
 alias: Bathroom Motion Lights
 mode: restart
 trigger:
-  platform: state
-  entity_id: 
+  entity_id:
     - binary_sensor.bathroom_motion_detection
-    - binary_sensor.ep1_bathroom_pir
+    - binary_sensor.ep1_bathroom_occupancy
+  platform: state
   to: "on"
 action:
   - choose:
@@ -25,10 +25,18 @@ action:
         sequence:
           - service: light.turn_on
             target:
-              entity_id: light.bathroom_sink_4
+              entity_id: >
+                {{ 
+                  [
+                    "light.bathroom_sink_1",
+                    "light.bathroom_sink_2", 
+                    "light.bathroom_sink_3", 
+                    "light.bathroom_sink_4" 
+                  ] | random 
+                }}
             data:
-              color_temp: 454
               brightness: 10
+              color_temp_kelvin: 2202
               transition: 5
       - conditions:
           - condition: or
@@ -42,8 +50,8 @@ action:
             target:
               entity_id: light.sink_light
             data:
-              color_temp: 389
               brightness: 75
+              color_temp_kelvin: 4000
               transition: 5
     default:
       - service: light.turn_on
@@ -51,7 +59,7 @@ action:
           entity_id: light.sink_light
         data:
           brightness: 255
-          color_temp: 300
+          color_temp_kelvin: 3101
           transition: 5
   - delay: "00:03:00"
   - service: light.turn_off
