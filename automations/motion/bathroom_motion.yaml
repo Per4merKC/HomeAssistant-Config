@@ -1,69 +1,89 @@
 ---
 id: "00032"
-alias: Bathroom Motion Lights
+alias: Bathroom Intelligent Lighting
 mode: restart
+description: >
+  Automatically control bathroom lighting based on motion,
+  occupancy, and shower activity.
+
 trigger:
-  entity_id:
-    - binary_sensor.bathroom_motion_detection
-    - binary_sensor.ep1_bathroom_occupancy
-  platform: state
-  to: "on"
+  - platform: state
+    entity_id:
+      - binary_sensor.bathroom_motion_detection
+      - binary_sensor.ep1_bathroom_occupancy
+      - binary_sensor.ep1_bathroom_mmwave
+    to: "on"
+
+condition:
+  - condition: template
+    value_template: >
+      {{
+        is_state('light.sink_light','off') and
+        is_state('light.bathroom_sink_1','off') and
+        is_state('light.bathroom_sink_2','off') and
+        is_state('light.bathroom_sink_3','off') and
+        is_state('light.bathroom_sink_4','off')
+      }}
+
 action:
   - choose:
+      # --- OPTION 1: NIGHT TIME ---
       - conditions:
-          - condition: and
-            conditions:
-              - condition: not
-                conditions:
-                  - condition: state
-                    entity_id: input_boolean.john_bed
-                    state: "off"
-                    for: 00:05:00
-              - condition: time
-                after: "22:00"
-                before: 05:00
+          - condition: state
+            entity_id: sun.sun
+            state: "below_horizon"
         sequence:
           - service: light.turn_on
             target:
               entity_id: >
-                {{ 
-                  [
-                    "light.bathroom_sink_1",
-                    "light.bathroom_sink_2", 
-                    "light.bathroom_sink_3", 
-                    "light.bathroom_sink_4" 
-                  ] | random 
-                }}
+                {% if is_state('binary_sensor.withings_in_bed_john', 'on') or is_state('binary_sensor.withings_in_bed_robert', 'on') %}
+                  {{ ["light.bathroom_sink_1", "light.bathroom_sink_2", "light.bathroom_sink_3", "light.bathroom_sink_4"] | random }}
+                {% else %}
+                  light.sink_light
+                {% endif %}
             data:
-              brightness: 10
-              color_temp_kelvin: 2202
-              transition: 5
-      - conditions:
-          - condition: or
-            conditions:
-              - condition: sun
-                before: sunrise
-              - condition: sun
-                after: sunset
-        sequence:
-          - service: light.turn_on
-            target:
-              entity_id: light.sink_light
-            data:
-              brightness: 75
-              color_temp_kelvin: 4000
-              transition: 5
+              brightness: >
+                {% if is_state('binary_sensor.withings_in_bed_john', 'on') or is_state('binary_sensor.withings_in_bed_robert', 'on') %}
+                  10
+                {% elif is_state('binary_sensor.bathroom_shower_active','on') %}
+                  120
+                {% else %}
+                  75
+                {% endif %}
+              color_temp_kelvin: >
+                {{ 2200 if (is_state('binary_sensor.withings_in_bed_john', 'on') or is_state('binary_sensor.withings_in_bed_robert', 'on')) else 3800 }}
+              transition: 2
+
+    # --- OPTION 2: DAYTIME (DEFAULT) ---
     default:
       - service: light.turn_on
         target:
           entity_id: light.sink_light
         data:
-          brightness: 255
-          color_temp_kelvin: 3101
-          transition: 5
-  - delay: "00:03:00"
+          brightness: "{{ 200 if is_state('binary_sensor.bathroom_shower_active','on') else 255 }}"
+          color_temp_kelvin: 4500
+          transition: 2
+
+  # --- STEP 2: WAIT FOR OFF ---
+  - wait_for_trigger:
+      - platform: state
+        entity_id: binary_sensor.ep1_bathroom_occupancy
+        to: "off"
+        for: >
+          {% if is_state('binary_sensor.bathroom_shower_active', 'on') %}
+            00:20:00
+          {% else %}
+            00:03:00
+          {% endif %}
+
+  # --- STEP 3: TURN OFF ---
   - service: light.turn_off
     target:
-      entity_id: light.sink_light
+      entity_id:
+        - light.sink_light
+        - light.bathroom_sink_1
+        - light.bathroom_sink_2
+        - light.bathroom_sink_3
+        - light.bathroom_sink_4
     data:
       transition: 5

@@ -1,0 +1,7 @@
+---
+platform: derivative
+source: sensor.ep1_bathroom_humidity
+name: Bathroom Humidity Rate
+round: 2
+unit_time: min
+time_window: "00:03:00"
