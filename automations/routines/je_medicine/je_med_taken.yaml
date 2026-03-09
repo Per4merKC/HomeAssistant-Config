@@ -1,10 +1,35 @@
 ---
 id: "00004"
-alias: JE Daily Meds Taken
+alias: "JE Daily Meds Taken"
+description: "Optimized meds tracker with centralized data object."
+
 variables:
+  # 1. CENTRALIZED DATA OBJECT
+  # Define every attribute once here. 
+  med_data:
+    - { name: "Blood Pressure", id: "bp", threshold: 5, icon: "🩸", morning: true, evening: true }
+    - { name: "Cholesterol", id: "cholesterol", threshold: 5, icon: "💊", morning: true, evening: false }
+    - { name: "Potassium Citrate", id: "kcitrate", threshold: 20, icon: "💊", morning: true, evening: true, div: 2 }
+    - { name: "Trintellix", id: "ttx", threshold: 5, icon: "🗣", morning: true, evening: false }
+    - { name: "Wellbutrin", id: "wb", threshold: 5, icon: "🧠", morning: true, evening: false }
+
+  # 2. STATE LOGIC
+  is_morning: "{{ now() < today_at('18:15:00') }}"
+  from_button: "{{ trigger.id == 't_00004_button' }}"
+  
+  # 3. DYNAMIC FILTERING
+  # This creates a list of entity_ids for ONLY the meds that should be taken NOW
+  target_counters: >
+      {% set attr = 'morning' if is_morning else 'evening' %}
+      {% set selected_ids = med_data | selectattr(attr, 'eq', true) | map(attribute='id') | list %}
+      {% set ns = namespace(entities=[]) %}
+      {% for med_id in selected_ids %}
+        {% set ns.entities = ns.entities + ['counter.' ~ med_id ~ '_medicine_counter'] %}
+      {% endfor %}
+      {{ ns.entities }}
+
   response_var: >
-    {{
-      [ 
+    {{ [
         "Meds complete — John achieves +10 stability and +5 adulting skill.",
         "You took your meds! Your organs send their deepest gratitude.",
         "Pill successfully swallowed — human operating system updated.",
@@ -36,235 +61,77 @@ variables:
         "Meds complete — please enjoy the improved performance boost.",
         "You took your meds! Your body approves this message.",
         "Success! Chemistry has entered the chat and likes what it sees."
-      ] | random
-    }}
+    ] | random }}
+
 trigger:
   - platform: event
     id: t_00004_ios
     event_type: ios.notification_action_fired
     event_data:
       actionName: JE_MEDS_TAKEN
-    context:
-      user_id:
-        - 58f909a7060b4eabb036e244d0369894
   - platform: device
     id: t_00004_button
     device_id: 99d88e062470eadce3e5ff19acd21f62
     domain: zha
     type: remote_button_short_press
     subtype: turn_off
-action:
-  - if:
-      - alias: "Before 18:15"
-        condition: time
-        before: "18:15:00"
-    then:
-      - alias: "Decrement JE AM Meds"
-        service: counter.decrement
-        data: {}
-        target:
-          entity_id:
-            - counter.bp_medicine_counter
-            - counter.cholesterol_counter
-            - counter.kcitrate_medicine_counter
-            - counter.ttx_medicine_counter
-            - counter.wb_medicine_counter
-    else:
-      - alias: "Decrement JE PM Meds"
-        service: counter.decrement
-        data: {}
-        target:
-          entity_id:
-            - counter.bp_medicine_counter
-            - counter.kcitrate_medicine_counter
-  - service: input_boolean.turn_on
-    entity_id: input_boolean.je_medicine
 
-  - service: script.text_notify_john
-    data_template:
+action:
+  # 1. Decrement Meds
+  - action: counter.decrement
+    target:
+      entity_id: "{{ target_counters }}"
+
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.je_medicine
+
+  # 2. Feedback
+  - action: script.text_notify_john
+    data:
       title: "Thank You!"
       message: "{{ response_var }}"
       data: {}
-  - condition: trigger
-    id: t_00004_button
-  - service: notify.alexa_media
+
+  - action: notify.alexa_media
     data:
-      # yamllint disable-line rule:line-length
-      message: <audio src="soundbank://soundlibrary/computers/beeps_tones/beeps_tones_09"/> {{ response_var }}
+      message: "<audio src='soundbank://soundlibrary/computers/beeps_tones/beeps_tones_09'/> {{ response_var }}"
       target: media_player.bathroom_flex
       data:
         type: tts
 
-  # Blood Pressure (Losartan)
-  - alias: Losartan is Low
-    if:
-      - condition: numeric_state
-        entity_id: counter.bp_medicine_counter
-        below: 5
-    then:
-      - if:
-          - condition: trigger
-            id: t_00004_button
-        then:
-          - service: notify.alexa_media
-            data:
-              message: >
-                Your blood pressure prescription is low with
-                {% if int(states("counter.bp_medicine_counter")) == 1 -%}
-                  {{  states("counter.bp_medicine_counter") }} dose left.
-                {%- else -%}
-                  {{  states("counter.bp_medicine_counter") }} doses left.
-                {%- endif %}
-              target: media_player.bathroom_flex
+  # 3. Low Inventory Check & Alert
+  - repeat:
+      for_each: "{{ med_data }}"
+      sequence:
+        - variables:
+            med: "{{ repeat.item }}"
+            entity: "counter.{{ repeat.item.id }}_medicine_counter"
+            count: "{{ states(entity) | int(0) }}"
+            doses: "{{ (count / repeat.item.div | default(1)) | int }}"
+        
+        - if: "{{ count < repeat.item.threshold }}"
+          then:
+            # Voice Alert
+            - if: "{{ from_button }}"
+              then:
+                - action: notify.alexa_media
+                  data:
+                    message: "Your {{ repeat.item.name }} is low. {{ doses }} doses left."
+                    target: media_player.bathroom_flex
+                    data:
+                      type: announce
+            
+            # Interactive Phone Alert (Allows text input!)
+            - action: notify.mobile_app_john_iphone # <-- Update to your actual device ID
               data:
-                type: announce
-      - service: notify.persistent_notification
-        data:
-          title: 🩸 Prescription Low
-          message: >
-            Your blood pressure prescription is low with
-            {% if int(states("counter.bp_medicine_counter")) == 1 -%}
-              {{  states("counter.bp_medicine_counter") }} dose left.
-            {%- else -%}
-              {{  states("counter.bp_medicine_counter") }} doses left.
-            {%- endif %}
-
-  # Cholesterol (Rosuvastatin)
-  - alias: Rosuvastatin is Low
-    if:
-      - condition: numeric_state
-        entity_id: counter.cholesterol_counter
-        below: 5
-    then:
-      - if:
-          - condition: trigger
-            id: t_00004_button
-        then:
-          - service: notify.alexa_media
-            data:
-              message: >
-                Your cholesterol prescription is low with
-                {% if int(states("counter.cholesterol_counter")) == 1 -%}
-                  {{  states("counter.cholesterol_counter") }} dose left.
-                {%- else -%}
-                  {{  states("counter.cholesterol_counter") }} doses left.
-                {%- endif %}
-              target: media_player.bathroom_flex
-              data:
-                type: announce
-      - service: notify.persistent_notification
-        data:
-          title: 💊 Prescription Low
-          message: >
-            Your cholesterol prescription is low with
-            {% if int(states("counter.cholesterol_counter")) == 1 -%}
-              {{  states("counter.cholesterol_counter") }} dose left.
-            {%- else -%}
-              {{  states("counter.cholesterol_counter") }} doses left.
-            {%- endif %}
-
-  # Potassium Citrate
-  - alias: Potassium Citrate is Low
-    if:
-      - condition: numeric_state
-        entity_id: counter.kcitrate_medicine_counter
-        below: 20  # double tablets per dose 2x Per day
-    then:
-      - if:
-          - condition: trigger
-            id: t_00004_button
-        then:
-          - service: notify.alexa_media
-            data:
-              # yamllint disable rule:line-length
-              message: >
-                Your potassium citrate prescription is low with
-                {% if int(states("counter.kcitrate_medicine_counter")/2) == 1 -%}
-                  {{  int(states("counter.kcitrate_medicine_counter")/2) }} dose left.
-                {%- else -%}
-                  {{  int(states("counter.kcitrate_medicine_counter")/2) }} doses left.
-                {%- endif %}
-              # yamllint enable rule:line-length
-              target: media_player.bathroom_flex
-              data:
-                type: announce
-      - service: notify.persistent_notification
-        data:
-          title: 💊 Prescription Low
-          # yamllint disable rule:line-length
-          message: >
-            Your potassium citrate prescription is low with
-            {% if int(states("counter.kcitrate_medicine_counter")/2) == 1 -%}
-              {{  int(states("counter.kcitrate_medicine_counter")/2) }} dose left.
-            {%- else -%}
-              {{  int(states("counter.kcitrate_medicine_counter")/2) }} doses left.
-            {%- endif %}
-          # yamllint enable rule:line-length
-
-  # Trintellix
-  - alias: Trintellix is Low
-    if:
-      - condition: numeric_state
-        entity_id: counter.ttx_medicine_counter
-        below: 5
-    then:
-      - if:
-          - condition: trigger
-            id: t_00004_button
-        then:
-          - service: notify.alexa_media
-            data:
-              message: >
-                Your Trintellix prescription is low with
-                {% if int(states("counter.ttx_medicine_counter")) == 1 -%}
-                  {{  states("counter.ttx_medicine_counter") }} dose left.
-                {%- else -%}
-                  {{  states("counter.ttx_medicine_counter") }} doses left.
-                {%- endif %}
-              target: media_player.bathroom_flex
-              data:
-                type: announce
-      - service: notify.persistent_notification
-        data:
-          title: 🗣 Prescription Low
-          message: >
-            Your trintellix prescription is low with
-            {% if int(states("counter.ttx_medicine_counter")) == 1 -%}
-              {{  states("counter.ttx_medicine_counter") }} dose left.
-            {%- else -%}
-              {{  states("counter.ttx_medicine_counter") }} doses left.
-            {%- endif %}
-
-  # Wellbutrin
-  - alias: Wellbutrin is Low
-    if:
-      - condition: numeric_state
-        entity_id: counter.wb_medicine_counter
-        below: 5
-    then:
-      - if:
-          - condition: trigger
-            id: t_00004_button
-        then:
-          - service: notify.alexa_media
-            data:
-              message: >
-                Your Wellbutrin prescription is low with
-                {% if int(states("counter.wb_medicine_counter")) == 1 -%}
-                  {{  states("counter.wb_medicine_counter") }} dose left.
-                {%- else -%}
-                  {{  states("counter.wb_medicine_counter") }} doses left.
-                {%- endif %}
-              target: media_player.bathroom_flex
-              data:
-                type: announce
-      - service: notify.persistent_notification
-        data:
-          title: 🧠 Prescription Low
-          message: >
-            Your wellbutrin prescription is low with
-            {% if int(states("counter.wb_medicine_counter")) == 1 -%}
-              {{  states("counter.wb_medicine_counter") }} dose left.
-            {%- else -%}
-              {{  states("counter.wb_medicine_counter") }} doses left.
-            {%- endif %}
+                title: "{{ repeat.item.icon }} {{ repeat.item.name }} Low"
+                message: "Only {{ doses }} doses left."
+                data:
+                  tag: "refill_{{ repeat.item.id }}"
+                  actions:
+                    - action: "REFILL_{{ repeat.item.id | upper }}"
+                      title: "Log Refill Amount"
+                      behavior: textInput
+                      textInputButtonTitle: "Save"
+                      textInputPlaceholder: "Enter pill count (e.g. 90)"

@@ -1,81 +1,27 @@
 ---
 id: "00044"
-alias: JE Medicine Counters Reset
+alias: "Meds: Phone Refill Handler"
+description: "Catches text input from iOS notification and updates counter"
 trigger:
-  platform: device
-  device_id: 99d88e062470eadce3e5ff19acd21f62
-  domain: zha
-  type: remote_button_long_release
-  subtype: dim_up
+  - platform: event
+    event_type: ios.notification_action_fired
 action:
-  - if:
-      - condition: numeric_state
-        entity_id: counter.bp_medicine_counter
-        below: 5
-    then:
-      - service: counter.reset
-        data: {}
-        target:
-          entity_id:
-            - counter.bp_medicine_counter
-      - service: notify.alexa_media
-        data:
-          message: >
-            I have reset your blood pressure medicine counter.
-          target: media_player.bathroom_flex
-          data:
-            type: announce
+  - variables:
+      action_name: "{{ trigger.event.data.actionName | default('') }}"
+      med_id: "{{ action_name.split('_')[1] | lower if '_' in action_name else '' }}"
+      refill_amount: "{{ trigger.event.data.textInput | int(0) if trigger.event.data.textInput is defined else 0 }}"
+      counter_entity: "counter.{{ med_id }}_medicine_counter"
 
-  - if:
-      - condition: numeric_state
-        entity_id: counter.cholesterol_counter
-        below: 5
-    then:
-      - service: counter.reset
-        data: {}
-        target:
-          entity_id:
-            - counter.cholesterol_counter
-      - service: notify.alexa_media
-        data:
-          message: >
-            I have reset your cholesterol medicine counter.
-          target: media_player.bathroom_flex
-          data:
-            type: announce
+  # Update the counter
+  - action: counter.set_value
+    target:
+      entity_id: "{{ counter_entity }}"
+    data:
+      value: "{{ refill_amount }}"
 
-  - if:
-      - condition: numeric_state
-        entity_id: counter.kcitrate_counter
-        below: 5
-    then:
-      - service: counter.reset
-        data: {}
-        target:
-          entity_id:
-            - counter.kcitrate_counter
-      - service: notify.alexa_media
-        data:
-          message: >
-            I have reset your potassium citrate counter.
-          target: media_player.bathroom_flex
-          data:
-            type: announce
-
-  - if:
-      - condition: numeric_state
-        entity_id: counter.wb_medicine_counter
-        below: 5
-    then:
-      - service: counter.reset
-        data: {}
-        target:
-          entity_id:
-            - counter.wb_medicine_counter
-      - service: notify.alexa_media
-        data:
-          message: >
-            I have reset your anxiety medicine counter.
-          target: media_player.bathroom_flex
-          data:
-            type: announce
+  # Clear the notification from the phone screen
+  - action: notify.mobile_app_john_iphone
+    data:
+      message: "clear_notification"
+      data:
+        tag: "refill_{{ med_id }}"

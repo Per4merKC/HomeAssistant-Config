@@ -1,12 +1,13 @@
+---
 platform: rest
-name: Instagram Followers
-resource_template: !secret ig_url
+name: instagram_api
+resource_template: !secret ig_url  # "https://i.instagram.com/api/v1/users/web_profile_info/?username=YOURS_NAME"
 method: GET
 headers:
-  user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-  x-ig-app-id: "936619743392459"
-  referer: "https://www.instagram.com/"
+  content-type: 'application/json'
+  user-agent: 'Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)'
 value_template: "{{ value_json.data.user.edge_followed_by.count }}"
 json_attributes:
   - "data"
-scan_interval: 21600 # 6 Hours
+# scan_interval: 21600 # 6 Hours
+scan_interval: 86400000 # Manual mode (3 years)

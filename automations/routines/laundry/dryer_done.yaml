@@ -1,55 +1,55 @@
----
-id: "00030"
-alias: Dryer Done
-trigger:
-  platform: state
-  entity_id: binary_sensor.dryer
-  to: "off"
-action:
-  - parallel:
-      - sequence:
-          - service: light.turn_on
-            metadata: {}
-            data:
-              brightness_pct: 100
-              effect: Fireworks
-            target:
-              entity_id: light.west_lamp
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 10
-              milliseconds: 0
-          - service: scene.turn_on
-            target:
-              entity_id: scene.before_dry
-            data:
-              transition: 5
-      - service: counter.decrement
-        target:
-          entity_id: counter.laundry_queue
-        data: {}
-      - service: mqtt.publish
-        metadata: {}
-        data:
-          qos: 0
-          retain: false
-          topic: awtrix_4200c8/custom/dryerstate
-          payload: "{}"
-      - service: mqtt.publish
-        metadata: {}
-        data:
-          qos: 0
-          retain: false
-          topic: awtrix_4200c8/notify
-          payload: |-
-            {
-              "text": "Dryer is done!",
-              "icon": "48497",
-              "rainbow": true,
-              "duration": 60
-            }
-  - service: scene.delete
-    metadata: {}
-    target:
-      entity_id: scene.before_dry
+# ---
+# id: "00030"
+# alias: Dryer Done
+# trigger:
+#   platform: state
+#   entity_id: binary_sensor.dryer
+#   to: "off"
+# action:
+#   - parallel:
+#       - sequence:
+#           - service: light.turn_on
+#             metadata: {}
+#             data:
+#               brightness_pct: 100
+#               effect: Fireworks
+#             target:
+#               entity_id: light.west_lamp
+#           - delay:
+#               hours: 0
+#               minutes: 0
+#               seconds: 10
+#               milliseconds: 0
+#           - service: scene.turn_on
+#             target:
+#               entity_id: scene.before_dry
+#             data:
+#               transition: 5
+#       - service: counter.decrement
+#         target:
+#           entity_id: counter.laundry_queue
+#         data: {}
+#       - service: mqtt.publish
+#         metadata: {}
+#         data:
+#           qos: 0
+#           retain: false
+#           topic: awtrix_4200c8/custom/dryerstate
+#           payload: "{}"
+#       - service: mqtt.publish
+#         metadata: {}
+#         data:
+#           qos: 0
+#           retain: false
+#           topic: awtrix_4200c8/notify
+#           payload: |-
+#             {
+#               "text": "Dryer is done!",
+#               "icon": "48497",
+#               "rainbow": true,
+#               "duration": 60
+#             }
+#   - service: scene.delete
+#     metadata: {}
+#     target:
+#       entity_id: scene.before_dry

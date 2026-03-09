@@ -1,5 +1,5 @@
 ---
-cholesterol_counter:
+cholesterol_medicine_counter:
   icon: mdi:prescription
   initial: 30
   minimum: 0

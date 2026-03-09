@@ -1,0 +1,33 @@
+---
+alias: "Refrigerator Alerts"
+id: "00009"
+description: "Alerts John and Robert if fridge stays out of safe range for 30m"
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.refrigerator_temperature_air_temperature
+    above: 50
+    for:
+      minutes: 30
+    id: "hot_alert"
+  - platform: numeric_state
+    entity_id: sensor.refrigerator_temperature_air_temperature
+    below: 32
+    for:
+      minutes: 30
+    id: "cold_alert"
+action:
+  - action: script.text_notify_all
+    data:
+      title: "🚨 Fridge Temperature Alert"
+      message: >
+        {% if trigger.id == 'hot_alert' %}
+          The fridge is too warm! Current temp: {{ states('sensor.refrigerator_temperature_air_temperature') }}°F. Check the door.
+        {% else %}
+          The fridge is too cold! Current temp: {{ states('sensor.refrigerator_temperature_air_temperature') }}°F. Food may freeze.
+        {% endif %}
+      data:
+        push:
+          sound:
+            name: "default"
+            critical: 1
+            volume: 1.0

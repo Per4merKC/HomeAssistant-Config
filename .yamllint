@@ -2,15 +2,46 @@
 extends: default
 
 ignore: |
+  .storage/
   blueprints/
   custom_components/
-  custom_components/alexa_media/
-  custom_components/bhyve/
-  custom_components/browser_mod/
-  custom_components/fullykiosk/
-  custom_components/yahoofinance/
-  custom_components/smartthinq_sensors/
-  custom_components/grocy/
-  custom_components/teamtracker/
-  esphome/
-  themes/
+  node_modules/
+  www/community/
+  home-assistant_v2.db*
+  *.log
+
+rules:
+  # Home Assistant automations rely on logical key ordering
+  braces:
+    max-spaces-inside: 1
+  # HA templates and entity lists can get long
+  brackets:
+    max-spaces-inside: 1
+  # HA frequently uses on/off/yes/no
+  comments:
+    min-spaces-from-content: 1
+  # indentation issues cause real HA breakage
+  empty-lines:
+    max: 2
+    max-end: 0
+    max-start: 0
+  # allow comments without strict spacing rules
+  indentation:
+    indent-sequences: consistent
+    spaces: 2
+  # allow empty lines in templates and scripts
+  key-ordering: disable
+  # don't complain about document start markers
+  #document-start: disable
+
+  # allow quoted strings freely (useful for templates)
+  line-length:
+    level: warning
+    max: 220
+  # allow inline mappings for small HA data structures
+  quoted-strings: disable
+  # allow inline lists
+  trailing-spaces:
+    level: warning
+  # allow trailing spaces in multiline templates
+  truthy: disable

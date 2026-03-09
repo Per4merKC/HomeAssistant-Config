@@ -1,0 +1,21 @@
+---
+binary_sensor:
+  - name: "Meds Low Alert"
+    unique_id: meds_low_alert
+    device_class: problem
+    icon: mdi:pill
+    state: >-
+      {% set meds = [
+        {'id': 'bp', 'thresh': 5},
+        {'id': 'ttx', 'thresh': 5},
+        {'id': 'wb', 'thresh': 5},  
+        {'id': 'kcitrate', 'thresh': 20},
+        {'id': 'cholesterol', 'thresh': 5}
+      ] %}
+      {% set ns = namespace(any_low=false) %}
+      {% for med in meds %}
+        {% if states('counter.' ~ med.id ~ '_medicine_counter') | int(0) < med.thresh %}
+          {% set ns.any_low = true %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.any_low }}

@@ -1,23 +1,29 @@
----
 basement_motion_helper:
+  alias: "Basement Motion Helper"
+  description: "Helper script to manage basement motion-triggered actions with a timer."
+  mode: restart
   sequence:
     - delay:
         minutes: 3
-    - service: light.turn_off
-      data:
+    - action: light.turn_off
+      target:
         entity_id:
           - light.stairwell_light
           - light.laundry_light
 
 basement_motion_timer:
+  alias: "Basement Motion Timer"
+  description: "Starts a timer to turn off basement lights after motion is detected."
+  mode: restart
   sequence:
-    - service: script.turn_off
-      data:
+    - action: script.turn_off
+      target:
         entity_id: script.basement_motion_helper
-    - service: light.turn_on
-      entity_id:
-        - light.stairwell_light
-        - light.laundry_light
-    - service: script.turn_on
-      data:
+    - action: light.turn_on
+      target:
+        entity_id:
+          - light.stairwell_light
+          - light.laundry_light
+    - action: script.turn_on
+      target:
         entity_id: script.basement_motion_helper
