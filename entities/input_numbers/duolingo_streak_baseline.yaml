@@ -1,0 +1,9 @@
+---
+duolingo_streak_baseline:
+  icon: mdi:counter
+  name: Duolingo Streak Baseline
+  initial: 0
+  min: 0
+  max: 9999
+  step: 1
+  mode: box

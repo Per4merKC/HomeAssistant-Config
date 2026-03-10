@@ -77,6 +77,10 @@ trigger:
     subtype: turn_off
 
 action:
+  # 0. The "Gatekeeper" Condition
+  - condition: state
+    entity_id: input_boolean.je_medicine
+    state: "off"
   # 1. Decrement Meds
   - action: counter.decrement
     target:

@@ -1,0 +1,9 @@
+---
+dashboard_refill_qty:
+  name: "Dashboard Refill Quantity"
+  initial: 30
+  min: 0
+  max: 200
+  step: 1
+  mode: box
+  icon: mdi:numeric

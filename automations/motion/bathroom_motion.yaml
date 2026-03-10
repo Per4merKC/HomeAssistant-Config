@@ -13,10 +13,10 @@ triggers:
       - binary_sensor.ep1_bathroom_mmwave
     to: "on"
 
-conditions:
-  - condition: state
-    entity_id: light.sink_light
-    state: "off"
+# conditions:
+#   - condition: state
+#     entity_id: light.sink_light
+#     state: "off"
 
 actions:
 

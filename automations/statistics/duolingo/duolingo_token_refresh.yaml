@@ -1,0 +1,47 @@
+---
+id: "00072"
+alias: "Duolingo: Smart Token Refresh"
+trigger:
+  # Trigger 1: The sensor failed (Unauthorized)
+  - platform: state
+    entity_id: sensor.duolingo_streak
+    to: "unavailable"
+  # Trigger 2: The weekly safety check
+  - platform: time
+    at: "03:00:00"
+condition:
+  # Logic: Run IF (Sensor is unavailable) OR (It is Monday)
+  - condition: or
+    conditions:
+      - condition: state
+        entity_id: sensor.duolingo_streak
+        state: "unavailable"
+      - condition: time
+        weekday:
+          - mon
+action:
+  - action: rest_command.duolingo_login
+    data:
+      username: !secret duolingo_username
+      password: !secret duolingo_password
+    response_variable: login_data
+
+  - if:
+      - condition: template
+        value_template: "{{ login_data is defined and login_data.status == 200 }}"
+    then:
+      - variables:
+          jwt_value: "{{ login_data['headers']['jwt'] }}"
+
+      - parallel:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.duolingo_jwt
+            data:
+              value: "Bearer {{ jwt_value }}"
+
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.duolingo_userid
+            data:
+              value: "{{ login_data['content']['user_id'] }}"

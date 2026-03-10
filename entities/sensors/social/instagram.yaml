@@ -1,13 +1,18 @@
 ---
 platform: rest
 name: instagram_api
-resource_template: !secret ig_url  # "https://i.instagram.com/api/v1/users/web_profile_info/?username=YOURS_NAME"
+resource_template: !secret ig_url
 method: GET
 headers:
   content-type: 'application/json'
   user-agent: 'Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)'
-value_template: "{{ value_json.data.user.edge_followed_by.count }}"
+# Updated defensive template below
+value_template: >
+  {% if value_json is defined and value_json.data is defined and value_json.data.user is defined %}
+    {{ value_json.data.user.edge_followed_by.count | int(0) }}
+  {% else %}
+    {{ states('sensor.instagram_api') | int(0) }}
+  {% endif %}
 json_attributes:
   - "data"
-# scan_interval: 21600 # 6 Hours
-scan_interval: 86400000 # Manual mode (3 years)
+scan_interval: 86400000

@@ -1,17 +1,17 @@
 ---
 platform: rest
 name: Duolingo Streak
-resource: !secret duolingo_url
+icon: mdi:school
+# Use the stored UserID to build the resource URL
+resource_template: "https://www.duolingo.cn/2017-06-30/users/{{ states('input_text.duolingo_userid') }}?fields=streak"
 method: GET
-scan_interval: 3600
 headers:
-  User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
+  User-Agent: "Mozilla/5.0..."
+  Authorization: "{{ states('input_text.duolingo_jwt') }}"
 value_template: >
   {% if value_json is defined and value_json.streak is defined %}
     {{ value_json.streak | int(0) }}
   {% else %}
-    {# Fallback to current state if possible, otherwise hard zero #}
     {{ states('sensor.duolingo_streak') | int(0) }}
   {% endif %}
 unit_of_measurement: "days"
-icon: mdi:school

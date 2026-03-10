@@ -1,0 +1,12 @@
+---
+id: "000073"
+alias: "Duolingo: Reset Daily Baseline"
+trigger:
+  - platform: time
+    at: "00:01:00"
+action:
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.duolingo_streak_baseline
+    data:
+      value: "{{ states('sensor.duolingo_streak') | int(0) }}"
