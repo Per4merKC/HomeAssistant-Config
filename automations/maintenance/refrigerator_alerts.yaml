@@ -1,19 +1,19 @@
 ---
 alias: "Refrigerator Alerts"
 id: "00009"
-description: "Alerts John and Robert if fridge stays out of safe range for 30m"
+description: "Alerts John and Robert if fridge stays out of safe range for 20m"
 trigger:
   - platform: numeric_state
     entity_id: sensor.refrigerator_temperature_air_temperature
-    above: 50
+    above: "{{ state_attr('climate.refrigerator', 'temperature') + states('input_number.refrigerator_tolerance') | float + 5 }}"
     for:
-      minutes: 30
+      minutes: 20
     id: "hot_alert"
   - platform: numeric_state
     entity_id: sensor.refrigerator_temperature_air_temperature
-    below: 32
+    below: "{{ state_attr('climate.refrigerator', 'temperature') - states('input_number.refrigerator_tolerance') | float - 5 }}"
     for:
-      minutes: 30
+      minutes: 20
     id: "cold_alert"
 action:
   - action: script.text_notify_all

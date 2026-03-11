@@ -1,0 +1,14 @@
+---
+- platform: generic_thermostat
+  name: Kitchen Refrigerator
+  unique_id: c73f241b-6dc3-483f-8558-9933a647dd02
+  heater: switch.smart_heater_logic
+  target_sensor: sensor.refrigerator_temperature_air_temperature
+  min_temp: 32
+  max_temp: 62
+  target_temp: 42
+  ac_mode: true
+  initial_hvac_mode: "cool"
+  precision: 0.1
+  min_cycle_duration:
+    minutes: 5

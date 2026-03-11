@@ -3,7 +3,7 @@
 id: "00032"
 alias: Bathroom Intelligent Lighting
 mode: restart
-description: Intelligent bathroom lighting with night mode and shower detection
+description: Intelligent bathroom lighting with night mode, manual override guard, and shower detection
 
 triggers:
   - platform: state
@@ -13,11 +13,6 @@ triggers:
       - binary_sensor.ep1_bathroom_mmwave
     to: "on"
 
-# conditions:
-#   - condition: state
-#     entity_id: light.sink_light
-#     state: "off"
-
 actions:
 
 #################################################
@@ -25,16 +20,9 @@ actions:
 #################################################
 
   - variables:
-
       someone_in_bed: >
         {{ is_state('binary_sensor.withings_in_bed_john','on')
            or is_state('binary_sensor.withings_in_bed_robert','on') }}
-
-      night_light: >
-        {{ ["light.bathroom_sink_1",
-            "light.bathroom_sink_2",
-            "light.bathroom_sink_3",
-            "light.bathroom_sink_4"] | random }}
 
       night_mode: >
         {{ is_state('sun.sun','below_horizon') and someone_in_bed }}
@@ -45,60 +33,63 @@ actions:
       shower_mode: >
         {{ is_state('binary_sensor.bathroom_shower_active','on') }}
 
-#################################################
-# DETERMINE TARGET LIGHT
-#################################################
-
+      # 1. Determine Target Light
       target_light: >
         {% if night_mode %}
-          {{ night_light }}
+          {% set night_bulbs = ["light.bathroom_sink_1", "light.bathroom_sink_2", "light.bathroom_sink_3", "light.bathroom_sink_4"] %}
+          {% set active_lights = night_bulbs | select('is_state', 'on') | list %}
+          {% if active_lights | count > 0 %}
+            {{ active_lights | first }}
+          {% else %}
+            {{ night_bulbs | random }}
+          {% endif %}
         {% else %}
           light.sink_light
         {% endif %}
 
-#################################################
-# DETERMINE BRIGHTNESS
-#################################################
-
+      # 2. Determine Programmed Brightness
       brightness: >
-        {% if night_mode %}
-          10
-        {% elif evening_mode and shower_mode %}
-          120
-        {% elif evening_mode %}
-          75
-        {% elif shower_mode %}
-          200
-        {% else %}
-          255
+        {% if night_mode %} 10
+        {% elif evening_mode and shower_mode %} 120
+        {% elif evening_mode %} 75
+        {% elif shower_mode %} 200
+        {% else %} 255
         {% endif %}
 
-#################################################
-# DETERMINE COLOR TEMP
-#################################################
-
+      # 3. Determine Programmed Color Temp (Capped at hardware limit: 4000K)
       color_temp: >
-        {{ 2200 if night_mode else (3800 if evening_mode else 4500) }}
+        {{ 2202 if night_mode else (3800 if evening_mode else 4000) }}
 
-#################################################
-# DETERMINE TIMEOUT
-#################################################
+      # 4. CAPTURE ACTUALS FOR GUARD
+      # We use 'int(brightness)' as default so the guard doesn't trigger if bulb is off
+      current_actual_brightness: "{{ state_attr(target_light, 'brightness') | int(brightness) }}"
+      current_actual_kelvin: "{{ state_attr(target_light, 'color_temp_kelvin') | int(color_temp) }}"
+
+      # 5. CALCULATE OVERRIDE
+      # Using a buffer for hardware drift (15 for brightness, 100 for Kelvin)
+      manual_override: >
+        {{ is_state(target_light, 'on') and 
+           ( ((current_actual_brightness - brightness) | abs > 15) or 
+             ((current_actual_kelvin - color_temp) | abs > 100) ) }}
 
       timeout: >
         {{ "00:20:00" if shower_mode else "00:03:00" }}
 
 #################################################
-# TURN LIGHTS ON
+# TURN LIGHTS ON (IF NOT OVERRIDDEN)
 #################################################
 
-  - action: light.turn_on
-    target:
-      entity_id: "{{ target_light }}"
-    data:
-      brightness: "{{ brightness }}"
-      color_temp_kelvin: "{{ color_temp }}"
-      transition: 2
-
+  - if:
+      - condition: template
+        value_template: "{{ not manual_override }}"
+    then:
+      - action: light.turn_on
+        target:
+          entity_id: "{{ target_light }}"
+        data:
+          brightness: "{{ brightness }}"
+          color_temp_kelvin: "{{ color_temp }}"
+          transition: 2
 
 #################################################
 # WAIT UNTIL ROOM EMPTY
@@ -109,7 +100,6 @@ actions:
         entity_id: binary_sensor.ep1_bathroom_occupancy
         to: "off"
         for: "{{ timeout }}"
-
 
 #################################################
 # TURN LIGHTS OFF
