@@ -1,47 +1,74 @@
 ---
-extends: default
-
 ignore: |
-  .storage/
-  blueprints/
+  automations.yaml
+  blueprints/*/homeassistant/*.yaml
   custom_components/
-  node_modules/
-  www/community/
-  home-assistant_v2.db*
-  *.log
-
+  esphome/.esphome/
+  ip_bans.yaml
+  notebooks/
+  scenes.yaml
+  scripts.yaml
+  themes/*.yaml
 rules:
-  # Home Assistant automations rely on logical key ordering
   braces:
+    level: error
+    min-spaces-inside: 0
     max-spaces-inside: 1
-  # HA templates and entity lists can get long
+    min-spaces-inside-empty: -1
+    max-spaces-inside-empty: -1
   brackets:
-    max-spaces-inside: 1
-  # HA frequently uses on/off/yes/no
+    level: error
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+    min-spaces-inside-empty: -1
+    max-spaces-inside-empty: -1
+  colons:
+    level: error
+    max-spaces-before: 0
+    max-spaces-after: 1
+  commas:
+    level: error
+    max-spaces-before: 0
+    min-spaces-after: 1
+    max-spaces-after: 1
   comments:
-    min-spaces-from-content: 1
-  # indentation issues cause real HA breakage
+    level: error
+    require-starting-space: true
+    min-spaces-from-content: 2
+  comments-indentation:
+    level: error
+  document-end:
+    level: error
+    present: false
+  document-start:
+    level: error
+    present: true
   empty-lines:
-    max: 2
-    max-end: 0
+    level: error
+    max: 1
     max-start: 0
-  # allow comments without strict spacing rules
+    max-end: 1
+  hyphens:
+    level: error
+    max-spaces-after: 1
   indentation:
-    indent-sequences: consistent
+    level: error
     spaces: 2
-  # allow empty lines in templates and scripts
-  key-ordering: disable
-  # don't complain about document start markers
-  #document-start: disable
-
-  # allow quoted strings freely (useful for templates)
+    indent-sequences: true
+    check-multi-line-strings: false
+  key-duplicates:
+    level: error
   line-length:
     level: warning
-    max: 220
-  # allow inline mappings for small HA data structures
-  quoted-strings: disable
-  # allow inline lists
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+  new-line-at-end-of-file:
+    level: error
+  new-lines:
+    level: error
+    type: unix
   trailing-spaces:
-    level: warning
-  # allow trailing spaces in multiline templates
-  truthy: disable
+    level: error
+  truthy:
+    level: error
