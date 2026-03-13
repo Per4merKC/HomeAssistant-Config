@@ -1,6 +1,6 @@
 # Script Listing
 
- > Next Available Number: 00008, 00009, 00010, 00011, 00021, 00026, 00027, 00072
+ > Next Available Number: 00008, 00011, 00021, 00026, 00027
 
 <!-- markdownlint-disable MD009 MD019 -->
 
@@ -15,7 +15,7 @@
 |  00007 | door_open_w_hvac        | Front door, back door, or garage door left open for more than 5 minutes while HVAC is running and outside temperature is more than 5 degrees than the HVAC setting | door                  |
 |  00008 | mousetrap               | Mousetrap alert when triggered                                                                                                                                     | security              |
 |  00009 | refrigerator_alerts     |                                                                                                                                                                    |                       |
-|  00010 |                         |                                                                                                                                                                    |                       |
+|  00010 | work_travel_time        | Travel time for JE                                                                                                                                                 |                       |
 |  00011 |                         |                                                                                                                                                                    |                       |
 |  00012 | arrive_night            | Arrive home at night                                                                                                                                               | doors                 |
 |  00013 | mf_med_reset_am         | Reset the bp medicine flag for the input_boolean.mf_medicine to off                                                                                                | routines/mf_medicine  |
@@ -47,7 +47,6 @@
 |  00040 | sink_onoff              | Bathroom Remote on/off pressed                                                                                                                                     | lights/bathroom       |
 |  00041 | sink_onoff_long         | Bathroom Remote on/off long pressed                                                                                                                                | lights/bathroom       |
 |  00042 | sink_right              | Bathroom Remote Right pressed                                                                                                                                      | lights/bathroom       |
-|        |                         |                                                                                                                                                                    |                       |
 |  00043 | sink_right_long         | Bathroom Remote Right long pressed                                                                                                                                 | lights/bathroom       |
 |  00044 | bp_med_counter_reset    | IKEA on-off long press                                                                                                                                             | routines/bp_medicine  |
 |  00045 | bathroom_motion_pause   | IKEA on-off short press                                                                                                                                            | motion                |
@@ -80,6 +79,5 @@
 |  00072 | duolingo_token_refresh  | Update the Bearer Token and user_id for duolingo                                                                                                                   | statistics/duolingo   |
 |  00073 | duolingo_reset_baseline | Update the baseline for duolingo                                                                                                                                   | statistics/duolingo   |
 |  00074 | duolingo_adaptive_nag   | Annoying reminders to practice                                                                                                                                     | statistics/duolingo   |
-
 
 <!-- markdownlint-enable MD009 MD019 -->

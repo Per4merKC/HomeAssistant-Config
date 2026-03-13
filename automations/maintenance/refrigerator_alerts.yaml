@@ -3,15 +3,21 @@ alias: "Refrigerator Alerts"
 id: "00009"
 description: "Alerts John and Robert if fridge stays out of safe range for 20m"
 trigger:
-  - platform: numeric_state
-    entity_id: sensor.refrigerator_temperature_air_temperature
-    above: "{{ state_attr('climate.refrigerator', 'temperature') + states('input_number.refrigerator_tolerance') | float + 5 }}"
+  - platform: template
+    value_template: >
+      {% set current = states('sensor.refrigerator_temperature_air_temperature') | float(0) %}
+      {% set target = state_attr('climate.kitchen_refrigerator', 'temperature') | float(37) %}
+      {% set tolerance = states('input_number.refrigerator_tolerance') | float(0) %}
+      {{ current > (target + tolerance + 5) }}
     for:
       minutes: 20
     id: "hot_alert"
-  - platform: numeric_state
-    entity_id: sensor.refrigerator_temperature_air_temperature
-    below: "{{ state_attr('climate.refrigerator', 'temperature') - states('input_number.refrigerator_tolerance') | float - 5 }}"
+  - platform: template
+    value_template: >
+      {% set current = states('sensor.refrigerator_temperature_air_temperature') | float(0) %}
+      {% set target = state_attr('climate.kitchen_refrigerator', 'temperature') | float(37) %}
+      {% set tolerance = states('input_number.refrigerator_tolerance') | float(0) %}
+      {{ current < (target - tolerance - 5) }}
     for:
       minutes: 20
     id: "cold_alert"
