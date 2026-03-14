@@ -1,0 +1,42 @@
+---
+alias: "Bathroom: Lighting Watchdog"
+description: "Kills ghost lights stuck at brightness 1"
+mode: single
+trigger:
+  # Trigger 1: The Watchdog Boolean has been off for a bit
+  - platform: state
+    entity_id: input_boolean.bathroom_lighting_active
+    to: "off"
+    for: "00:02:00"
+  # Trigger 2: Occupancy has been off for a safety margin
+  - platform: state
+    entity_id: binary_sensor.ep1_bathroom_occupancy
+    to: "off"
+    for: "00:05:00"
+condition:
+  # Only run if the group or a specific bulb still reports "on"
+  - condition: state
+    entity_id: light.sink_light
+    state: "on"
+action:
+  # 1. First, try turning the group off with NO transition
+  - action: light.turn_off
+    target:
+      entity_id: light.sink_light
+  
+  # 2. Wait 2 seconds for Zigbee mesh to update
+  - delay: "00:00:02"
+
+  # 3. Double-tap: If any individual bulb is still "on" (the ghost), kill it individually
+  - if:
+      - condition: state
+        entity_id: light.sink_light
+        state: "on"
+    then:
+      - action: light.turn_off
+        target:
+          entity_id:
+            - light.bathroom_sink_1
+            - light.bathroom_sink_2
+            - light.bathroom_sink_3
+            - light.bathroom_sink_4

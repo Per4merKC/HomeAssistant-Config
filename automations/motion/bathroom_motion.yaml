@@ -110,8 +110,6 @@ actions:
   - action: light.turn_off
     target:
       entity_id: light.sink_light
-    data:
-      transition: 5
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.bathroom_lighting_active
