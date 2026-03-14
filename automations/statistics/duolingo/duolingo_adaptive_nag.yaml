@@ -3,51 +3,44 @@ id: "00074"
 alias: "Duolingo: Adaptive Nag System"
 trigger:
   - platform: time_pattern
-    minutes: "/30" # Runs every 30 mins, but conditions filter it
+    minutes: "/30" 
 condition:
-  # Condition 1: John is home
+  # Check if John is home and if the current time matches your frequency logic
   - condition: state
     entity_id: device_tracker.john_phone
     state: "home"
-  # Condition 2: Streak hasn't increased today
-  - condition: template
-    value_template: >
-      {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
-  # Condition 3: Logic for frequency based on time of day
   - condition: template
     value_template: >
       {% set hr = now().hour %}
-      {% if hr >= 9 and hr < 18 %} {{ now().minute == 0 and hr % 2 == 0 }} {# Every 2 hours #}
-      {% elif hr >= 18 and hr < 21 %} {{ now().minute == 0 }}           {# Every 1 hour #}
-      {% elif hr >= 21 and hr < 23 %} true                               {# Every 30 mins #}
+      {% if hr >= 9 and hr < 18 %} {{ now().minute == 0 and hr % 2 == 0 }}
+      {% elif hr >= 18 and hr < 21 %} {{ now().minute == 0 }}
+      {% elif hr >= 21 and hr < 23 %} true
       {% else %} false {% endif %}
 action:
-  # Action: Phone Notification (All day during active hours)
-  - action: script.text_notify_john
-    data:
-      title: "🦉 Duolingo Reminder"
-      message: "Your streak is currently {{ states('sensor.duolingo_streak') }}. Don't forget your lesson!"
-      data: {}
+  # 1. Force the sensor to update from the API only when needed
+  - action: homeassistant.update_entity
+    target:
+      entity_id: sensor.duolingo_streak
 
-  # Action: Alexa Voice Nag (Only after 6:00 PM)
+  # 2. Briefly wait for the API response
+  - delay: "00:00:05"
+
+  # 3. Proceed ONLY if the streak hasn't increased
   - if:
-      - condition: time
-        after: "18:00:00"
+      - condition: template
+        value_template: >
+          {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
     then:
-      - action: notify.alexa_media
+      # Notifications (Phone & Alexa)
+      - action: script.text_notify_john
         data:
-          target:
-            - media_player.computer_room_spot
-            - media_player.living_room_dot
-            - media_player.bedroom_dot
-            - media_player.kitchen_show
-            - media_player.bathroom_flex
-
-          data:
-            type: announce
-          message: >
-            {% if now().hour >= 21 %}
-              John, the owl is getting angry. Complete your Duolingo lesson now to save your streak!
-            {% else %}
-              Hey John, don't forget to practice your languages today.
-            {% endif %}
+          title: "🦉 Duolingo Reminder"
+          message: "Your streak is still {{ states('sensor.duolingo_streak') }}. Practice now!"
+      - if:
+          - condition: time
+            after: "18:00:00"
+        then:
+          - action: notify.alexa_media
+            data:
+              target: ["media_player.kitchen_show", "media_player.living_room_dot"] # etc
+              message: "John, don't forget to practice."

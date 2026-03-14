@@ -5,8 +5,14 @@ trigger:
   - platform: time
     at: "00:01:00"
 action:
+  # Reset the baseline to the current streak
   - action: input_number.set_value
     target:
       entity_id: input_number.duolingo_streak_baseline
     data:
       value: "{{ states('sensor.duolingo_streak') | int(0) }}"
+  
+  # Re-enable the nag automation for the new day
+  - action: automation.turn_on
+    target:
+      entity_id: automation.duolingo_adaptive_nag_system

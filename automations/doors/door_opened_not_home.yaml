@@ -14,7 +14,7 @@ condition:
     entity_id: device_tracker.robert_iphone
     state: not_home
   - condition: state
-    entity_id: device_tracker.john_iphone
+    entity_id: device_tracker.john_iphone_promax
     state: not_home
 action:
   - data:

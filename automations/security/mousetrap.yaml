@@ -16,11 +16,12 @@ action:
     data:
       message: Please empty the mousetrap as soon as possible
       title: Mouse Trap Alert
+ 
   - action: script.text_notify_all
     data_template:
-      title: HVAC Notice!
+      title: "🪤 Mouse Trap Alert"
       message: >-
-        Please empty the mousetrap as soon possible.
+        🐭 Please empty the mousetrap as soon as possible.
       data:
         subtitle: >-
-          Mouse Trap Alert
+          🪤 Mouse Trap Alert

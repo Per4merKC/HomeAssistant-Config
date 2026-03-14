@@ -9,8 +9,6 @@ triggers:
   - platform: state
     entity_id:
       - binary_sensor.bathroom_motion_detection
-      - binary_sensor.ep1_bathroom_occupancy
-      - binary_sensor.ep1_bathroom_mmwave
     to: "on"
 
 actions:

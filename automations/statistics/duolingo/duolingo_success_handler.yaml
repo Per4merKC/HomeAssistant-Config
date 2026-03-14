@@ -1,0 +1,24 @@
+---
+id: "00075"
+alias: "Duolingo: Success Handler"
+trigger:
+  - platform: state
+    entity_id: sensor.duolingo_streak
+condition:
+  # Verify the streak actually increased compared to the morning baseline
+  - condition: template
+    value_template: >
+      {{ states('sensor.duolingo_streak') | int(0) > states('input_number.duolingo_streak_baseline') | int(0) }}
+action:
+  # Turn off both the nag system and the token refresh automation
+  - action: automation.turn_off
+    target:
+      entity_id:
+        - automation.duolingo_adaptive_nag_system
+        - automation.duolingo_smart_token_refresh
+      
+  # Send a final confirmation to John
+  - action: script.text_notify_john
+    data:
+      title: "🦉 Duolingo Success"
+      message: "Goal reached! Systems are powering down for the day."
