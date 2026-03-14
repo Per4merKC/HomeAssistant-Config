@@ -1,6 +1,6 @@
 ---
 duolingo_login:
-  url: !secret dulingo_login_url
+  url: !secret duolingo_login_url
   method: POST
   headers:
     Content-Type: "application/json"

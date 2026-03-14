@@ -4,10 +4,10 @@ name: Duolingo Streak
 icon: mdi:school
 # Use the stored UserID to build the resource URL
 scan_interval: 86400  # Update once a day
-resource_template: "https://www.duolingo.cn/2017-06-30/users/{{ states('input_text.duolingo_userid') }}?fields=streak"
+resource_template: "https://www.duolingo.com/2017-06-30/users/{{ states('input_text.duolingo_userid') }}?fields=streak"
 method: GET
 headers:
-  User-Agent: "Mozilla/5.0..."
+  user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
   Authorization: "{{ states('input_text.duolingo_jwt') }}"
 value_template: >
   {% if value_json is defined and value_json.streak is defined %}
