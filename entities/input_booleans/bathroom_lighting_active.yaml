@@ -1,0 +1,5 @@
+---
+bathroom_lighting_active:
+  name: Bathroom Lighting Active
+  initial: true
+  icon: mdi:lightbulb

@@ -2,10 +2,12 @@
 - platform: generic_thermostat
   name: Kitchen Refrigerator
   unique_id: c73f241b-6dc3-483f-8558-9933a647dd02
-  heater: switch.smart_heater_logic
+  heater: switch.refrigerator_power
   target_sensor: sensor.refrigerator_temperature_air_temperature
-  min_temp: 12
-  max_temp: 62
+  min_temp: 27
+  max_temp: 54
+  cold_tolerance: 2.5
+  hot_tolerance: 2.5
   target_temp: 38 # Food safety range is typically 35-38°F, but we set a slightly higher target to reduce compressor wear and save energy.
   ac_mode: true
   initial_hvac_mode: "cool"
