@@ -1,0 +1,35 @@
+---
+id: "000025"
+alias: "Dishwasher: Start Cycle"
+description: "Triggered by physical button press"
+trigger:
+  - device_id: fc260c2debe85cd444c0cd8990f53068
+    domain: zha
+    type: remote_button_short_press
+    subtype: turn_on
+    trigger: device
+action:
+  - variables:
+      space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_neutral_response_01'/>"
+
+  - service: counter.decrement
+    target:
+      entity_id: counter.dishwasher_pods
+
+  - service: input_select.select_option
+    target:
+      entity_id: input_select.dishwasher_status
+    data:
+      option: Running
+  
+  - service: timer.start
+    target:
+      entity_id: timer.dishwasher_cycle_timer
+    data:
+      duration: "02:00:00"     
+  
+  - service: notify.alexa_media_kitchen_show
+    data:
+      message: "{{ space_chime }} <break time='1s'/> Dishwasher cycle started. There are {{ states('counter.dishwasher_pods') }} pods remaining ."
+      data:
+        type: tts

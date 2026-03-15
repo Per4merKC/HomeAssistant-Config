@@ -1,0 +1,46 @@
+---
+id: "000026"
+alias: "Dishwasher: Voice Guidance"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.dishwasher_door
+    to: "on"
+    for:
+      minutes: 2
+action:
+  - variables:
+      space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_neutral_response_01'/>"
+
+  - choose:
+      # IF CLEAN -> UNLOADING
+      - conditions:
+          - condition: state
+            entity_id: input_select.dishwasher_status
+            state: "Clean"
+        sequence:
+          - service: notify.alexa_media_kitchen_show
+            data:
+              message: "{{ space_chime }} <break time='1s'/> Thank you for unloading the dishwasher"
+              data:
+                type: tts
+          - service: input_select.select_option
+            target:
+              entity_id: input_select.dishwasher_status
+            data:
+              option: Unloading
+
+      # IF DIRTY -> LOADING
+      - conditions:
+          - condition: state
+            entity_id: input_select.dishwasher_status
+            state: "Dirty"
+        sequence:
+          - service: notify.alexa_media_kitchen_show
+            data:
+              message: >
+                {{ space_chime }} <break time='1s'/>
+                Don't forget to push the dishwasher button after you start the 
+                machine so I can track the remaining dish detergent pods 
+                and remind everyone to empty the machine when it's done.
+              data:
+                type: tts

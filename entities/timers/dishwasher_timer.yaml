@@ -1,0 +1,5 @@
+---
+dishwasher_cycle_timer:
+  name: Dishwasher Cycle Timer
+  duration: '02:30:00'
+  icon: mdi:timer

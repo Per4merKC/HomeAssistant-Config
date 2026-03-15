@@ -1,6 +1,6 @@
 # Script Listing
 
- > Next Available Number: 00011, 00021, 00025, 00026, 00027
+ > Next Available Number: 00011, 00021, 00027
 
 <!-- markdownlint-disable MD009 MD019 -->
 
@@ -30,9 +30,9 @@
 |  00022 | laundry_active           | Washing machine is in use and using electricity                                                                                                                    | routines/laundry      |
 |  00023 | laundry_done             | Washing machine is not in use and not using electricity                                                                                                            | routines/laundry      |
 |  00024 | restart                  | Restart Home-Assistant                                                                                                                                             | maintenance           |
-|  00025 |                          |                                                                                                                                                                    | maintenance           |
-|  00026 |                          |                                                                                                                                                                    |                       |
-|  00027 |                          |                                                                                                                                                                    |                       |
+|  00025 | diswasher_start_cycle    | Actions when the diswasher button is pressed                                                                                                                       | routines/dishwasher   |
+|  00026 | dishwasher_door_guidance | Talk with users when diswasher door has been open for a while                                                                                                      | routines/dishwasher   |
+|  00027 | dishwasher_reset_dirty   | Resets the dishwasher status to dirty after a clean/unload                                                                                                         | routines/dishwasher   |
 |  00029 | dryer_active             | Dryer is in use and using electricity                                                                                                                              | routines/laundry      |
 |  00030 | dryer_done               | Dryer is not in use and not using electricity                                                                                                                      | routines/laundry      |
 |  00031 | finance                  | Update stock tickers from Yahoo! finance                                                                                                                           | statistics            |
