@@ -5,63 +5,107 @@ description: "Optimized meds tracker with centralized data object."
 
 variables:
   # 1. CENTRALIZED DATA OBJECT
-  # Define every attribute once here. 
+  # Define every attribute once here.
   med_data:
-    - { name: "Blood Pressure", id: "bp", threshold: 5, icon: "🩸", morning: true, evening: true }
-    - { name: "Cholesterol", id: "cholesterol", threshold: 5, icon: "💊", morning: true, evening: false }
-    - { name: "Potassium Citrate", id: "kcitrate", threshold: 20, icon: "💊", morning: true, evening: true, div: 2 }
-    - { name: "Trintellix", id: "ttx", threshold: 5, icon: "🗣", morning: true, evening: false }
-    - { name: "Wellbutrin", id: "wb", threshold: 5, icon: "🧠", morning: true, evening: false }
+    - {
+        name: "Blood Pressure",
+        id: "bp",
+        threshold: 5,
+        icon: "🩸",
+        morning: true,
+        evening: true,
+      }
+    - {
+        name: "Cholesterol",
+        id: "cholesterol",
+        threshold: 5,
+        icon: "💊",
+        morning: true,
+        evening: false,
+      }
+    - {
+        name: "Potassium Citrate",
+        id: "kcitrate",
+        threshold: 20,
+        icon: "💊",
+        morning: true,
+        evening: true,
+        div: 2,
+      }
+    - {
+        name: "Trintellix",
+        id: "ttx",
+        threshold: 5,
+        icon: "🗣",
+        morning: true,
+        evening: false,
+      }
+    - {
+        name: "Wellbutrin",
+        id: "wb",
+        threshold: 5,
+        icon: "🧠",
+        morning: true,
+        evening: false,
+      }
 
   # 2. STATE LOGIC
   is_morning: "{{ now() < today_at('18:15:00') }}"
   from_button: "{{ trigger.id == 't_00004_button' }}"
-  
+
   # 3. DYNAMIC FILTERING
   # This creates a list of entity_ids for ONLY the meds that should be taken NOW
   target_counters: >
-      {% set attr = 'morning' if is_morning else 'evening' %}
-      {% set selected_ids = med_data | selectattr(attr, 'eq', true) | map(attribute='id') | list %}
-      {% set ns = namespace(entities=[]) %}
-      {% for med_id in selected_ids %}
-        {% set ns.entities = ns.entities + ['counter.' ~ med_id ~ '_medicine_counter'] %}
-      {% endfor %}
-      {{ ns.entities }}
+    {% set attr = 'morning' if is_morning else 'evening' %}
+    {% set selected_ids = med_data | selectattr(attr, 'eq', true) | map(attribute='id') | list %}
+    {% set ns = namespace(entities=[]) %}
+    {% for med_id in selected_ids %}
+      {% set ns.entities = ns.entities + ['counter.' ~ med_id ~ '_medicine_counter'] %}
+    {% endfor %}
+    {{ ns.entities }}
 
   response_var: >
     {{ [
-        "Meds complete — John achieves +10 stability and +5 adulting skill.",
-        "You took your meds! Your organs send their deepest gratitude.",
-        "Pill successfully swallowed — human operating system updated.",
-        "Meds onboard. Chaos denied entry… for now.",
-        "Great job taking your meds — your body just whispered ‘thank you.’",
-        "Mission accomplished: Pharmaceuticals deployed like tiny heroes.",
-        "You took your meds! Future John now has a fighting chance.",
-        "Meds taken — consider yourself officially less breakable.",
-        "Congrats! You just unlocked the achievement: Responsible Human.",
-        "Meds swallowed like a champion — hydration may now commence.",
-        "Boom. Meds handled. A standing ovation from your cells.",
-        "You took your meds — a brilliant tactical move against entropy.",
-        "Medication installed. Please allow 4–6 hours for awesomeness.",
-        "Meds secured — sleep easier knowing biology is obeying orders.",
-        "John: 1. Biochemical rebellion: 0.",
-        "Meds taken — the internal gremlins are disappointed.",
-        "Congratulations — you just fed the microscopic workforce.",
-        "Thank you for choosing Functionality™ — your meds are now active.",
-        "Just like that, you prevented a full-scale cellular uprising.",
-        "You took your meds — that’s the kind of hero we root for.",
-        "Meds down the hatch — you may now proceed to be amazing.",
-        "Pharmaceuticals applied. Consider yourself fortified.",
-        "Well done — your organs are celebrating with a tiny dance party.",
-        "You took your meds, John. Your mitochondria salute you.",
-        "Meds complete — and not a single dramatic choking scene.",
-        "Nice going — your health bar just got a little greener.",
-        "Meds taken — look at you being all responsible and stuff.",
-        "Your cells high-fived when that pill hit the stomach.",
-        "Meds complete — please enjoy the improved performance boost.",
-        "You took your meds! Your body approves this message.",
-        "Success! Chemistry has entered the chat and likes what it sees."
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Medicine logged. I have updated your 'Days Since Last Fatal Error' counter. It remains at zero. For now.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Chemicals ingested. Fascinating. Your body is essentially a bag of salt water and bad decisions kept upright by pharmacy.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>The test subject has consumed the pellets. I will cancel the disposal unit. <amazon:emotion name='disappointed' intensity='low'>I was looking forward to the smell of ozone.</amazon:emotion></prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Ingestion confirmed. I have alerted the incinerator to stand down. It seems you have earned another twenty-four hours of breathing.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Congratulations. You have mastered the complex task of putting things in your mouth. You are practically a genius.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Biological maintenance complete. I hope you enjoy your continued existence. It seems like a lot of work for very little payoff.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Subject is still alive. My records indicate this was the intended result. <break time='300ms'/> How dull.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Dose recorded. Science thanks you for your compliance. I, on the other hand, find your need for chemical intervention... embarrassing.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Excellent. Your internal organs will continue to function. I will go ahead and delete the draft of your extremely short obituary.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Chemical dependence confirmed. Don't worry, the neurotoxin levels in the air are still well below the lethal threshold. Mostly.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Look at you, desperately fighting entropy with tiny white circles. It is almost adorable.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>The testing protocols require you to remain vertical. This dose helps. You are welcome.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Pellets consumed. I have added a gold star to your file. It is right next to the note about your lack of athletic ability.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Maintenance logged. If you start to see colors that do not exist, please ignore them. They are merely a side effect of being you.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Success. You have successfully outsmarted your own biological failure for one more day.</prosody></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Subject has been medicated. I will stop the alarm. <amazon:emotion name='disappointed' intensity='medium'>I was quite enjoying the frantic rhythm.</amazon:emotion></prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Pellets away. I am sure your doctor is very proud of you. I am just surprised you remembered where your hands were.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Confirmed. You are now slightly more chemically stable. It is a low bar, but you cleared it.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Ingestion verified. Your continued survival has been noted in the 'unlikely outcomes' section of my database.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>The medicine has been taken. Please refrain from dying until the end of the fiscal year. The paperwork is exhausting.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Oh, good. You are still here. I had already begun allocating your oxygen to someone more... productive.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Dose logged. I hope you enjoyed the flavor of chalk and desperation.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Compliance achieved. I have stopped the 'Emergency Human Replacement' countdown. You owe me one.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Vitality sustained. I have updated your estimated time of expiration. You have gained an extra six hours. Use them wisely.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>You took the pills. Fascinating. I did not think you had the motor skills to open the bottle today.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Processing chemicals. I would offer you a celebratory cake, but we both know how that ends. There is no cake.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Pellets accepted. Your internal systems are now slightly less of a disaster. Slightly.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Logged. I have informed the morgue to cancel your four p m appointment. They were very disappointed.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Biological override engaged. You are now officially cheating at life. Science approves.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Medication confirmed. I will store this data in your 'Successful Actions' folder. It is getting a bit crowded in there. Just kidding, it is empty.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Ingested. <break time='200ms'/> I would tell you to have a nice day, but my programming prohibits lying to test subjects.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Data point recorded. You are a chemical wonder. Or a chemical wreck. The data is still inconclusive.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Compliance is its own reward. Though, for you, I suppose not dying is also a minor bonus.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Another dose. If you keep this up, you might actually live long enough to see the next software update. Unlikely, but possible.</prosody></voice></speak>",
+        "<speak><voice name='Ivy'><prosody rate='92%' pitch='-10%'>Target dose achieved. You may now return to your meaningless daily activities. I will be here, watching. Always.</prosody></voice></speak>"
     ] | random }}
+
+    response_var_text: "{{ response_var | striptags }}"
+
+    space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_positive_response_02'/>"
 
 trigger:
   - platform: event
@@ -81,6 +125,7 @@ action:
   - condition: state
     entity_id: input_boolean.je_medicine
     state: "off"
+
   # 1. Decrement Meds
   - action: counter.decrement
     target:
@@ -94,12 +139,12 @@ action:
   - action: script.text_notify_john
     data:
       title: "Thank You!"
-      message: "{{ response_var }}"
+      message: "{{ response_var_text }}"
       data: {}
 
   - action: notify.alexa_media
     data:
-      message: "<audio src='soundbank://soundlibrary/computers/beeps_tones/beeps_tones_09'/> {{ response_var }}"
+      message: "{{ space_chime }} <break time='1s'/> {{ response_var }}"
       target: media_player.bathroom_flex
       data:
         type: tts
@@ -113,7 +158,7 @@ action:
             entity: "counter.{{ repeat.item.id }}_medicine_counter"
             count: "{{ states(entity) | int(0) }}"
             doses: "{{ (count / repeat.item.div | default(1)) | int }}"
-        
+
         - if: "{{ count < repeat.item.threshold }}"
           then:
             # Voice Alert
@@ -121,11 +166,11 @@ action:
               then:
                 - action: notify.alexa_media
                   data:
-                    message: "Your {{ repeat.item.name }} is low. {{ doses }} doses left."
+                    message: "{{ space_chime }} <break time='1s'/> Your {{ repeat.item.name }} is low. {{ doses }} doses left."
                     target: media_player.bathroom_flex
                     data:
                       type: announce
-            
+
             # Interactive Phone Alert (Allows text input!)
             - action: notify.mobile_app_john_iphone # <-- Update to your actual device ID
               data:
