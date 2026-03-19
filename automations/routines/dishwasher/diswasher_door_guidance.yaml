@@ -9,7 +9,7 @@ trigger:
       minutes: 2
 action:
   - variables:
-      space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_neutral_response_01'/>"
+      space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_positive_response_02'/>"
 
   - choose:
       # IF CLEAN -> UNLOADING

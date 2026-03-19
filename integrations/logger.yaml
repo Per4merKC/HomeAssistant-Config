@@ -2,3 +2,5 @@
 logger:
   logs:
     homeassistant.components.counter: debug
+    homeassistant.components.rest_command: debug
+    homeassistant.components.rest: debug

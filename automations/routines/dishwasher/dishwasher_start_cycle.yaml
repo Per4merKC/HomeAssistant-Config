@@ -10,7 +10,7 @@ trigger:
     trigger: device
 action:
   - variables:
-      space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_neutral_response_01'/>"
+      space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_positive_response_02'/>"
 
   - service: counter.decrement
     target:
@@ -21,13 +21,13 @@ action:
       entity_id: input_select.dishwasher_status
     data:
       option: Running
-  
+
   - service: timer.start
     target:
       entity_id: timer.dishwasher_cycle_timer
     data:
-      duration: "02:00:00"     
-  
+      duration: "02:00:00"
+
   - service: notify.alexa_media_kitchen_show
     data:
       message: "{{ space_chime }} <break time='1s'/> Dishwasher cycle started. There are {{ states('counter.dishwasher_pods') }} pods remaining ."

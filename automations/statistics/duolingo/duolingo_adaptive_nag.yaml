@@ -1,14 +1,15 @@
----
-id: "00074"
 alias: "Duolingo: Adaptive Nag System"
+id: "00074"
+description: "An adaptive nag system that sends personalized reminders to practice Duolingo based on streak"
 trigger:
   - platform: time_pattern
     minutes: "/30"
 condition:
-  # Check if John is home and if the current time matches your frequency logic
+  # Check if John is home
   - condition: state
     entity_id: device_tracker.john_iphone_promax
     state: "home"
+  # Frequency logic
   - condition: template
     value_template: >
       {% set hr = now().hour %}
@@ -17,72 +18,67 @@ condition:
       {% elif hr >= 21 and hr < 23 %} true
       {% else %} false {% endif %}
 action:
-  # 1. Force the sensor to update from the API only when needed
   - action: homeassistant.update_entity
     target:
       entity_id: sensor.duolingo_streak
 
-  # 2. Briefly wait for the API response
   - delay: "00:00:05"
 
-  # 3. Proceed ONLY if the streak hasn't increased
   - if:
       - condition: template
         value_template: >
           {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
     then:
-      # Notifications (Phone & Alexa)
+      # Step 1: Define the core message
       - variables:
-        streak: "{{ states('sensor.duolingo_streak') }}"
-        # SSML version for Alexa
-        nag_message_ssml: >
-          {{ [
-            "Your streak is " ~ streak ~ " days. <break time='500ms'/> At this rate, you’ll be able to order a water in Berlin by the year <say-as interpret-as='date' format='y'>2045</say-as>. <emphasis level='reduced'>Move it.</emphasis>",
-            "Your German is <emphasis level='moderate'>nein</emphasis>, your Spanish is <emphasis level='moderate'>nada</emphasis>, and your Arabic is... <break time='1s'/> nonexistent. Fix one of them before the owl <prosody pitch='low'>loses his mind.</prosody>",
-            "A " ~ streak ~ " day streak? <break time='500ms'/> You're one missed lesson away from 'Hola' being the <emphasis level='strong'>only</emphasis> word left in your brain.",
-            "Arabic script isn't going to learn itself while you sit there. <prosody rate='fast' volume='loud'>Yalla!</prosody>",
-            "You’re studying three languages and Chess? <break time='500ms'/> You’re either a genius... <break time='500ms'/> or a glutton for punishment. <emphasis level='reduced'>Either way, get to work.</emphasis>",
-            "Is your Spanish actually improving? <break time='800ms'/> Or are you just getting really good at <prosody rate='slow'>guessing</prosody> where the enyay goes?",
-            "Your streak is " ~ streak ~ ". Don't let your German travel plans turn into a series of <emphasis level='moderate'>confused grunts and pointing.</emphasis>",
-            "Arabic is hard. German is harder. <break time='500ms'/> Losing your " ~ streak ~ " day streak because you were lazy is just... <emphasis level='strong'>pathetic.</emphasis>",
-            "You can't even beat a Level 1 Chess bot, <break time='400ms'/> and now you're ignoring your Spanish? <prosody pitch='low'>Checkmate, loser.</prosody>",
-            "Ignoring your practice is a <emphasis level='strong'>blunder.</emphasis> <break time='500ms'/> Even a four-hundred rated player could see that.",
-            "Duo heard you wanted to learn Arabic <prosody volume='soft'>out of curiosity.</prosody> <break time='800ms'/> He’s <emphasis level='moderate'>curious</emphasis> why you haven’t opened the app today.",
-            "Maintaining a " ~ streak ~ " day streak is the <emphasis level='strong'>only</emphasis> thing keeping you from being a total quitter.",
-            "The Spanish R isn't going to roll itself. <break time='500ms'/> Get practicing before you sound like a <emphasis level='moderate'>permanent tourist.</emphasis>",
-            "I’ve seen better German from a bowl of <emphasis level='moderate'>sauerkraut.</emphasis> <break time='500ms'/> Go practice.",
-            "You have a " ~ streak ~ " day streak. If you drop it now, I’m telling everyone you think <prosody rate='slow'>Checkmate</prosody> is an Australian greeting.",
-            "Spanish, Arabic, and German walk into a bar. <break time='1s'/> You can't understand <emphasis level='strong'>any</emphasis> of them because you skipped your lessons.",
-            "Your streak is " ~ streak ~ ". That’s a lot of days to throw away just to stay <emphasis level='moderate'>monolingual</emphasis> and bad at Chess.",
-            "If you don't do your Arabic today, <emphasis level='strong'>the squiggles win.</emphasis> <break time='500ms'/> Is that what you want? To let the squiggles win?",
-            "Practice now, <break time='400ms'/> or I’ll start reading your German pronunciation attempts <emphasis level='strong'>out loud</emphasis> in public. <prosody pitch='low'>Nobody wants that.</prosody>"
-          ] | random }}
+          streak: "{{ states('sensor.duolingo_streak') }}"
+          nag_message_ssml: >
+            {{ [
+              "Your streak is " ~ streak ~ " days. <break time='500ms'/> At this rate, you’ll be able to order a water in Berlin by the year <say-as interpret-as='date' format='y'>2045</say-as>. <emphasis level='reduced'>Move it.</emphasis>",
+              "Your German is <emphasis level='moderate'>nein</emphasis>, your Spanish is <emphasis level='moderate'>nada</emphasis>, and your Arabic is... <break time='1s'/> nonexistent. Fix one of them before the owl <prosody pitch='low'>loses his mind.</prosody>",
+              "A " ~ streak ~ " day streak? <break time='500ms'/> You're one missed lesson away from 'Hola' being the <emphasis level='strong'>only</emphasis> word left in your brain.",
+              "Arabic script isn't going to learn itself while you sit there. <prosody rate='fast' volume='loud'>Yalla!</prosody>",
+              "You’re studying three languages and Chess? <break time='500ms'/> You’re either a genius... <break time='500ms'/> or a glutton for punishment. <emphasis level='reduced'>Either way, get to work.</emphasis>",
+              "Is your Spanish actually improving? <break time='800ms'/> Or are you just getting really good at <prosody rate='slow'>guessing</prosody> where the enyay goes?",
+              "Your streak is " ~ streak ~ ". Don't let your German travel plans turn into a series of <emphasis level='moderate'>confused grunts and pointing.</emphasis>",
+              "Arabic is hard. German is harder. <break time='500ms'/> Losing your " ~ streak ~ " day streak because you were lazy is just... <emphasis level='strong'>pathetic.</emphasis>",
+              "You can't even beat a Level 1 Chess bot, <break time='400ms'/> and now you're ignoring your Spanish? <prosody pitch='low'>Checkmate, loser.</prosody>",
+              "Ignoring your practice is a <emphasis level='strong'>blunder.</emphasis> <break time='500ms'/> Even a four-hundred rated player could see that.",
+              "Duo heard you wanted to learn Arabic <prosody volume='soft'>out of curiosity.</prosody> <break time='800ms'/> He’s <emphasis level='moderate'>curious</emphasis> why you haven’t opened the app today.",
+              "Maintaining a " ~ streak ~ " day streak is the <emphasis level='strong'>only</emphasis> thing keeping you from being a total quitter.",
+              "The Spanish R isn't going to roll itself. <break time='500ms'/> Get practicing before you sound like a <emphasis level='moderate'>permanent tourist.</emphasis>",
+              "I’ve seen better German from a bowl of <emphasis level='moderate'>sauerkraut.</emphasis> <break time='500ms'/> Go practice.",
+              "You have a " ~ streak ~ " day streak. If you drop it now, I’m telling everyone you think <prosody rate='slow'>Checkmate</prosody> is an Australian greeting.",
+              "Spanish, Arabic, and German walk into a bar. <break time='1s'/> You can't understand <emphasis level='strong'>any</emphasis> of them because you skipped your lessons.",
+              "Your streak is " ~ streak ~ ". That’s a lot of days to throw away just to stay <emphasis level='moderate'>monolingual</emphasis> and bad at Chess.",
+              "If you don't do your Arabic today, <emphasis level='strong'>the squiggles win.</emphasis> <break time='500ms'/> Is that what you want? To let the squiggles win?",
+              "Practice now, <break time='400ms'/> or I’ll start reading your German pronunciation attempts <emphasis level='strong'>out loud</emphasis> in public. <prosody pitch='low'>Nobody wants that.</prosody>"
+            ] | random }}
+          space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_positive_response_02'/>"
 
-        # Plain version for your Phone (Mobile app can't read SSML tags)
-        nag_message_plain: "{{ nag_message_ssml | striptags }}"
+      # Step 2: Create the plain version from the already-defined SSML variable
+      - variables:
+          nag_message_plain: "{{ nag_message_ssml | striptags }}"
 
-        space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_positive_response_02'/>"
-
-      # 1. Mobile Alert (Strips the tags so you don't see <prosody> in the text)
-
+      # Phone Notification
       - action: script.text_notify_john
         data:
           title: "🦉 Duolingo Reminder"
           message: "{{ nag_message_plain }}"
-          data: {}
 
+      # Alexa Notification (Evening Only)
       - if:
           - condition: time
             after: "18:00:00"
         then:
-          # 2. Alexa Announcement (Includes the SSML for the drama)
           - action: notify.alexa_media
             data:
               target:
-                - media_player.kitchen_show
-                - media_player.living_room_dot
                 - media_player.bathroom_flex
                 - media_player.bedroom_dot
+                - media_player.computer_room_spot
+                - media_player.kitchen_show
+                - media_player.living_room_dot
               message: "{{ space_chime }} <break time='1s'/> {{ nag_message_ssml }}"
               data:
                 type: tts

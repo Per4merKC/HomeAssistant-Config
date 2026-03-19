@@ -1,0 +1,85 @@
+alexa_smart_notifications:
+  alias: "Alexa Smart SSML Notifier"
+  description: "Advanced Alexa notifications with Priority chimes and Area awareness."
+
+  fields:
+    title:
+      name: Title
+      example: "System Message"
+    message:
+      name: Message
+      description: "SSML message body"
+      example: "This is a test"
+    target:
+      name: Target
+      description: "John, Robert, Area Name, or 'All'"
+      default: "All"
+    priority:
+      name: Priority
+      description: "Low, Normal, or High"
+      default: "Normal"
+    voice:
+      name: Voice
+      description: "Alexa Voice (e.g., Joanna, Matthew, Brian)"
+      default: "Joanna"
+
+  variables:
+    # 1. DYNAMIC 'ALL' LOOKUP
+    # This finds every media_player that has 'last_called_summary' (unique to Alexa)
+    all_alexas: >
+      {% set alexas = states.media_player 
+        | selectattr('attributes.last_called_summary', 'defined') 
+        | map(attribute='entity_id') | list %}
+      {{ alexas if alexas | length > 0 else states.media_player | map(attribute='entity_id') | list }}
+
+    # 2. CHIME LOGIC
+    chime: >
+      {% if priority | lower == 'high' %}
+        <audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_tally_positive_01'/>
+      {% elif priority | lower == 'low' %}
+        <audio src="soundbank://soundlibrary/magic/amzn_sfx_fairy_sparkle_chimes_01"/>
+      {% else %}
+        <audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_positive_response_02'/>
+      {% endif %}
+
+    # 3. FINAL TARGET RESOLUTION
+    # This converts the list to a comma-separated string for the notify service
+    final_target: >
+      {% set t = target | lower %}
+      {% set all = all_alexas %}
+      {% set area_list = areas() %}
+
+      {% if t == 'all' %}
+        {{ all | join(',') }}
+      {% elif t in ['john', 'robert'] %}
+        {# Placeholder for future person-location sensor logic #}
+        {{ all | join(',') }}
+      {% elif t in area_list or t in area_list | map('lower') | list %}
+        {% set a_devs = area_entities(target) | select('in', all) | list %}
+        {% if a_devs | length > 0 %}
+          {{ a_devs | join(',') }}
+        {% else %}
+          {# Fallback: Name search if Area is empty of Alexas #}
+          {% set named = all | select('search', t) | list %}
+          {{ named | join(',') if named | length > 0 else all | join(',') }}
+        {% endif %}
+      {% else %}
+        {# Path D: Direct Name Search (e.g. for 'Bathroom') #}
+        {% set named = all | select('search', t) | list %}
+        {{ named | join(',') if named | length > 0 else all | join(',') }}
+      {% endif %}
+
+  sequence:
+    - service: notify.alexa_media
+      data:
+        target: "{{ final_target }}"
+        message: >
+          {% set clean_msg = message | replace('<speak>', '') | replace('</speak>', '') %}
+          <speak>
+            {{ chime }}
+            {{ clean_msg }}
+          </speak>
+        data:
+          type: tts
+          title: "{{ title }}"
+          voice: "{{ voice | default('Joanna') }}"
