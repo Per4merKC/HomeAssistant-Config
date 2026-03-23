@@ -1,6 +1,6 @@
 # Script Listing
 
- > Next Available Number: 00011, 00021, 00027
+ > Next Available Number: 00076
 
 <!-- markdownlint-disable MD009 MD019 -->
 
@@ -16,7 +16,7 @@
 |  00008 | mousetrap                | Mousetrap alert when triggered                                                                                                                                     | security              |
 |  00009 | refrigerator_alerts      | Alert when the refrigerator temperatures are out of limits                                                                                                         |                       |
 |  00010 | work_travel_time         | Travel time for JE                                                                                                                                                 |                       |
-|  00011 |                          |                                                                                                                                                                    |                       |
+|  00011 | je_temperature           | Display temperature on the AWTRIX display                                                                                                                          | routines/je_health    |
 |  00012 | arrive_night             | Arrive home at night                                                                                                                                               | doors                 |
 |  00013 | mf_med_reset_am          | Reset the bp medicine flag for the input_boolean.mf_medicine to off                                                                                                | routines/mf_medicine  |
 |  00014 | mf_med_remind_am         | Send the AM reminder to take Metformin                                                                                                                             | routines/mf_medicine  |
@@ -26,7 +26,7 @@
 |  00018 | mf_med_remind_pm         | Send the PM reminder to take Metformin                                                                                                                             | routines/mf_medicine  |
 |  00019 | power_reset              | Reset the total power meters on the zwave power meter                                                                                                              | statistics            |
 |  00020 | stairwell_motion         | Motion in stairwell, activate lights                                                                                                                               | motion                |
-|  00021 |                          |                                                                                                                                                                    |                       |
+|  00021 | habitica_start_day       | Start the CRON for the daily tasks to be ready for completion                                                                                                      | routines/je_health    |
 |  00022 | laundry_active           | Washing machine is in use and using electricity                                                                                                                    | routines/laundry      |
 |  00023 | laundry_done             | Washing machine is not in use and not using electricity                                                                                                            | routines/laundry      |
 |  00024 | restart                  | Restart Home-Assistant                                                                                                                                             | maintenance           |

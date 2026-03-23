@@ -1,0 +1,30 @@
+---
+habitica_complete_daily:
+  alias: Habitica Complete Daily
+  mode: queued
+  fields:
+    task_id:
+      description: "Habitica Task ID"
+      example: "3877bca5-9400-4ec8-afd0-b26c404ee194"
+
+  sequence:
+    # - variables:
+    #     user_id: !secret habitica_api_user
+    #     api_key: !secret habitica_api_key
+    #     client: !secret habitica_api_client
+    #     base_url: "https://habitica.com/api/v3/tasks"
+
+    # Step 1: Score the task (gives rewards)
+    - service: rest_command.habitica_score_task
+      data:
+        task_id: "{{ task_id }}"
+        direction: "up"
+
+    # Small delay to avoid race conditions
+    - delay: "00:00:01"
+
+    # Step 2: Mark task as completed (checkbox)
+    - service: rest_command.habitica_update_task
+      data:
+        task_id: "{{ task_id }}"
+        completed: true

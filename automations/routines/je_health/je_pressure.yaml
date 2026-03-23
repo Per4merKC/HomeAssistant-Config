@@ -1,34 +1,65 @@
----
 id: "00069"
-alias: JE BP
-description: "Carrot or Stick for John's Weight Change"
-mode: single
+alias: "JE: Blood Pressure Sync & Bio-Scan"
+description: "Syncs BP to Habitica and Alexa always; AWTRIX only if no visitors."
+mode: restart
 trigger:
   - platform: state
     entity_id:
       - sensor.withings_diastolic_blood_pressure_mmhg_john
       - sensor.withings_systolic_blood_pressure_mmhg_john
 condition:
-  - condition: state
-    entity_id: input_boolean.house_visitors
-    state: "off"
+  - condition: template
+    # Ensure both numbers are valid before proceeding
+    value_template: >
+      {{ is_number(states('sensor.withings_systolic_blood_pressure_mmhg_john')) and 
+         is_number(states('sensor.withings_diastolic_blood_pressure_mmhg_john')) }}
 action:
   - variables:
-      # yamllint disable-line rule:line-length
       bp_top: "{{ states('sensor.withings_systolic_blood_pressure_mmhg_john') }}"
-      # yamllint disable-line rule:line-length
       bp_bottom: "{{ states('sensor.withings_diastolic_blood_pressure_mmhg_john') }}"
-  - service: mqtt.publish
+
+  # 1. CONDITIONAL: Update AWTRIX Display (Only if no visitors)
+  - if:
+      - condition: state
+        entity_id: input_boolean.house_visitors
+        state: "off"
+    then:
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/JE_BP
+          payload: |-
+            {
+              "text": "JE: {{ bp_top }}/{{ bp_bottom }}",
+              "textCase": 2,
+              "icon": "331",
+              "repeat": 2,
+              "duration": 5,
+              "stack": 0
+            }
+          qos: 0
+          retain: false
+
+  # 2. ALWAYS: Mark Habitica Task Done
+  - service: script.habitica_complete_daily
     data:
-      topic: awtrix_4200c8/custom/JE_BP
-      payload: |-
-        {
-          "text": "JE: {{ bp_top }}/{{ bp_bottom }}",
-          "textCase": 2,
-          "icon": "331",
-          "repeat": 2,
-          "duration": 5,
-          "stack": 0
-        }
-      qos: 0
-      retain: false
+      task_id: CC03B5CF-2E22-4EA1-BACF-63D333FC74D9
+
+  # 3. ALWAYS: Generate Dynamic AI Report via Gemini
+  - service: conversation.process
+    data:
+      agent_id: conversation.google_generative_ai
+      text: >
+        John Edmonds just synced his blood pressure. 
+        Reading: {{ bp_top }} over {{ bp_bottom }}.
+        Act as a crisp, efficient medical bay AI on a spaceship. 
+        Provide a one-sentence verbal status update. 
+        Be technical, slightly clinical, and concise. No emojis.
+        Response with be spoken so read the blood pressure as "BP: 120 over 80" for example.
+    response_variable: gemini_response
+
+  # 4. ALWAYS: Voice Announcement via Smart Notifications
+  - service: script.alexa_smart_notifications
+    data:
+      message: "{{ gemini_response.response.speech.plain.speech }}"
+      priority: "Normal"
+      target: "bathroom"

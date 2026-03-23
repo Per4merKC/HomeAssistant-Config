@@ -1,0 +1,39 @@
+---
+id: "00011"
+alias: "JE: Temperature Sync & Bio-Scan"
+mode: single
+trigger:
+  - platform: state
+    entity_id: sensor.withings_body_temperature_c_john
+condition:
+  - condition: template
+    value_template: "{{ is_number(trigger.to_state.state) }}"
+action:
+  - variables:
+      current_temp: "{{ trigger.to_state.state | float | round(1) }}"
+
+  - if:
+      - condition: state
+        entity_id: input_boolean.house_visitors
+        state: "off"
+    then:
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/JE_TEMP
+          payload: '{"text": "JE: {{ current_temp }}°F", "textCase": 2, "icon": "25166", "repeat": 2, "duration": 5}'
+
+  - service: script.habitica_complete_daily
+    data:
+      task_id: 3CA3C6B2-728C-420C-A558-5717A8AE7E43
+
+  - service: conversation.process
+    data:
+      agent_id: conversation.google_generative_ai
+      text: "John synced body temp: {{ current_temp }}°F. Act as a spaceship medical AI. One-sentence technical status update."
+    response_variable: gemini_res
+
+  - service: script.alexa_smart_notifications
+    data:
+      message: "{{ gemini_res.response.speech.plain.speech }}"
+      priority: "Normal"
+      target: "bathroom"

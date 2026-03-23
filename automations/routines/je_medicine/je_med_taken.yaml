@@ -141,12 +141,19 @@ action:
       message: "{{ response_var_text }}"
       data: {}
 
-  - action: notify.alexa_media
-    data:
-      message: "<speak>{{ space_chime }} <break time='1s'/> {{ response_var }}</speak>"
-      target: media_player.bathroom_flex
-      data:
-        type: tts
+  - if: "{{ from_button }}"
+    then:
+      - service: script.alexa_smart_notifications
+        data:
+          message: "{{ response_var }}"
+          priority: "Normal"
+          target: "bathroom"
+
+  - if: "{{ is_morning }}"
+    then:
+      - service: script.habitica_complete_daily
+        data:
+          task_id: 28160DB4-6E5D-4C67-B66A-038BFDB2D028
 
   # 4. Low Inventory Check & Alert
   - repeat:

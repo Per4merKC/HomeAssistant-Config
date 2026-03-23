@@ -24,3 +24,10 @@ action:
       retain: false
       topic: awtrix_4200c8/custom/JE_Weight
       payload: "{}"
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_4200c8/custom/JE_TEMP
+      payload: "{}"

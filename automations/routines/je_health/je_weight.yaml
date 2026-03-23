@@ -1,57 +1,60 @@
----
 id: "00070"
-alias: JE Weight Change
+alias: "JE: Weight Sync & Bio-Scan"
+description: "Syncs weight to Habitica/Alexa always; AWTRIX only if no visitors."
 mode: single
 trigger:
   - platform: state
-    entity_id:
-      - sensor.withings_weight_kg_john
+    entity_id: sensor.withings_weight_kg_john
 condition:
-  - condition: state
-    entity_id: input_boolean.house_visitors
-    state: "off"
+  - condition: template
+    value_template: "{{ is_number(trigger.to_state.state) }}"
 action:
   - variables:
-      weight: "{{ trigger.to_state.state }}"
-      # yamllint disable-line rule:line-length
-      weight_delta: "{{ int(trigger.from_state.state) - int(trigger.to_state.state) }}"
+      current_w: "{{ trigger.to_state.state | float }}"
+      previous_w: "{{ trigger.from_state.state | float if is_number(trigger.from_state.state) else current_w }}"
+      weight_delta: "{{ (current_w - previous_w) | round(2) }}"
+
+  # 1. CONDITIONAL: Update AWTRIX Display (Only if no visitors)
   - if:
-      - condition: template
-        value_template: |-
-          {{ (weight_delta | int) >= 0 }}
+      - condition: state
+        entity_id: input_boolean.house_visitors
+        state: "off"
     then:
       - service: mqtt.publish
-        metadata: {}
         data:
           topic: awtrix_4200c8/custom/JE_Weight
-          # yamllint disable rule:line-length
           payload: |-
             {
-              "text": "JE: {{ trigger.to_state.state | int }} (down {{ weight_delta }})",
+              "text": "JE: {{ current_w | int }} ({% if weight_delta <= 0 %}down {{ weight_delta | abs }}{% else %}up {{ weight_delta }}{% endif %})",
               "textCase": 2,
               "icon": "27742",
               "repeat": 2,
               "duration": 5,
               "stack": 0
             }
-          # yamllint enable rule:line-length
           qos: 0
           retain: false
-    else:
-      - service: mqtt.publish
-        metadata: {}
-        data:
-          topic: awtrix_4200c8/custom/JE_Weight
-          # yamllint disable rule:line-length
-          payload: |-
-            {
-              "text": "JE: {{ trigger.to_state.state | int }} (up {{ weight_delta | abs }})",
-              "textCase": 2,
-              "icon": "27742",
-              "repeat": 2,
-              "duration": 5,
-              "stack": 0
-            }
-          # yamllint enable rule:line-length
-          qos: 0
-          retain: false
+
+  # 2. ALWAYS: Mark Habitica Task Done
+  - service: script.habitica_complete_daily
+    data:
+      task_id: 5632C6E6-8AB4-4F11-B240-23282D958E4D
+
+  # 3. ALWAYS: Generate Dynamic AI Report via Gemini
+  - service: conversation.process
+    data:
+      agent_id: conversation.google_generative_ai
+      text: >
+        John Edmonds just completed a 'Weigh In'. 
+        Current mass: {{ current_w }} lbs. Delta: {{ weight_delta }} lbs.
+        Act as a crisp, slightly snarky spaceship computer terminal.
+        Provide a one-sentence verbal announcement acknowledging the sync and the trend. 
+        Keep it technical and sci-fi.
+    response_variable: gemini_response
+
+  # 4. ALWAYS: Voice Announcement via Smart Notifications
+  - service: script.alexa_smart_notifications
+    data:
+      message: "{{ gemini_response.response.speech.plain.speech }}"
+      priority: "Normal"
+      target: "bathroom"

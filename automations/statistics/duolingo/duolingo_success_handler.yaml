@@ -16,9 +16,13 @@ action:
       entity_id:
         - automation.duolingo_adaptive_nag_system
         - automation.duolingo_smart_token_refresh
-      
+
   # Send a final confirmation to John
   - action: script.text_notify_john
     data:
       title: "🦉 Duolingo Success"
       message: "Goal reached! Systems are powering down for the day."
+
+  - action: script.habitica_complete_daily
+    data:
+      task_id: D7E08EA1-6A8B-4765-AE7A-084C183183B3

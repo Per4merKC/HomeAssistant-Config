@@ -1,0 +1,10 @@
+---
+habitica_cron:
+  url: "https://habitica.com/api/v3/cron"
+  method: POST
+  headers:
+    x-api-user: !secret habitica_api_user
+    x-api-key: !secret habitica_api_key
+    x-client: !secret habitica_api_client
+  content_type: "application/json"
+  payload: "{}"

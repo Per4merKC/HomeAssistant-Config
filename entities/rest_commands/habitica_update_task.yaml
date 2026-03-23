@@ -1,0 +1,13 @@
+---
+habitica_update_task:
+  url: "https://habitica.com/api/v3/tasks/{{ task_id }}"
+  method: put
+  headers:
+    x-api-user: !secret habitica_api_key
+    x-api-key: !secret habitica_api_key
+    x-client: !secret habitica_api_client
+    Content-Type: "application/json"
+  payload: >
+    {
+      "completed": {{ completed | tojson }}
+    }
