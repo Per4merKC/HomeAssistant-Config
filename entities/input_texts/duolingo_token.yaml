@@ -1,6 +1,0 @@
----
-duolingo_jwt:
-  icon: mdi:school
-  max: 255
-  mode: password
-  name: Duolingo JWT Token

@@ -1,0 +1,281 @@
+---
+# -------------------------------------------------------------------------
+# DUOLINGO ECOSYSTEM
+# Includes: API Fetching, Token Management, Nagging, and Success Tracking
+# -------------------------------------------------------------------------
+
+# 1. INPUT HELPERS (The "Storage" for your JWT and IDs)
+input_text:
+  duolingo_jwt:
+    icon: mdi:school
+    max: 255
+    mode: password
+    name: Duolingo JWT Token
+  duolingo_userid:
+    icon: mdi:account-circle
+    mode: text
+    name: Duolingo User ID
+
+input_number:
+  duolingo_streak_baseline:
+    icon: mdi:counter
+    name: Duolingo Streak Baseline
+    initial: 0
+    min: 0
+    max: 9999
+    step: 1
+    mode: box
+
+# 2. SENSORS (The "Brain")
+rest:
+  - resource_template: "https://www.duolingo.com/2017-06-30/users/{{ states('input_text.duolingo_userid') }}?fields=streak"
+    scan_interval: 86400 # Once a day, though the automation forces an update
+    method: GET
+    headers:
+      user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+      Authorization: "{{ states('input_text.duolingo_jwt') }}"
+
+    # "sensor" here is a list of sensors created from this REST call.
+    sensor:
+      - name: "Duolingo Streak"
+        unique_id: duolingo_streak_api
+        unit_of_measurement: "days"
+        icon: mdi:school
+        value_template: >
+          {% if value_json is defined and value_json.streak is defined %}
+            {{ value_json.streak | int(0) }}
+          {% else %}
+            {# Fallback to current state if the API fails #}
+            {{ states('sensor.duolingo_streak') | int(0) }}
+          {% endif %}
+
+template:
+  - binary_sensor:
+      - name: "Duolingo Lesson Progress"
+        unique_id: b1b4f370-4b3e-4d13-86dd-7e174c585db8
+        device_class: problem
+        state: >
+          {{ states('sensor.duolingo_streak') | int(0) > states('input_number.duolingo_streak_baseline') | int(0) }}
+        icon: >
+          {% if is_state('binary_sensor.duolingo_lesson_progress', 'on') %}
+            mdi:owl
+          {% else %}
+            mdi:owl-off
+          {% endif %}
+
+rest_command:
+  duolingo_login:
+    url: "https://www.duolingo.com/2017-06-30/login"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    payload: >
+      {"identifier": "{{ username }}", "password": "{{ password }}"}
+
+# 3. AUTOMATIONS (The "Muscle")
+automation:
+  - alias: "Duolingo: Daily Baseline Reset"
+    id: "000073"
+    trigger:
+      - platform: time
+        at: "00:01:00"
+    action:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duolingo_streak_baseline
+        data:
+          value: "{{ states('sensor.duolingo_streak') | int(0) }}"
+      - action: automation.turn_on
+        target:
+          entity_id:
+            - automation.duolingo_adaptive_nag_system
+            - automation.duolingo_smart_token_refresh
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/JE_DUOLINGO
+          payload: {}
+
+  - alias: "Duolingo: Token Refresh"
+    id: "00072"
+    trigger:
+      - platform: state
+        entity_id: sensor.duolingo_streak
+        to: "unavailable"
+      - platform: time
+        at: "03:00:00"
+    condition:
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: sensor.duolingo_streak
+            state: "unavailable"
+          - condition: time
+            weekday:
+              - mon
+    action:
+      # 1. Run the login command
+      - action: rest_command.duolingo_login
+        data:
+          username: !secret duolingo_username
+          password: !secret duolingo_password
+        response_variable: login_data
+
+      # 2. Check if the login was successful (Status 200)
+      - if:
+          - condition: template
+            value_template: "{{ login_data is defined and login_data.status == 200 }}"
+        then:
+          - variables:
+              # This looks for the JWT in headers (standard)
+              # but falls back to checking the body if they sent it there.
+              jwt_value: >
+                {% if login_data.headers.get('jwt') %}
+                  {{ login_data.headers.get('jwt') }}
+                {% elif login_data.content.get('jwt') %}
+                  {{ login_data.content.get('jwt') }}
+                {% else %}{% endif %}
+              user_id_value: "{{ login_data.content.get('id') }}"
+
+          # 3. Only update the input_texts if we actually got valid data
+          - if:
+              - condition: template
+                value_template: "{{ jwt_value != '' and user_id_value != '' }}"
+            then:
+              - action: input_text.set_value
+                target:
+                  entity_id: input_text.duolingo_jwt
+                data:
+                  value: "Bearer {{ jwt_value }}"
+
+              - action: input_text.set_value
+                target:
+                  entity_id: input_text.duolingo_userid
+                data:
+                  value: "{{ user_id_value }}"
+
+  - alias: "Duolingo: Adaptive Nag System"
+    id: "00074"
+    description: "An adaptive nag system that sends personalized reminders to practice Duolingo based on streak"
+    trigger:
+      - platform: time_pattern
+        minutes: "/30"
+    condition:
+      # Check if John is home
+      - condition: state
+        entity_id: device_tracker.john_iphone_promax
+        state: "home"
+      # Frequency logic
+      - condition: template
+        value_template: >
+          {% set hr = now().hour %}
+          {% if hr >= 9 and hr < 18 %} {{ now().minute == 0 and hr % 2 == 0 }}
+          {% elif hr >= 18 and hr < 21 %} {{ now().minute == 0 }}
+          {% elif hr >= 21 and hr < 23 %} true
+          {% else %} false {% endif %}
+    action:
+      - action: homeassistant.update_entity
+        target:
+          entity_id: sensor.duolingo_streak
+
+      - delay: "00:00:05"
+
+      - if:
+          - condition: template
+            value_template: >
+              {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
+        then:
+          # 1. Ask Gemini for a snarky Spanish-only roast
+          - action: ai_task.generate_data
+            data:
+              entity_id: ai_task.google_ai_announcements
+              task_name: "spanish_duolingo_nag"
+              instructions: >
+                Write a very short, witty, and slightly mean-spirited reminder for someone 
+                to practice their Spanish on Duolingo. Focus ONLY on Spanish. Use a mix 
+                of English and Spanish words. Mention their current {{ states('sensor.duolingo_streak') }} day streak. 
+                Keep it under 30 words. Do not use emojis. Use SSML tags like <emphasis> or <prosody> 
+                to make it sound dramatic when read aloud.  Be sure to mark Spanish words with the correct SSML so they are pronounced correctly.
+            response_variable: gemini_response
+
+          - variables:
+              raw_nag: "{{ gemini_response.data }}"
+              # Ensure mobile gets a clean version
+              plain_nag: "{{ raw_nag | striptags }}"
+
+          # Phone Notification
+          - action: script.text_notify_john
+            data:
+              title: "🦉 Duolingo Reminder"
+              message: "{{ plain_nag }}"
+
+          # Alexa Notification (Evening Only)
+          - if:
+              - condition: time
+                after: "18:00:00"
+            then:
+              - action: script.alexa_smart_notifications
+                data:
+                  title: "Spanish Practice Reminder"
+                  message: "{{ raw_nag }}"
+                  target: "John"
+                  priority: "Normal"
+                  voice: "Conchita"
+
+  - alias: "Duolingo: Success Handler"
+    id: "00075"
+    trigger:
+      - platform: state
+        entity_id: sensor.duolingo_streak
+        not_to:
+          - "unavailable"
+          - "unknown"
+    condition:
+      # Verify the streak actually increased compared to the morning baseline
+      - condition: template
+        value_template: >
+          {{ states('sensor.duolingo_streak') | int(0) > states('input_number.duolingo_streak_baseline') | int(0) }}
+    action:
+      - variables:
+          new_streak: "{{ states('sensor.duolingo_streak') | int(0) }}"
+
+      # Turn off both the nag system and the token refresh automation
+      - action: automation.turn_off
+        target:
+          entity_id:
+            - automation.duolingo_adaptive_nag_system
+            - automation.duolingo_smart_token_refresh
+
+      # Send a final confirmation to John
+      - action: script.text_notify_john
+        data:
+          title: "🦉 Duolingo Success"
+          message: "Goal reached! Systems are powering down for the day."
+
+      # Announce the success on Alexa
+      - action: script.alexa_smart_notifications
+        data:
+          title: "Duolingo Streak Update"
+          message: "Congratulations! Your streak is now {{ new_streak }} days! Keep up the great work!"
+          targer: "John"
+          priority: "Normal"
+          voice: "Enrique"
+
+      # update habitica to mark the task as complete
+      - action: script.habitica_complete_daily
+        data:
+          task_id: D7E08EA1-6A8B-4765-AE7A-084C183183B3
+
+      # send display to AWTRIX
+      - action: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/JE_DUOLINGO
+          payload: >-
+            {
+              "text": "Streak achieved! {{ new_streak }} Days", 
+              "textCase": 2, 
+              "icon": "70320", 
+              "repeat": 2, 
+              "duration": 5
+            }
