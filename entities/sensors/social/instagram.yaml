@@ -16,4 +16,4 @@ value_template: >
     {{ states('sensor.instagram_api') | int(0) }}
   {% endif %}
 # 86400 seconds = 24 hours. Don't poll more than once a day or you'll get IP banned.
-scan_interval: 86400
+scan_interval: 86400000

@@ -20,7 +20,14 @@ action:
       - service: mqtt.publish
         data:
           topic: awtrix_4200c8/custom/JE_TEMP
-          payload: '{"text": "JE: {{ current_temp }}°F", "textCase": 2, "icon": "25166", "repeat": 2, "duration": 5}'
+          payload: >-
+            {
+              "text": "JE: {{ current_temp }}°F", 
+              "textCase": 2, 
+              "icon": "1257", 
+              "repeat": 2, 
+              "duration": 5
+            }
 
   - service: script.habitica_complete_daily
     data:

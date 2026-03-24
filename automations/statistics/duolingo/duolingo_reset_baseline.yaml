@@ -18,3 +18,9 @@ action:
       entity_id:
         - automation.duolingo_adaptive_nag_system
         - automation.duolingo_smart_token_refresh
+
+  # Clear the AWTRIX nag display
+  - service: mqtt.publish
+    data:
+      topic: awtrix_4200c8/JE_DUOLINGO
+      payload: {}
