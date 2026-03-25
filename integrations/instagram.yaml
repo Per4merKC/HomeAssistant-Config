@@ -1,0 +1,110 @@
+# -------------------------------------------------------------------------
+# INSTAGRAM ECOSYSTEM
+# Includes: Follower Count Fetching, Daily Change Tracking,
+#           Milestone Notifications, and AWTRIX Integration
+# -------------------------------------------------------------------------
+
+sensor:
+  - platform: rest
+    name: instagram_followers
+    resource: !secret ig_url
+    headers:
+      User-Agent: Mozilla/5.0
+    scan_interval: 86400 # Manual updates handled by the jittered automation below
+    value_template: >
+      {% set matches = value | regex_findall('content="([0-9,]+) Followers') %}
+      {% if matches | count > 0 %}
+        {{ matches[0] | replace(',', '') }}
+      {% else %}
+        {{ states('sensor.instagram_followers') }}
+      {% endif %}
+
+template:
+  - trigger:
+      - platform: time
+        at: "00:00:00"
+      - platform: homeassistant
+        event: start
+    sensor:
+      - name: "Instagram Followers at Midnight"
+        unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3ce
+        state: "{{ states('sensor.instagram_followers') | int(0) }}"
+        unit_of_measurement: "followers"
+
+  - sensor:
+      - name: "Instagram Daily Change"
+        unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3cf
+        state: >
+          {% set current = states('sensor.instagram_followers') | int(0) %}
+          {% set midnight = states('sensor.instagram_followers_at_midnight') | int(0) %}
+          {{ current - midnight }}
+        unit_of_measurement: "followers"
+
+automation:
+  - alias: "Instagram: Manual Update with Jitter"
+    id: "00068"
+    trigger:
+      - platform: time_pattern
+        minutes: "0"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.withings_in_bed_john
+        state: "off"
+    action:
+      - delay:
+          minutes: "{{ range(0, 21) | random }}" # Using 21 allows for a full 20-minute delay
+      - service: homeassistant.update_entity
+        target:
+          entity_id: sensor.instagram_followers
+
+  - alias: "AWTRIX: Display Instagram Followers"
+    id: "000076"
+    description: "Update AWTRIX only when the count actually changes"
+    trigger:
+      - platform: state
+        entity_id: sensor.instagram_followers
+    condition:
+      - condition: template
+        value_template: "{{ trigger.from_state.state != trigger.to_state.state and trigger.to_state.state not in ['unavailable', 'unknown'] }}"
+    action:
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/instagram
+          payload: |-
+            {% set change = states('sensor.instagram_daily_change') | int(0) %}
+            {% set prefix = '+' if change >= 0 else '' %}
+            {
+              "icon": "52162",
+              "text": "{{ states('sensor.instagram_followers') }} ({{ prefix }}{{ change }})",
+              "duration": 5
+            }
+
+  - alias: "Instagram: Milestone & Smart Notifications"
+    id: "00077"
+    trigger:
+      - platform: state
+        entity_id: sensor.instagram_followers
+    condition:
+      - condition: template
+        value_template: >
+          {% set old = trigger.from_state.state | int(0) %}
+          {% set new = trigger.to_state.state | int(0) %}
+          {{ (new // 100) > (old // 100) }}
+    action:
+      # 1. iOS Notification via your text_notify_john script
+      - service: script.text_notify_john
+        data:
+          title: "Instagram Milestone!"
+          message: "You've reached {{ trigger.to_state.state }} followers. Daily change: {{ states('sensor.instagram_daily_change') }}."
+
+      # 2. Alexa Smart Notification only if John is home
+      - if:
+          - condition: state
+            entity_id: person.john
+            state: "home"
+        then:
+          - service: script.alexa_smart_notification
+            data:
+              target: "John"
+              priority: "Normal"
+              message: "Congratulations John, your Instagram just hit {{ trigger.to_state.state }} followers."

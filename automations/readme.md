@@ -72,7 +72,7 @@
 |  00065 | je_med_remind_pm         | Send the evening reminder to take BP medicine                                                                                                                      | routines/je_medicine  |
 |  00066 | finance_stock_ticker     | Display changed stock prices on AWTRIX                                                                                                                             | routines/statistics   |
 |  00067 | ulanzi_no_rain           | Update the total rain message on AWTRIX and turn off overlay                                                                                                       | routines/statistics   |
-|  00068 | instagram_followers      | Display Instagram followers on AWTRIX                                                                                                                              | routines/statistics   |
+|  00068 | instagram                | Update instagram followers with jitter to minimize looking like a bot                                                                                              | ingegrations          |
 |  00069 | je_pressure              | Display BP Numbers on AWTRIX                                                                                                                                       | routines/je_health    |
 |  00070 | je_weight                | Display Weight on AWTRIX                                                                                                                                           | routines/je_health    |
 |  00071 | je_hide_health           | Remove display of JE Health data on AWTRIX                                                                                                                         | routines/je_health    |
@@ -80,5 +80,7 @@
 |  00073 | duolingo_reset_baseline  | Update the baseline for duolingo                                                                                                                                   | statistics/duolingo   |
 |  00074 | duolingo_adaptive_nag    | Annoying reminders to practice                                                                                                                                     | statistics/duolingo   |
 |  00075 | duolingo_success_handler | JE has practiced for the day, disable the nag                                                                                                                      | statistics/duolingo   |
+|  00076 | instagram                | update the AWTRIX display with instagram followers                                                                                                                 | integrations          |
+|  00077 | instagram                | Milestone notificaitons for Instagram followers                                                                                                                    | integrations          |
 
 <!-- markdownlint-enable MD009 MD019 -->
