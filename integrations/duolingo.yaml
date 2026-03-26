@@ -55,12 +55,40 @@ template:
         unique_id: b1b4f370-4b3e-4d13-86dd-7e174c585db8
         device_class: problem
         state: >
-          {{ states('sensor.duolingo_streak') | int(0) > states('input_number.duolingo_streak_baseline') | int(0) }}
+          {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
         icon: >
           {% if is_state('binary_sensor.duolingo_lesson_progress', 'on') %}
-            mdi:owl
+            mdi:book-open-blank-variant-outline
           {% else %}
-            mdi:owl-off
+            mdi:book-check-outline
+          {% endif %}
+
+  - sensor:
+      - name: "Duolingo Stress Level"
+        unique_id: duolingo_stress_level
+        state: >
+          {% set streak = states('sensor.duolingo_streak') | int(0) %}
+          {% set baseline = states('input_number.duolingo_streak_baseline') | int(0) %}
+          {% set hour = now().hour %}
+
+          {% if streak > baseline %}
+            safe
+          {% elif hour < 12 %}
+            low
+          {% elif hour < 17 %}
+            medium
+          {% elif hour < 21 %}
+            high
+          {% else %}
+            critical
+          {% endif %}
+        icon: >
+          {% set s = this.state %}
+          {% if s == 'safe' %} mdi:owl
+          {% elif s == 'low' %} mdi:emoticon-neutral
+          {% elif s == 'medium' %} mdi:emoticon-confused
+          {% elif s == 'high' %} mdi:emoticon-angry
+          {% else %} mdi:emoticon-dead
           {% endif %}
 
 rest_command:
@@ -77,7 +105,7 @@ rest_command:
 # 3. AUTOMATIONS (The "Muscle")
 automation:
   - alias: "Duolingo: Daily Baseline Reset"
-    id: "000073"
+    id: "00073"
     trigger:
       - platform: time
         at: "00:01:00"
@@ -157,22 +185,21 @@ automation:
 
   - alias: "Duolingo: Adaptive Nag System"
     id: "00074"
-    description: "An adaptive nag system that sends personalized reminders to practice Duolingo based on streak"
+    description: "AI-powered nag system with synced Stress Levels and Alexa Priorities."
     trigger:
       - platform: time_pattern
         minutes: "/30"
     condition:
-      # Check if John is home
       - condition: state
         entity_id: device_tracker.john_iphone_promax
         state: "home"
-      # Frequency logic
       - condition: template
         value_template: >
           {% set hr = now().hour %}
-          {% if hr >= 9 and hr < 18 %} {{ now().minute == 0 and hr % 2 == 0 }}
-          {% elif hr >= 18 and hr < 21 %} {{ now().minute == 0 }}
-          {% elif hr >= 21 and hr < 23 %} true
+          {% set stress = states('sensor.duolingo_stress_level') %}
+          {% if stress == 'critical' %} true
+          {% elif stress == 'high' %} {{ now().minute == 0 }}
+          {% elif (stress == 'medium' or stress == 'low') and (hr % 2 == 0) and now().minute == 0 %} true
           {% else %} false {% endif %}
     action:
       - action: homeassistant.update_entity
@@ -186,41 +213,55 @@ automation:
             value_template: >
               {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
         then:
-          # 1. Ask Gemini for a snarky Spanish-only roast
           - action: ai_task.generate_data
             data:
               entity_id: ai_task.google_ai_announcements
               task_name: "spanish_duolingo_nag"
               instructions: >
-                Write a very short, witty, and slightly mean-spirited reminder for someone 
-                to practice their Spanish on Duolingo. Focus ONLY on Spanish. Use a mix 
-                of English and Spanish words. Mention their current {{ states('sensor.duolingo_streak') }} day streak. 
-                Keep it under 30 words. Do not use emojis. Use SSML tags like <emphasis> or <prosody> 
-                to make it sound dramatic when read aloud.  Be sure to mark Spanish words with the correct SSML so they are pronounced correctly.
+                {% set level = states('sensor.duolingo_stress_level') %}
+                Write a short, witty reminder to practice Spanish. 
+                Streak: {{ states('sensor.duolingo_streak') }} days.
+                Urgency: {{ level | upper }}.
+
+                {% if level == 'low' %} Tone: Encouraging but slightly judgmental.
+                {% elif level == 'medium' %} Tone: A disappointed professor.
+                {% elif level == 'high' %} Tone: Sharp, sarcastic, and impatient.
+                {% else %} Tone: Dramatic emergency. Use a "last warning" vibe. {% endif %}
+
+                Requirements:
+                - Mix English with Spanish. Under 30 words.
+                - Use SSML <emphasis> or <prosody> for drama.
+                - Wrap Spanish words in <lang xml:lang='es-ES'>tags</lang>.
             response_variable: gemini_response
 
           - variables:
               raw_nag: "{{ gemini_response.data }}"
-              # Ensure mobile gets a clean version
               plain_nag: "{{ raw_nag | striptags }}"
+              # Mapping Stress Level to Alexa Priority
+              alexa_priority: >
+                {% set level = states('sensor.duolingo_stress_level') %}
+                {% if level in ['low', 'medium'] %} Low
+                {% elif level == 'high' %} Normal
+                {% else %} High {% endif %}
 
           # Phone Notification
           - action: script.text_notify_john
             data:
-              title: "🦉 Duolingo Reminder"
+              title: "🦉 Duolingo: {{ states('sensor.duolingo_stress_level') | upper }}"
               message: "{{ plain_nag }}"
 
-          # Alexa Notification (Evening Only)
+          # Alexa Notification (Evening/Critical Only)
           - if:
-              - condition: time
-                after: "18:00:00"
+              - condition: template
+                value_template: >
+                  {{ states('sensor.duolingo_stress_level') in ['high', 'critical'] }}
             then:
               - action: script.alexa_smart_notifications
                 data:
                   title: "Spanish Practice Reminder"
                   message: "{{ raw_nag }}"
                   target: "John"
-                  priority: "Normal"
+                  priority: "{{ alexa_priority }}"
                   voice: "Conchita"
 
   - alias: "Duolingo: Success Handler"

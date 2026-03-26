@@ -1,0 +1,78 @@
+---
+###############################################################################
+# Habitica Core Package
+# Provides central API services for marking tasks as complete and running CRON
+###############################################################################
+
+# 1. SCRIPTS
+script:
+  habitica_complete_daily:
+    alias: "Habitica: Complete Daily"
+    mode: queued
+    fields:
+      task_id:
+        description: "Habitica Task ID"
+        example: "3877bca5-9400-4ec8-afd0-b26c404ee194"
+    sequence:
+      # Step 1: Score the task (gives rewards)
+      - action: rest_command.habitica_score_task
+        data:
+          task_id: "{{ task_id }}"
+      # Small delay to avoid race conditions
+      - delay: "00:00:01"
+      # Step 2: Mark task as completed (checkbox)
+      - action: rest_command.habitica_update_task
+        data:
+          task_id: "{{ task_id }}"
+          completed: true
+
+# 2. REST COMMANDS
+rest_command:
+  # Run the daily CRON to reset tasks
+  habitica_cron:
+    url: "https://habitica.com/api/v3/cron"
+    method: POST
+    headers:
+      x-api-user: !secret habitica_api_user
+      x-api-key: !secret habitica_api_key
+      x-client: !secret habitica_api_client
+    content_type: "application/json"
+    payload: "{}"
+
+  # Scores a task 'up' to provide gold/XP
+  habitica_score_task:
+    url: "https://habitica.com/api/v3/tasks/{{ task_id }}/score/up"
+    method: POST
+    headers:
+      x-api-user: !secret habitica_api_user
+      x-api-key: !secret habitica_api_key
+      x-client: !secret habitica_api_client
+    content_type: "application/json"
+    payload: "{}"
+
+  # Updates the completion status of a task
+  habitica_update_task:
+    url: "https://habitica.com/api/v3/tasks/{{ task_id }}"
+    method: put
+    headers:
+      x-api-user: !secret habitica_api_user # FIXED: Changed from api_key to api_user
+      x-api-key: !secret habitica_api_key
+      x-client: !secret habitica_api_client
+      Content-Type: "application/json"
+    payload: >
+      {
+        "completed": {{ completed | tojson }}
+      }
+
+# 3. CORE AUTOMATIONS
+automation:
+  # 00021: START OF DAY CRON
+  - id: "00021"
+    alias: "Habitica: Start Day"
+    description: "Triggers the Habitica CRON and prepares daily tasks"
+    trigger:
+      - platform: time
+        at: "00:01:00"
+    action:
+      - action: rest_command.habitica_cron
+    mode: single

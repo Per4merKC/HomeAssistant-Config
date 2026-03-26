@@ -48,13 +48,14 @@ action:
   - service: conversation.process
     data:
       agent_id: conversation.google_generative_ai
-      text: >
+      text: >-
         John Edmonds just synced his blood pressure. 
         Reading: {{ bp_top }} over {{ bp_bottom }}.
         Act as a crisp, efficient medical bay AI on a spaceship. 
         Provide a one-sentence verbal status update. 
-        Be technical, slightly clinical, and concise. No emojis.
-        Response with be spoken so read the blood pressure as "BP: 120 over 80" for example.
+        Be technical, sci-fi, and humorous. No emojis.
+        Response will be spoken so pronounce the blood pressure 
+        part as "120 over 80" for example.
     response_variable: gemini_response
 
   # 4. ALWAYS: Voice Announcement via Smart Notifications

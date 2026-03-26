@@ -49,7 +49,9 @@ automation:
     condition:
       - condition: state
         entity_id: binary_sensor.withings_in_bed_john
-        state: "off"
+        state:
+          - "off"
+          - "unknown"
     action:
       - delay:
           minutes: "{{ range(0, 21) | random }}" # Using 21 allows for a full 20-minute delay

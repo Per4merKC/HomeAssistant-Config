@@ -49,7 +49,7 @@ action:
         Current mass: {{ current_w }} lbs. Delta: {{ weight_delta }} lbs.
         Act as a crisp, slightly snarky spaceship computer terminal.
         Provide a one-sentence verbal announcement acknowledging the sync and the trend. 
-        Keep it technical and sci-fi.
+        Keep it technical, sci-fi, and humorous.
     response_variable: gemini_response
 
   # 4. ALWAYS: Voice Announcement via Smart Notifications

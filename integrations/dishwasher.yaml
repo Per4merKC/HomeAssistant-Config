@@ -1,0 +1,136 @@
+---
+###############################################################################
+# Dishwasher Management Package
+###############################################################################
+
+input_select:
+  dishwasher_status:
+    name: Dishwasher Status
+    icon: mdi:dishwasher
+    options:
+      - "Dirty"
+      - "Running"
+      - "Clean"
+      - "Unloading"
+
+timer:
+  dishwasher_cycle_timer:
+    name: Dishwasher Cycle Timer
+    duration: "02:30:00"
+    icon: mdi:timer
+
+counter:
+  dishwasher_pods:
+    name: Dishwasher Pods
+    initial: 20
+    step: 1
+    icon: mdi:pill
+
+automation:
+  # 1. TRIGGERED BY PHYSICAL BUTTON
+  - id: "00025"
+    alias: "Dishwasher: Start Cycle"
+    triggers:
+      - device_id: fc260c2debe85cd444c0cd8990f53068
+        domain: zha
+        type: remote_button_short_press
+        subtype: turn_on
+        trigger: device
+    action:
+      - service: counter.decrement
+        target:
+          entity_id: counter.dishwasher_pods
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.dishwasher_status
+        data:
+          option: Running
+      - service: timer.start
+        target:
+          entity_id: timer.dishwasher_cycle_timer
+        data:
+          duration: "02:00:00"
+      - service: script.alexa_smart_notifications
+        data:
+          target: kitchen
+          message: >-
+            Dishwasher cycle started. 
+            There are {{ states('counter.dishwasher_pods') }} pods remaining.
+
+  # 2. TRIGGERED BY TIMER FINISHING (Logic Fix: Clean, not Dirty)
+  - id: "00027"
+    alias: "Dishwasher: Cycle Complete"
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.dishwasher_cycle_timer
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.dishwasher_status
+        data:
+          option: Clean
+      - service: script.alexa_smart_notifications
+        data:
+          target: kitchen
+          message: "Dishwasher cycle complete. Please unload the dishes when you have a chance."
+
+  # 3. VOICE GUIDANCE WHEN DOOR OPENS
+  - id: "00026"
+    alias: "Dishwasher: Voice Guidance"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.dishwasher_door
+        to: "on"
+        for:
+          minutes: 2
+    action:
+      - choose:
+          # IF CLEAN -> UNLOADING
+          - conditions:
+              - condition: state
+                entity_id: input_select.dishwasher_status
+                state: "Clean"
+            sequence:
+              - service: script.alexa_smart_notifications
+                data:
+                  target: kitchen
+                  message: "Thank you for unloading the dishwasher."
+              - service: input_select.select_option
+                target:
+                  entity_id: input_select.dishwasher_status
+                data:
+                  option: Unloading
+
+          # IF DIRTY -> LOADING REMINDER
+          - conditions:
+              - condition: state
+                entity_id: input_select.dishwasher_status
+                state: "Dirty"
+            sequence:
+              - service: script.alexa_smart_notifications
+                data:
+                  title: Dishwasher Button Reminder
+                  target: kitchen
+                  message: >-
+                    Don't forget to push the dishwasher button after 
+                    you start the machine so I can track the remaining pods.
+
+  # 4. RESET TO DIRTY (New Logic for Door Closing)
+  - id: "00028"
+    alias: "Dishwasher: Reset to Dirty"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.dishwasher_door
+        to: "off"
+    condition:
+      - condition: state
+        entity_id: input_select.dishwasher_status
+        state: "Unloading"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.dishwasher_status
+        data:
+          option: Dirty

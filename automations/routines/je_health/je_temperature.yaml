@@ -36,7 +36,10 @@ action:
   - service: conversation.process
     data:
       agent_id: conversation.google_generative_ai
-      text: "John synced body temp: {{ current_temp }}°F. Act as a spaceship medical AI. One-sentence technical status update."
+      text: >-
+        John synced body temp: {{ current_temp }}°F. 
+        Act as a spaceship medical AI with a sense of humor. 
+        One-sentence technical status update.
     response_variable: gemini_res
 
   - service: script.alexa_smart_notifications
