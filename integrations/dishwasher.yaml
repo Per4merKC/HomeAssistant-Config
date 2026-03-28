@@ -13,6 +13,16 @@ input_select:
       - "Clean"
       - "Unloading"
 
+input_number:
+  dishwasher_pods_refill_amount:
+    name: "Refill Amount"
+    initial: 65
+    min: 0
+    max: 500
+    step: 1
+    mode: box
+    icon: mdi:package-variant-plus
+
 timer:
   dishwasher_cycle_timer:
     name: Dishwasher Cycle Timer
@@ -134,3 +144,20 @@ automation:
           entity_id: input_select.dishwasher_status
         data:
           option: Dirty
+
+script:
+  add_bulk_pods:
+    alias: "Confirm Bulk Pod Refill"
+    icon: mdi:plus-box
+    sequence:
+      - service: counter.configure
+        target:
+          entity_id: counter.dishwasher_pods
+        data:
+          value: "{{ states('counter.dishwasher_pods') | int + states('input_number.dishwasher_pods_refill_amount') | int }}"
+      # Optional: Reset the input back to a common default
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.dishwasher_pods_refill_amount
+        data:
+          value: 65

@@ -68,3 +68,4 @@ www/alexa_tts/*
 !/.stubs/secrets.yaml
 .ha_run.lock
 .HA_VERSION
+www/ig_debug.html

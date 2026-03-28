@@ -4,19 +4,30 @@
 #           Milestone Notifications, and AWTRIX Integration
 # -------------------------------------------------------------------------
 
+# packages/instagram.yaml
+shell_command:
+  debug_instagram: 'curl -L -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" {{ url }} > /config/www/ig_debug.html'
+
 sensor:
   - platform: rest
     name: instagram_followers
+    unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3cd
     resource: !secret ig_url
+    method: GET
+    scan_interval: 86400
     headers:
-      User-Agent: Mozilla/5.0
-    scan_interval: 86400 # Manual updates handled by the jittered automation below
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      # Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     value_template: >
-      {% set matches = value | regex_findall('content="([0-9,]+) Followers') %}
-      {% if matches | count > 0 %}
-        {{ matches[0] | replace(',', '') }}
+      {# Regex: Find the og:description tag and grab everything before the first space #}
+      {% set pattern = '<meta property="og:description" content="([0-9,.]+)' %}
+      {% set match = value | regex_findall(pattern, ignorecase=True) %}
+
+      {% if match %}
+        {# Remove commas and convert to an integer #}
+        {{ match[0] | replace(',', '') | int(0) }}
       {% else %}
-        {{ states('sensor.instagram_followers') }}
+        {{ states('sensor.instagram_followers') | int(0) }}
       {% endif %}
 
 template:
@@ -98,6 +109,7 @@ automation:
         data:
           title: "Instagram Milestone!"
           message: "You've reached {{ trigger.to_state.state }} followers. Daily change: {{ states('sensor.instagram_daily_change') }}."
+          data: []
 
       # 2. Alexa Smart Notification only if John is home
       - if:
@@ -105,7 +117,7 @@ automation:
             entity_id: person.john
             state: "home"
         then:
-          - service: script.alexa_smart_notification
+          - service: script.alexa_smart_notifications
             data:
               target: "John"
               priority: "Normal"
