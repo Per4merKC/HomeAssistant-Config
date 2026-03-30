@@ -16,11 +16,12 @@ sensor:
     method: GET
     scan_interval: 86400
     headers:
-      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-      # Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+      User-Agent: "Mozilla/5.0"
+      accept: "text/html" #,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
     value_template: >
       {# Regex: Find the og:description tag and grab everything before the first space #}
       {% set pattern = '<meta property="og:description" content="([0-9,.]+)' %}
+      {# set pattern = 'content="([0-9,]+) Followers' #}
       {% set match = value | regex_findall(pattern, ignorecase=True) %}
 
       {% if match %}

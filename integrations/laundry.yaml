@@ -1,0 +1,174 @@
+###############################################################################
+# Laundry Package: Local MQTT Control, AI Reminders, and State Tracking
+###############################################################################
+
+input_select:
+  washing_machine_status:
+    name: "Washing Machine Status"
+    options:
+      - Idle
+      - Running
+      - Done
+    icon: mdi:washing-machine
+  dryer_status:
+    name: "Dryer Status"
+    options:
+      - Idle
+      - Running
+      - Done
+    icon: mdi:tumble-dryer
+
+counter:
+  laundry_queue:
+    name: "Laundry Queue"
+    icon: mdi:tray-full
+  washing_machine_pods:
+    name: "Washing Machine Pods"
+    initial: 24
+    restore: true
+    step: 1
+    minimum: 0
+    icon: mdi:soap
+
+binary_sensor:
+  - platform: threshold
+    name: "Wash Active"
+    device_class: power
+    entity_id: sensor.laundry_power_switch_1
+    upper: 3000
+
+automation:
+  # 1. WASHER START
+  - id: "00022"
+    alias: "Laundry: Washer Started"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.wash_active
+        to: "on"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.washing_machine_status
+        data:
+          option: Running
+      - service: scene.create
+        data:
+          scene_id: before_wash
+          snapshot_entities:
+            - light.east_lamp
+      - service: light.turn_on
+        target:
+          entity_id: light.east_lamp
+        data:
+          brightness_pct: 30
+          color_name: blue
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/washerstate
+          payload: '{"text": "Wash: Running", "icon": "24502"}'
+
+  # 2. WASHER DONE
+  - id: "00023"
+    alias: "Laundry: Washer Finished"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.wash_active
+        to: "off"
+        for: "00:02:00"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.washing_machine_status
+        data:
+          option: Done
+      - service: counter.increment
+        target:
+          entity_id: counter.laundry_queue
+      - service: counter.decrement
+        target:
+          entity_id: counter.washing_machine_pods
+      - service: light.turn_on
+        target:
+          entity_id: light.east_lamp
+        data:
+          effect: "Pulse" # Local MQTT handles this transition quickly
+          brightness_pct: 80
+          color_name: blue
+      - service: ai_task.generate_data
+        data:
+          entity_id: ai_task.google_ai_announcements
+          prompt: >
+            The washing machine has finished. There are now {{ states('counter.laundry_queue') }} 
+            loads of wet clothes waiting. Write a clever, encouraging one-sentence reminder 
+            to move them to the dryer. Use no Spanish.
+      - wait_for_trigger:
+          - platform: state
+            entity_id: ai_task.google_ai_announcements
+      - service: script.alexa_smart_notifications
+        data:
+          message: "{{ states('ai_task.google_ai_announcements') }}"
+          target: ALL
+      - service: script.text_notify_all
+        data:
+          title: "Laundry Update"
+          message: "{{ states('ai_task.google_ai_announcements') }}"
+
+  # 3. DRYER START
+  - id: "00029"
+    alias: "Laundry: Dryer Started"
+    trigger:
+      - platform: state
+        entity_id: sensor.clothes_dryer # LG ThinQ sensor
+        to: "Running"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.dryer_status
+        data:
+          option: Running
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.washing_machine_status
+        data:
+          option: Idle
+      - service: counter.decrement
+        target:
+          entity_id: counter.laundry_queue
+      - service: scene.turn_on
+        target:
+          entity_id: scene.before_wash # Restores East Lamp to original state
+      - service: scene.create
+        data:
+          scene_id: before_dry
+          snapshot_entities:
+            - light.west_lamp
+      - service: light.turn_on
+        target:
+          entity_id: light.west_lamp
+        data:
+          brightness_pct: 30
+          color_name: orange
+      - service: mqtt.publish
+        data:
+          topic: awtrix_4200c8/custom/dryerstate
+          payload: '{"text": "Dryer: Running", "icon": "24504"}'
+
+  # 4. DRYER DONE
+  - id: "00030"
+    alias: "Laundry: Dryer Finished"
+    trigger:
+      - platform: state
+        entity_id: sensor.run_completed # LG ThinQ sensor
+        to: "on"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.dryer_status
+        data:
+          option: Done
+      - service: light.turn_on
+        target:
+          entity_id: light.west_lamp
+        data:
+          effect: "Pulse"
+          brightness_pct:

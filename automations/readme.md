@@ -1,6 +1,6 @@
 # Script Listing
 
- > Next Available Number: 00076
+ > Next Available Number: 00033, 00076
 
 <!-- markdownlint-disable MD009 MD019 -->
 
@@ -27,18 +27,18 @@
 |  00019 | power_reset              | Reset the total power meters on the zwave power meter                                                                                                              | statistics            |
 |  00020 | stairwell_motion         | Motion in stairwell, activate lights                                                                                                                               | motion                |
 |  00021 | habitica_start_day       | Start the CRON for the daily tasks to be ready for completion                                                                                                      | routines/je_health    |
-|  00022 | laundry_active           | Washing machine is in use and using electricity                                                                                                                    | routines/laundry      |
-|  00023 | laundry_done             | Washing machine is not in use and not using electricity                                                                                                            | routines/laundry      |
+|  00022 | laundry_washer_started   | Washing machine is running, updat status and counters                                                                                                              | integrations          |
+|  00023 | laundry_washer_finished  | Washing machine is finished and clothes are ready to move to the dryer                                                                                             | integrations          |
 |  00024 | restart                  | Restart Home-Assistant                                                                                                                                             | maintenance           |
 |  00025 | dishwasher               | Dishwasher: Start Cycle                                                                                                                                            | integrations          |
 |  00026 | dishwasher               | Dishwasher: Voice Guidance                                                                                                                                         | integrations          |
 |  00027 | dishwasher               | Dishwasher: Cycle Complete                                                                                                                                         | integrations          |
 |  00028 | dishwasher               | Dishwasher: Reset to Dirty                                                                                                                                         | integrations          |
-|  00029 | dryer_active             | Dryer is in use and using electricity                                                                                                                              | routines/laundry      |
-|  00030 | dryer_done               | Dryer is not in use and not using electricity                                                                                                                      | routines/laundry      |
+|  00029 | laundry_dryer_started    | Dryer is running, update status and queues                                                                                                                         | integrations          |
+|  00030 | laundry_dryer_finished   | Dryer is done make announcements                                                                                                                                   | integrations          |
 |  00031 | finance                  | Update stock tickers from Yahoo! finance                                                                                                                           | statistics            |
 |  00032 | bathroom_motion          | Turn on the bathroom lights automatically based on time of day                                                                                                     | motion                |
-|  00033 | laundry_queue            | Remind everyone that there is wet laundry in the wash                                                                                                              | routines/laundry      |
+|  00033 |                          |                                                                                                                                                                    |                       |
 |  00034 | sink_bright              | Bathroom Remote Bright pressed                                                                                                                                     | lights/bathroom       |
 |  00035 | sink_bright_long         | Bathroom Remote Bright long pressed                                                                                                                                | lights/bathroom       |
 |  00036 | sink_dim                 | Bathroom Remote Dim pressed                                                                                                                                        | lights/bathroom       |
