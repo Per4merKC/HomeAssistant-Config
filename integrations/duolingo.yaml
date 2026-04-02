@@ -299,7 +299,7 @@ automation:
         data:
           title: "Duolingo Streak Update"
           message: "Congratulations! Your streak is now {{ new_streak }} days! Keep up the great work!"
-          targer: "John"
+          target: "John"
           priority: "Normal"
           voice: "Enrique"
 

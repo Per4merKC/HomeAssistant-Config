@@ -1,0 +1,232 @@
+---
+# -------------------------------------------------------------------------
+# MAILBOX MONITORING SYSTEM (V22 - TIMER-BASED ARRIVAL)
+# -------------------------------------------------------------------------
+
+input_select:
+  mailbox_status:
+    name: "Mailbox Status"
+    icon: mdi:mailbox
+    options:
+      - "Empty"
+      - "Arrived"
+      - "Collected"
+      - "Sent"
+
+input_datetime:
+  mailbox_opened_at:
+    name: Mailbox Opened At
+    has_date: true
+    has_time: true
+
+template:
+  - binary_sensor:
+      - name: "House Vacation Mode"
+        unique_id: house_vacation_mode_24h
+        device_class: occupancy
+        icon: mdi:airplane
+        state: >
+          {{ is_state('person.john', 'not_home') and 
+             is_state('person.robert', 'not_home') }}
+        delay_on:
+          hours: 24
+
+automation:
+  # -----------------------------------------------------------------------
+  # MAIN MAILBOX LOGIC
+  # -----------------------------------------------------------------------
+  - id: mailbox_unified_control_v22
+    alias: "Mailbox: Unified Control (V22)"
+    mode: restart
+
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.mailbox_window_door_is_open
+        from: "off"
+        to: "on"
+        id: "open"
+
+      - platform: state
+        entity_id: binary_sensor.mailbox_window_door_is_open
+        from: "on"
+        to: "off"
+        id: "close"
+
+    action:
+      - choose:
+          # ===============================================================
+          # 📬 DOOR OPEN → START ARRIVAL TIMER
+          # ===============================================================
+          - conditions:
+              - condition: trigger
+                id: "open"
+            sequence:
+              # Store timestamp
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: input_datetime.mailbox_opened_at
+                data:
+                  datetime: "{{ now().isoformat() }}"
+
+              # Wait 60 seconds to confirm ARRIVAL
+              - delay: "00:01:00"
+
+              # Only continue if STILL OPEN
+              - condition: state
+                entity_id: binary_sensor.mailbox_window_door_is_open
+                state: "on"
+
+              # ✅ CONFIRMED ARRIVAL
+              - action: input_select.select_option
+                target:
+                  entity_id: input_select.mailbox_status
+                data:
+                  option: "Arrived"
+
+              # -------------------------------
+              # AI ARRIVAL MESSAGE
+              # -------------------------------
+              - action: ai_task.generate_data
+                continue_on_error: true
+                data:
+                  entity_id: ai_task.google_ai_announcements
+                  task_name: "mail_arrival_announcement"
+                  instructions: >
+                    Generate a witty 1-sentence SSML announcement for mail delivery.
+                    - Mention postal carrier or snail mail
+                    - Use <emphasis>
+                    - Under 25 words
+                response_variable: gemini_response
+
+              - variables:
+                  mail_announcement: >
+                    {% if gemini_response is defined and gemini_response.data %}
+                      {{ gemini_response.data }}
+                    {% else %}
+                      <speak>The postal carrier has delivered today's mail.</speak>
+                    {% endif %}
+                  mail_plain: >
+                    {% if gemini_response is defined and gemini_response.data %}
+                      {{ gemini_response.data | striptags }}
+                    {% else %}
+                      The postal carrier has delivered today's mail.
+                    {% endif %}
+
+              # -------------------------------
+              # NOTIFICATIONS
+              # -------------------------------
+              - if:
+                  - condition: state
+                    entity_id: binary_sensor.house_vacation_mode
+                    state: "off"
+                then:
+                  - action: script.text_notify_john
+                    data:
+                      title: "Mail Delivered"
+                      message: "📬 {{ mail_plain }}"
+                else:
+                  - action: script.alexa_smart_notifications
+                    data:
+                      title: "Mail Alert"
+                      message: "{{ mail_announcement }}"
+                      target: "ALL"
+                      priority: "Normal"
+
+                  - action: script.text_notify_john
+                    data:
+                      title: "Mailbox"
+                      message: "📬 {{ mail_plain }}"
+
+              # awtrix_4200c8
+              - action: mqtt.publish
+                data:
+                  topic: "awtrix_4200c8/custom/mailbox"
+                  payload: >
+                    {
+                      "text": "Mail has arrived!",
+                      "repeat": 2,
+                      "duration": 5
+                    }
+
+          # ===============================================================
+          # 📭 DOOR CLOSE → SENT or COLLECTED
+          # ===============================================================
+          - conditions:
+              - condition: trigger
+                id: "close"
+            sequence:
+              - variables:
+                  open_time: "{{ states('input_datetime.mailbox_opened_at') }}"
+                  duration: >
+                    {{ (as_timestamp(now()) - as_timestamp(open_time)) | int(0) }}
+
+              - choose:
+                  # -------------------------------------------------------
+                  # 📤 SENT (closed within 60s)
+                  # -------------------------------------------------------
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ duration < 60 }}"
+                    sequence:
+                      - action: input_select.select_option
+                        target:
+                          entity_id: input_select.mailbox_status
+                        data:
+                          option: "Sent"
+
+                  # -------------------------------------------------------
+                  # 📭 COLLECTED (after confirmed arrival)
+                  # -------------------------------------------------------
+                  - conditions:
+                      - condition: state
+                        entity_id: input_select.mailbox_status
+                        state: "Arrived"
+                    sequence:
+                      - action: input_select.select_option
+                        target:
+                          entity_id: input_select.mailbox_status
+                        data:
+                          option: "Collected"
+
+                      # Clear awtrix_4200c8
+                      - action: mqtt.publish
+                        data:
+                          topic: "awtrix_4200c8/custom/mailbox"
+                          payload: ""
+
+                      # Vacation → send COLLECTION message (correct wording)
+                      - if:
+                          - condition: state
+                            entity_id: binary_sensor.house_vacation_mode
+                            state: "on"
+                        then:
+                          - action: script.text_notify_john
+                            data:
+                              title: "Mail Collected"
+                              message: "📭 The mailbox has been cleared."
+
+  # -----------------------------------------------------------------------
+  # MIDNIGHT RESET
+  # -----------------------------------------------------------------------
+  - id: mailbox_daily_reset_v22
+    alias: "Mailbox: Daily Reset (V22)"
+    trigger:
+      - platform: time
+        at: "00:00:00"
+
+    condition:
+      - condition: state
+        entity_id: input_select.mailbox_status
+        state: "Collected"
+
+    action:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.mailbox_status
+        data:
+          option: "Empty"
+
+      - action: mqtt.publish
+        data:
+          topic: "awtrix_4200c8/custom/mailbox"
+          payload: ""
