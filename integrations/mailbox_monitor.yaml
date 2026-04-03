@@ -35,19 +35,19 @@ automation:
   # -----------------------------------------------------------------------
   # MAIN MAILBOX LOGIC
   # -----------------------------------------------------------------------
-  - id: mailbox_unified_control_v22
-    alias: "Mailbox: Unified Control (V22)"
+  - id: "00078"
+    alias: "Mailbox: Unified Control"
     mode: restart
 
     trigger:
       - platform: state
-        entity_id: binary_sensor.mailbox_window_door_is_open
+        entity_id: binary_sensor.mailbox
         from: "off"
         to: "on"
         id: "open"
 
       - platform: state
-        entity_id: binary_sensor.mailbox_window_door_is_open
+        entity_id: binary_sensor.mailbox
         from: "on"
         to: "off"
         id: "close"
@@ -55,7 +55,7 @@ automation:
     action:
       - choose:
           # ===============================================================
-          # 📬 DOOR OPEN → START ARRIVAL TIMER
+          # 📬 INDICATOR UP → START ARRIVAL TIMER
           # ===============================================================
           - conditions:
               - condition: trigger
@@ -73,7 +73,7 @@ automation:
 
               # Only continue if STILL OPEN
               - condition: state
-                entity_id: binary_sensor.mailbox_window_door_is_open
+                entity_id: binary_sensor.mailbox
                 state: "on"
 
               # ✅ CONFIRMED ARRIVAL
@@ -93,6 +93,7 @@ automation:
                   task_name: "mail_arrival_announcement"
                   instructions: >
                     Generate a witty 1-sentence SSML announcement for mail delivery.
+                    - Humorous and playful tone
                     - Mention postal carrier or snail mail
                     - Use <emphasis>
                     - Under 25 words
@@ -149,7 +150,7 @@ automation:
                     }
 
           # ===============================================================
-          # 📭 DOOR CLOSE → SENT or COLLECTED
+          # 📭 INDICATOR DOWN → SENT or COLLECTED
           # ===============================================================
           - conditions:
               - condition: trigger
@@ -203,13 +204,13 @@ automation:
                           - action: script.text_notify_john
                             data:
                               title: "Mail Collected"
-                              message: "📭 The mailbox has been cleared."
+                              message: "📭 The mail has been collected."
 
   # -----------------------------------------------------------------------
   # MIDNIGHT RESET
   # -----------------------------------------------------------------------
-  - id: mailbox_daily_reset_v22
-    alias: "Mailbox: Daily Reset (V22)"
+  - id: "00079"
+    alias: "Mailbox: Daily Reset"
     trigger:
       - platform: time
         at: "00:00:00"

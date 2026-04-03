@@ -3,9 +3,9 @@ id: "00006"
 alias: Door Opened - Not Home
 trigger:
   - entity_id:
-      - binary_sensor.front_door
-      - binary_sensor.back_door
-      - binary_sensor.garage_door
+      - binary_sensor.front_door_open
+      - binary_sensor.back_door_open
+      - binary_sensor.garage_door_open
     platform: state
     from: "off"
     to: "on"

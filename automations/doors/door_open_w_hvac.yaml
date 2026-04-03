@@ -6,8 +6,8 @@ trigger:
   - platform: state
     entity_id:
       - binary_sensor.front_door
-      - binary_sensor.back_door
-      - binary_sensor.garage_door
+      - binary_sensor.back_door_open
+      - binary_sensor.garage_door_open
     to: "on"
     for:
       hours: 0

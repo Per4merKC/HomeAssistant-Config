@@ -91,7 +91,7 @@ automation:
     alias: "Dishwasher: Voice Guidance"
     trigger:
       - platform: state
-        entity_id: binary_sensor.dishwasher_door
+        entity_id: binary_sensor.dishwasher_door_open
         to: "on"
         for:
           minutes: 2
@@ -132,7 +132,7 @@ automation:
     alias: "Dishwasher: Reset to Dirty"
     trigger:
       - platform: state
-        entity_id: binary_sensor.dishwasher_door
+        entity_id: binary_sensor.dishwasher_door_open
         to: "off"
     condition:
       - condition: state

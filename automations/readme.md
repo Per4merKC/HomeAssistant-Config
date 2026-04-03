@@ -83,5 +83,7 @@
 |  00075 | duolingo_success_handler | JE has practiced for the day, disable the nag                                                                                                                      | statistics/duolingo   |
 |  00076 | instagram                | update the AWTRIX display with instagram followers                                                                                                                 | integrations          |
 |  00077 | instagram                | Milestone notificaitons for Instagram followers                                                                                                                    | integrations          |
+|  00078 | mailbox_monitor          | Mailbox: Unified Control                                                                                                                                           | integrations          |
+|  00079 | mailbox_monitor          | Mailbox: Daily Reset                                                                                                                                               | integrations          |
 
 <!-- markdownlint-enable MD009 MD019 -->
