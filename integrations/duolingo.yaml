@@ -109,7 +109,7 @@ automation:
     trigger:
       - platform: time
         at: "00:01:00"
-      - platform: - platform: state
+      - platform: state
         entity_id: sensor.duolingo_streak
     condition:
       - condition: template
@@ -117,12 +117,12 @@ automation:
           {# 1. Ensure the sensor is actually a number (blocks 'unavailable'/'unknown') #}
           {% set streak = states('sensor.duolingo_streak') %}
           {% set is_valid = streak | is_number %}
-          
+
           {# 2. Ensure we haven't already performed a successful reset today #}
           {# This attribute only updates if the 'action' block actually runs #}
           {% set last_run = state_attr('automation.duolingo_daily_baseline_reset', 'last_triggered') %}
           {% set already_run_today = last_run is not none and last_run.date() == now().date() %}
-          
+
           {{ is_valid and not already_run_today }}
     action:
       - action: input_number.set_value

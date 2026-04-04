@@ -113,7 +113,7 @@ automation:
       - service: mqtt.publish
         data:
           topic: "awtrix_4200c8/custom/washer"
-          payload: {}
+          payload: "{}"
 
       - service: ai_task.generate_data
         continue_on_error: true
@@ -127,6 +127,7 @@ automation:
             Use SSML markup <emphasis> and <prosody> to make it more engaging.
             CRITICAL: Return ONLY the raw SSML code starting with <speak> and ending with </speak>. 
             Do not include any introductory text, markdown formatting, backticks, or explanations.
+            Use 25 words or less.
         response_variable: wash_done_message
 
       - service: script.alexa_smart_notifications
@@ -154,6 +155,11 @@ automation:
         entity_id: sensor.clothes_dryer_run_state
         to: "Drying"
     action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.washing_machine_status
+        data:
+          option: Idle
       - service: input_select.select_option
         target:
           entity_id: input_select.dryer_status
@@ -262,7 +268,7 @@ automation:
       - service: mqtt.publish
         data:
           topic: "awtrix_4200c8/custom/dryer"
-          payload: {}
+          payload: "{}"
 
   # 5. DRYER DOOR: The Cleanup Trigger
   - id: "00033"

@@ -228,4 +228,4 @@ automation:
       - action: mqtt.publish
         data:
           topic: "awtrix_4200c8/custom/mailbox"
-          payload: ""
+          payload: "{}"
