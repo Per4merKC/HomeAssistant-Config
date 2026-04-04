@@ -20,6 +20,8 @@ deps
 ._.DS_Store
 .config_entries.json
 .DS_Store
+.ha_run.lock
+.HA_VERSION
 .homekit.state
 .ios.conf
 .pip_progress
@@ -36,6 +38,7 @@ options.xml
 OZW_Log.txt
 pyozw.sqlite
 secrets.yaml
+www/ig_debug.html
 zwcfg_*
 zwscene.xml
 
@@ -66,6 +69,4 @@ www/alexa_tts/*
 !.gitkeep
 !/.stubs
 !/.stubs/secrets.yaml
-.ha_run.lock
-.HA_VERSION
-www/ig_debug.html
+

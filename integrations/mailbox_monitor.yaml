@@ -116,27 +116,11 @@ automation:
               # -------------------------------
               # NOTIFICATIONS
               # -------------------------------
-              - if:
-                  - condition: state
-                    entity_id: binary_sensor.house_vacation_mode
-                    state: "off"
-                then:
-                  - action: script.text_notify_john
-                    data:
-                      title: "Mail Delivered"
-                      message: "📬 {{ mail_plain }}"
-                else:
-                  - action: script.alexa_smart_notifications
-                    data:
-                      title: "Mail Alert"
-                      message: "{{ mail_announcement }}"
-                      target: "ALL"
-                      priority: "Normal"
-
-                  - action: script.text_notify_john
-                    data:
-                      title: "Mailbox"
-                      message: "📬 {{ mail_plain }}"
+              - action: script.text_notify_all
+                data:
+                  title: "Mailbox"
+                  message: "📬 {{ mail_plain }}"
+                  data: {}
 
               # awtrix_4200c8
               - action: mqtt.publish
@@ -149,6 +133,18 @@ automation:
                       "repeat": 2,
                       "duration": 5
                     }
+
+              - if:
+                  - condition: state
+                    entity_id: binary_sensor.house_vacation_mode
+                    state: "off"
+                then:
+                  - action: script.alexa_smart_notifications
+                    data:
+                      title: "Mail Alert"
+                      message: "{{ mail_announcement }}"
+                      target: "ALL"
+                      priority: "Normal"
 
           # ===============================================================
           # 📭 INDICATOR DOWN → SENT or COLLECTED
@@ -202,10 +198,11 @@ automation:
                             entity_id: binary_sensor.house_vacation_mode
                             state: "on"
                         then:
-                          - action: script.text_notify_john
+                          - action: script.text_notify_all
                             data:
                               title: "Mail Collected"
                               message: "📭 The mail has been collected."
+                              data: {}
 
   # -----------------------------------------------------------------------
   # MIDNIGHT RESET

@@ -46,7 +46,7 @@ rest:
             {{ value_json.streak | int(0) }}
           {% else %}
             {# Fallback to current state if the API fails #}
-            {{ states('sensor.duolingo_streak') | int(0) }}
+            {{ states('sensor.duolingo_streak') | int }}
           {% endif %}
 
 template:
@@ -109,17 +109,28 @@ automation:
     trigger:
       - platform: time
         at: "00:01:00"
+      - platform: - platform: state
+        entity_id: sensor.duolingo_streak
+    condition:
+      - condition: template
+        value_template: >
+          {# 1. Ensure the sensor is actually a number (blocks 'unavailable'/'unknown') #}
+          {% set streak = states('sensor.duolingo_streak') %}
+          {% set is_valid = streak | is_number %}
+          
+          {# 2. Ensure we haven't already performed a successful reset today #}
+          {# This attribute only updates if the 'action' block actually runs #}
+          {% set last_run = state_attr('automation.duolingo_daily_baseline_reset', 'last_triggered') %}
+          {% set already_run_today = last_run is not none and last_run.date() == now().date() %}
+          
+          {{ is_valid and not already_run_today }}
     action:
       - action: input_number.set_value
         target:
           entity_id: input_number.duolingo_streak_baseline
         data:
-          value: "{{ states('sensor.duolingo_streak') | int(0) }}"
-      - action: automation.turn_on
-        target:
-          entity_id:
-            - automation.duolingo_adaptive_nag_system
-            - automation.duolingo_smart_token_refresh
+          value: "{{ states('sensor.duolingo_streak') | int }}"
+
       - service: mqtt.publish
         data:
           topic: awtrix_4200c8/JE_DUOLINGO
@@ -191,8 +202,9 @@ automation:
         minutes: "/30"
     condition:
       - condition: state
-        entity_id: device_tracker.john_iphone_promax
-        state: "home"
+        entity_id: binary_sensor.duolingo_lesson_progress
+        state: "on"
+
       - condition: template
         value_template: >
           {% set hr = now().hour %}
@@ -209,9 +221,9 @@ automation:
       - delay: "00:00:05"
 
       - if:
-          - condition: template
-            value_template: >
-              {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
+          - condition: state
+            entity_id: binary_sensor.duolingo_lesson_progress
+            state: "on"
         then:
           - action: ai_task.generate_data
             data:
@@ -245,24 +257,34 @@ automation:
                 {% else %} High {% endif %}
 
           # Phone Notification
-          - action: script.text_notify_john
-            data:
-              title: "🦉 Duolingo: {{ states('sensor.duolingo_stress_level') | upper }}"
-              message: "{{ plain_nag }}"
+          - if:
+              - condition: state
+                entity_id: binary_sensor.withings_in_bed_john
+                state: "off"
+            then:
+              - action: script.text_notify_john
+                data:
+                  title: "🦉 Duolingo: {{ states('sensor.duolingo_stress_level') | upper }}"
+                  message: "{{ plain_nag }}"
 
           # Alexa Notification (Evening/Critical Only)
           - if:
-              - condition: template
-                value_template: >
-                  {{ states('sensor.duolingo_stress_level') in ['high', 'critical'] }}
+              - condition: and
+                conditions:
+                  - condition: state
+                    entity_id: device_tracker.john_iphone_promax
+                    state: "home"
+                  - condition: template
+                    value_template: >
+                      {{ states('sensor.duolingo_stress_level') in ['high', 'critical'] }}
             then:
               - action: script.alexa_smart_notifications
                 data:
-                  title: "Spanish Practice Reminder"
+                  title: "Duolingo Practice Reminder"
                   message: "{{ raw_nag }}"
                   target: "John"
                   priority: "{{ alexa_priority }}"
-                  voice: "Conchita"
+                  voice: "Conchita" # Spanish voice for extra motivation
 
   - alias: "Duolingo: Success Handler"
     id: "00075"
@@ -276,7 +298,10 @@ automation:
       # Verify the streak actually increased compared to the morning baseline
       - condition: template
         value_template: >
-          {{ states('sensor.duolingo_streak') | int(0) > states('input_number.duolingo_streak_baseline') | int(0) }}
+          {% set streak = states('sensor.duolingo_streak') | int(0) %}
+          {% set baseline = states('input_number.duolingo_streak_baseline') | int(0) %}
+          {# Success only if we actually moved the needle today #}
+          {{ streak > baseline }}
     action:
       - variables:
           new_streak: "{{ states('sensor.duolingo_streak') | int(0) }}"

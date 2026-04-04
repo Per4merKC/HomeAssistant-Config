@@ -14,7 +14,7 @@ template:
             mdi:washing-machine-off
           {% endif %}
         name: Washing Machine Active
-        state: "{{ states('sensor.washing_machine_power')|float > 3000 }}"
+        state: "{{ states('sensor.laundry_power_switch_1')|float > 3000 }}"
 
 input_select:
   washing_machine_status:
