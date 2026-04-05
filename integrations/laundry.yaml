@@ -93,7 +93,12 @@ automation:
       - platform: state
         entity_id: binary_sensor.wash_active
         to: "off"
-        for: "00:02:00"
+        for:
+          minutes: 2
+    conditions:
+      - condition: state
+        entity_id: input_select.washing_machine_status
+        state: "Running"
     action:
       - service: input_select.select_option
         target:
@@ -248,6 +253,7 @@ automation:
             Use SSML markup <emphasis> and <prosody> to make it more engaging.
             CRITICAL: Return ONLY the raw SSML code starting with <speak> and ending with </speak>. 
             Do not include any introductory text, markdown formatting, backticks, or explanations.
+            Use 25 words or less.
         response_variable: dryer_done_message
 
       - service: script.alexa_smart_notifications
