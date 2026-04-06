@@ -38,7 +38,7 @@ rest:
     # "sensor" here is a list of sensors created from this REST call.
     sensor:
       - name: "Duolingo Streak"
-        unique_id: duolingo_streak_api
+        unique_id: duolingo_streak
         unit_of_measurement: "days"
         icon: mdi:school
         value_template: >

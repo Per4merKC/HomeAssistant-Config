@@ -15,4 +15,4 @@ condition:
 action:
   - service: light.turn_on
     data_template:
-      entity_id: light.outside_light
+      entity_id: light.outside_post_light
