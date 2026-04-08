@@ -55,7 +55,7 @@ template:
         unique_id: b1b4f370-4b3e-4d13-86dd-7e174c585db8
         device_class: problem
         state: >
-          {{ states('sensor.duolingo_streak') | int(0) <= states('input_number.duolingo_streak_baseline') | int(0) }}
+          {{ states('sensor.duolingo_streak') | int(0) == states('input_number.duolingo_streak_baseline') | int(0) }}
         icon: >
           {% if is_state('binary_sensor.duolingo_lesson_progress', 'on') %}
             mdi:book-open-blank-variant-outline
@@ -134,7 +134,7 @@ automation:
       - service: mqtt.publish
         data:
           topic: awtrix_4200c8/JE_DUOLINGO
-          payload: {}
+          payload: "{}"
 
   - alias: "Duolingo: Token Refresh"
     id: "00072"
@@ -226,6 +226,7 @@ automation:
             state: "on"
         then:
           - action: ai_task.generate_data
+            continue_on_error: true
             data:
               entity_id: ai_task.google_ai_announcements
               task_name: "spanish_duolingo_nag"
@@ -247,7 +248,22 @@ automation:
             response_variable: gemini_response
 
           - variables:
-              raw_nag: "{{ gemini_response.data }}"
+              raw_nag: >
+                {% if gemini_response is defined and gemini_response.data %}
+                  {{ gemini_response.data }}
+                {% else %}
+                  {% set fallback_level = states('sensor.duolingo_stress_level') %}
+                  {% set streak = states('sensor.duolingo_streak') %}
+                  {% if fallback_level == 'low' %}
+                    <prosody rate="95%">Hey, a little <lang xml:lang='es-ES'>Español</lang> practice would be <emphasis level="moderate">great</emphasis>.</prosody> Your streak is {{ streak }} days. Let's keep it up!
+                  {% elif fallback_level == 'medium' %}
+                    <prosody pitch="-10%" rate="90%">Your Spanish is gathering dust.</prosody> <lang xml:lang='es-ES'>Qué decepción.</lang> Streak: {{ streak }} days. Time to hit those lessons.
+                  {% elif fallback_level == 'high' %}
+                    <emphasis level="strong"><lang xml:lang='es-ES'>¡Vamos!</lang></emphasis> Your streak is {{ streak }} days but it's slipping away. <prosody rate="110%">Open Duolingo <emphasis level="reduced">now</emphasis>.</prosody>
+                  {% else %}
+                    <prosody pitch="low" volume="+3dB">This is your last warning.</prosody> Your streak of {{ streak }} days is in <emphasis level="strong">jeopardy</emphasis>. <lang xml:lang='es-ES'>¡Hazlo ahora mismo!</lang>
+                  {% endif %}
+                {% endif %}
               plain_nag: "{{ raw_nag | striptags }}"
               # Mapping Stress Level to Alexa Priority
               alexa_priority: >
@@ -305,13 +321,6 @@ automation:
     action:
       - variables:
           new_streak: "{{ states('sensor.duolingo_streak') | int(0) }}"
-
-      # Turn off both the nag system and the token refresh automation
-      - action: automation.turn_off
-        target:
-          entity_id:
-            - automation.duolingo_adaptive_nag_system
-            - automation.duolingo_smart_token_refresh
 
       # Send a final confirmation to John
       - action: script.text_notify_john
