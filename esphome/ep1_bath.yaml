@@ -1,17 +1,18 @@
 substitutions:
   name: ep1-bath
+  friendly_name: EP1 Bathroom
 
 packages:
-  Everything_Smart_Technology.Everything_Presence_One: github://everythingsmarthome/everything-presence-one/everything-presence-one-rev1.3.yaml@main
+  Everything Smart Technology.Everything Presence One: github://everythingsmarthome/everything-presence-one/everything-presence-one-ble-rev1.6.yaml@main
 
 esphome:
   name: ${name}
   name_add_mac_suffix: false
-  friendly_name: "EP1 Bathroom"
+  friendly_name: ${friendly_name}
 
 ota:
   - platform: esphome
-    password: !secret ota_password 
+    password: !secret ota_password
 
 api:
   encryption:
@@ -26,3 +27,8 @@ web_server:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+
+esp32_ble_tracker:
+
+bluetooth_proxy:
+  active: true

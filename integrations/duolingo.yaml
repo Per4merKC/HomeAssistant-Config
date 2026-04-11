@@ -43,7 +43,7 @@ rest:
         icon: mdi:school
         value_template: >
           {% if value_json is defined and value_json.streak is defined %}
-            {{ value_json.streak | int(0) }}
+            {{ value_json.streak | int }}
           {% else %}
             {# Fallback to current state if the API fails #}
             {{ states('sensor.duolingo_streak') | int }}

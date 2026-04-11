@@ -15,6 +15,7 @@ __pycache__
 .cloud
 .storage
 deps
+everything-presence-zone-configurator
 
 # Specific file ignores
 ._.DS_Store
@@ -70,3 +71,5 @@ www/alexa_tts/*
 !/.stubs
 !/.stubs/secrets.yaml
 
+# Ignore binary files
+*.bin
