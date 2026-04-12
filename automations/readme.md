@@ -1,6 +1,6 @@
 # Script Listing
 
- > Next Available Number: 00033, 00076
+ > Next Available Number: 00005, 00019, 00081
 
 <!-- markdownlint-disable MD009 MD019 -->
 
@@ -10,7 +10,7 @@
 |  00002 | je_med_remind_am         | Send the morning reminder to take BP medicine                                                                                                                      | routines/je_medicine  |
 |  00003 | je_med_later             | User choose to remind later, wait...                                                                                                                               | routines/je_medicine  |
 |  00004 | je_med_taken             | User said they took the medicine; set boolean_input.bp_medicine to on                                                                                              | routintes/bp_medicine |
-|  00005 | bedtime                  | Webhook from IFTTT with payload from Withings Sleep indicating if user is in bed; sets input_boolean.john_bed                                                      | routines/john_bed     |
+|  00005 |                          |                                                                                                                                                                    |                       |
 |  00006 | door_opened_not_home     | Front door, back door, or garage door was opened but nobody is home                                                                                                | doors                 |
 |  00007 | door_open_w_hvac         | Front door, back door, or garage door left open for more than 5 minutes while HVAC is running and outside temperature is more than 5 degrees than the HVAC setting | door                  |
 |  00008 | mousetrap                | Mousetrap alert when triggered                                                                                                                                     | security              |
@@ -24,7 +24,7 @@
 |  00016 | mf_med_taken             | User said they took the metformin; set boolean_input.mf_medicine to on                                                                                             | routintes/mf_medicine |
 |  00017 | mf_med_reset_pm          | Reset the bp medicine flag for the input_boolean.mf_medicine to off                                                                                                | routines/mf_medicine  |
 |  00018 | mf_med_remind_pm         | Send the PM reminder to take Metformin                                                                                                                             | routines/mf_medicine  |
-|  00019 | power_reset              | Reset the total power meters on the zwave power meter                                                                                                              | statistics            |
+|  00019 |                          |                                                                                                                                                                    |                       |
 |  00020 | stairwell_motion         | Motion in stairwell, activate lights                                                                                                                               | motion                |
 |  00021 | habitica_start_day       | Start the CRON for the daily tasks to be ready for completion                                                                                                      | routines/je_health    |
 |  00022 | laundry_washer_started   | Washing machine is running, updat status and counters                                                                                                              | integrations          |
@@ -56,7 +56,7 @@
 |  00048 | je_shopping              | Alert JE when entering a store and there are items on the shopping list                                                                                            | routines/shopping     |
 |  00049 | rb_shopping              | Alert RB when entering a store and there are items on the shopping list                                                                                            | routines/shopping     |
 |  00050 | smoke_warning            | Alert JE and RB that smoke is present in the house                                                                                                                 | security              |
-|  00051 | smoke_warning            | Alert JE and RB that smoke is present in the house                                                                                                                 | security              |
+|  00051 |                          |                                                                                                                                                                    |                       |
 |  00052 | ulanzi_recharge_start    | Begin chargeing session for Ulanzi Clock                                                                                                                           | maintenance           |
 |  00053 | ulanzi_recharge_stop     | End chargeing session for Ulanzi Clock                                                                                                                             | maintenance           |
 |  00054 | ulanzi_rain              | Update Ulanzi Clock with rain informaiotn from Netatmo                                                                                                             | statistics            |
@@ -85,5 +85,6 @@
 |  00077 | instagram                | Milestone notificaitons for Instagram followers                                                                                                                    | integrations          |
 |  00078 | mailbox_monitor          | Mailbox: Unified Control                                                                                                                                           | integrations          |
 |  00079 | mailbox_monitor          | Mailbox: Daily Reset                                                                                                                                               | integrations          |
+|  00080 | laundry                  | Laundry: Washer Move Reminder (Nag)                                                                                                                                | integrations          |
 
 <!-- markdownlint-enable MD009 MD019 -->

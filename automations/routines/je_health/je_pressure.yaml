@@ -1,6 +1,9 @@
+---
 id: "00069"
 alias: "JE: Blood Pressure Sync & Bio-Scan"
-description: "Syncs BP to Habitica and Alexa always; AWTRIX only if no visitors."
+description: >
+  Syncs BP to Habitica and Alexa always;
+  AWTRIX only if no visitors.
 mode: restart
 trigger:
   - platform: state
@@ -11,8 +14,11 @@ condition:
   - condition: template
     # Ensure both numbers are valid before proceeding
     value_template: >
-      {{ is_number(states('sensor.withings_systolic_blood_pressure_mmhg_john')) and 
-         is_number(states('sensor.withings_diastolic_blood_pressure_mmhg_john')) }}
+      {{
+        is_number(states('sensor.withings_systolic_blood_pressure_mmhg_john'))
+        and
+        is_number(states('sensor.withings_diastolic_blood_pressure_mmhg_john'))
+      }}
 action:
   - variables:
       bp_top: "{{ states('sensor.withings_systolic_blood_pressure_mmhg_john') }}"
@@ -49,12 +55,12 @@ action:
     data:
       agent_id: conversation.google_generative_ai
       text: >-
-        John Edmonds just synced his blood pressure. 
+        John Edmonds just synced his blood pressure.
         Reading: {{ bp_top }} over {{ bp_bottom }}.
-        Act as a crisp, efficient medical bay AI on a spaceship. 
-        Provide a one-sentence verbal status update. 
+        Act as a crisp, efficient medical bay AI on a spaceship.
+        Provide a one-sentence verbal status update.
         Be technical, sci-fi, and humorous. No emojis.
-        Response will be spoken so pronounce the blood pressure 
+        Response will be spoken so pronounce the blood pressure
         part as "120 over 80" for example.
     response_variable: gemini_response
 

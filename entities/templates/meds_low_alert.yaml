@@ -8,7 +8,7 @@ binary_sensor:
       {% set meds = [
         {'id': 'bp', 'thresh': 5},
         {'id': 'ttx', 'thresh': 5},
-        {'id': 'wb', 'thresh': 5},  
+        {'id': 'wb', 'thresh': 5},
         {'id': 'kcitrate', 'thresh': 20},
         {'id': 'cholesterol', 'thresh': 5}
       ] %}

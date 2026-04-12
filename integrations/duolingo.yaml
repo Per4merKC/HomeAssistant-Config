@@ -28,10 +28,12 @@ input_number:
 
 # 2. SENSORS (The "Brain")
 rest:
+  # yamllint disable-line rule:line-length
   - resource_template: "https://www.duolingo.com/2017-06-30/users/{{ states('input_text.duolingo_userid') }}?fields=streak"
-    scan_interval: 86400 # Once a day, though the automation forces an update
+    scan_interval: 86400
     method: GET
     headers:
+      # yamllint disable-line rule:line-length
       user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
       Authorization: "{{ states('input_text.duolingo_jwt') }}"
 
@@ -98,6 +100,7 @@ rest_command:
     headers:
       Content-Type: "application/json"
       Accept: "application/json"
+      # yamllint disable-line rule:line-length
       User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     payload: >
       {"identifier": "{{ username }}", "password": "{{ password }}"}
@@ -232,7 +235,7 @@ automation:
               task_name: "spanish_duolingo_nag"
               instructions: >
                 {% set level = states('sensor.duolingo_stress_level') %}
-                Write a short, witty reminder to practice Spanish. 
+                Write a short, witty reminder to practice Spanish.
                 Streak: {{ states('sensor.duolingo_streak') }} days.
                 Urgency: {{ level | upper }}.
 
@@ -255,13 +258,23 @@ automation:
                   {% set fallback_level = states('sensor.duolingo_stress_level') %}
                   {% set streak = states('sensor.duolingo_streak') %}
                   {% if fallback_level == 'low' %}
-                    <prosody rate="95%">Hey, a little <lang xml:lang='es-ES'>Español</lang> practice would be <emphasis level="moderate">great</emphasis>.</prosody> Your streak is {{ streak }} days. Let's keep it up!
+                    <prosody rate="95%">Hey, a little <lang xml:lang='es-ES'>Español</lang>
+                    practice would be <emphasis level="moderate">great</emphasis>.
+                    </prosody>Your streak is {{ streak }} days. Let's keep it up!
                   {% elif fallback_level == 'medium' %}
-                    <prosody pitch="-10%" rate="90%">Your Spanish is gathering dust.</prosody> <lang xml:lang='es-ES'>Qué decepción.</lang> Streak: {{ streak }} days. Time to hit those lessons.
+                    <prosody pitch="-10%" rate="90%">Your Spanish is gathering dust.</prosody>
+                    <lang xml:lang='es-ES'>Qué decepción.</lang> Streak: {{ streak }} days.
+                    Time to hit those lessons.
                   {% elif fallback_level == 'high' %}
-                    <emphasis level="strong"><lang xml:lang='es-ES'>¡Vamos!</lang></emphasis> Your streak is {{ streak }} days but it's slipping away. <prosody rate="110%">Open Duolingo <emphasis level="reduced">now</emphasis>.</prosody>
+                    <emphasis level="strong"><lang xml:lang='es-ES'>¡Vamos!</lang></emphasis>
+                    Your streak is {{ streak }} days but it's slipping away.
+                    <prosody rate="110%">Open Duolingo <emphasis level="reduced">now</emphasis>.
+                    </prosody>
                   {% else %}
-                    <prosody pitch="low" volume="+3dB">This is your last warning.</prosody> Your streak of {{ streak }} days is in <emphasis level="strong">jeopardy</emphasis>. <lang xml:lang='es-ES'>¡Hazlo ahora mismo!</lang>
+                    <prosody pitch="low" volume="+3dB">This is your last warning.</prosody>
+                    Your streak of {{ streak }} days is in
+                    <emphasis level="strong">jeopardy</emphasis>.
+                    <lang xml:lang='es-ES'>¡Hazlo ahora mismo!</lang>
                   {% endif %}
                 {% endif %}
               plain_nag: "{{ raw_nag | striptags }}"
@@ -300,7 +313,7 @@ automation:
                   message: "{{ raw_nag }}"
                   target: "John"
                   priority: "{{ alexa_priority }}"
-                  voice: "Conchita" # Spanish voice for extra motivation
+                  voice: "Conchita"
 
   - alias: "Duolingo: Success Handler"
     id: "00075"
@@ -348,9 +361,9 @@ automation:
           topic: awtrix_4200c8/custom/JE_DUOLINGO
           payload: >-
             {
-              "text": "Streak achieved! {{ new_streak }} Days", 
-              "textCase": 2, 
-              "icon": "70320", 
-              "repeat": 2, 
+              "text": "Streak achieved! {{ new_streak }} Days",
+              "textCase": 2,
+              "icon": "70320",
+              "repeat": 2,
               "duration": 5
             }

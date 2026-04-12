@@ -54,7 +54,7 @@ action:
             "Take your meds like the legend you are.",
             "Today will be 137% better if you take those pills.",
             "Your future self leaves a Yelp review. This affects your rating."
-          ] | random        
+          ] | random
         }}
       # yamllint enable rule:line-length
       data:

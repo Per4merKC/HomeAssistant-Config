@@ -79,7 +79,7 @@ automation:
         data:
           topic: "awtrix_4200c8/custom/washer"
           payload: >
-            { 
+            {
               "text": "Washing machine running...",
               "icon": 24502,
               "repeat": 2,
@@ -126,11 +126,11 @@ automation:
           entity_id: ai_task.google_ai_announcements
           task_name: "Laundry Encouragement"
           instructions: >
-            The washing machine finished. 
+            The washing machine finished.
             {{ states('counter.laundry_queue') }} loads are waiting in queue to be dried.
             Give a clever encouragement to move them in english.
             Use SSML markup <emphasis> and <prosody> to make it more engaging.
-            CRITICAL: Return ONLY the raw SSML code starting with <speak> and ending with </speak>. 
+            CRITICAL: Return ONLY the raw SSML code starting with <speak> and ending with </speak>.
             Do not include any introductory text, markdown formatting, backticks, or explanations.
             Use 25 words or less.
         response_variable: wash_done_message
@@ -248,10 +248,10 @@ automation:
           entity_id: ai_task.google_ai_announcements
           task_name: "Dryer Done Announcement"
           instructions: >
-            The dryer is done. 
+            The dryer is done.
             Give a clever encouragement to fold the warm clothes in English.
             Use SSML markup <emphasis> and <prosody> to make it more engaging.
-            CRITICAL: Return ONLY the raw SSML code starting with <speak> and ending with </speak>. 
+            CRITICAL: Return ONLY the raw SSML code starting with <speak> and ending with </speak>.
             Do not include any introductory text, markdown formatting, backticks, or explanations.
             Use 25 words or less.
         response_variable: dryer_done_message
@@ -296,3 +296,52 @@ automation:
       - service: scene.turn_on
         target:
           entity_id: scene.before_dry
+
+  # 6. WASHER NAG (Periodic Reminder)
+  - id: "00024"
+    alias: "Laundry: Washer Move Reminder (Nag)"
+    trigger:
+      - platform: time_pattern
+        minutes: "/20"
+    condition:
+      # Only nag if the washer is done and the dryer isn't already running
+      - condition: state
+        entity_id: input_select.washing_machine_status
+        state: "Done"
+      - condition: state
+        entity_id: input_select.dryer_status
+        state: "Idle"
+      - condition: numeric_state
+        entity_id: counter.laundry_queue
+        above: 0
+    action:
+      - service: ai_task.generate_data
+        continue_on_error: true
+        data:
+          entity_id: ai_task.google_ai_announcements
+          task_name: "Laundry Nag"
+          instructions: >
+            The washing machine finished a while ago and clothes are still sitting there.
+            There are {{ states('counter.laundry_queue') }} loads waiting.
+            Give a witty, slightly "nagging" encouragement to move them to the dryer.
+            Use SSML markup <emphasis> and <prosody>.
+            CRITICAL: Return ONLY raw SSML starting with <speak>.
+            25 words or less.
+        response_variable: nag_message
+
+      - service: script.alexa_smart_notifications
+        data:
+          title: "Laundry Still Waiting"
+          message: >-
+            {% if nag_message is defined and nag_message.data is defined %}
+              {{ nag_message.data }}
+            {% else %}
+              <speak>Friendly reminder: laundry is still waiting in the washer.</speak>
+            {% endif %}
+          target: ALL
+
+      - service: script.text_notify_all
+        data:
+          title: "Laundry Nag"
+          message: "Don't forget the laundry! {{ states('counter.laundry_queue') }} load(s) still in the washer."
+          data: {}

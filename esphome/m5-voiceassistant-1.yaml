@@ -4,7 +4,6 @@ substitutions:
   upper_devicename: M5-VA-1
   short_name: m5-va-1
 
-
 # Enable Home Assistant API
 api:
   encryption:
@@ -15,7 +14,7 @@ axp192:
   address: 0x34
   update_interval: 60s
   charge_voltage: 4150mV
-  dcdc1_voltage: 3300mv
+  dcdc1_voltage: 3300mV
   dcdc3_voltage: 1.5V
 
 binary_sensor:
@@ -71,7 +70,7 @@ color:
 
 # 1.14 inch, 135*240 Colorful TFT LCD, ST7789v2
 display:
-  - platform:  ili9xxx
+  - platform: ili9xxx
     model: st7789v
     id: assist_display
     dimensions:
@@ -130,19 +129,19 @@ font:
   - file: "gfonts://Roboto"
     id: roboto_32
     size: 32
-  - file: 
+  - file:
       type: gfonts
       family: Roboto
       weight: 700
     id: roboto_h2
     size: 18
-  - file: 
+  - file:
       type: gfonts
       family: Roboto
       weight: 700
     id: roboto_h1
     size: 24
-  - file: 
+  - file:
       type: gfonts
       family: Roboto
       weight: 700
@@ -150,15 +149,10 @@ font:
     size: 32
 
 i2c:
-   - id: bus_a
-     sda: GPIO21
-     scl: GPIO22
-     scan: True
-
-# i2s_audio:
-#   id: bus_i2s
-#   i2s_lrclk_pin: G26
-#   i2s_bclk_pin: G0
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+    scan: true
 
 i2s_audio:
   - id: mic_adc
@@ -168,7 +162,7 @@ i2s_audio:
 
 light:
   - platform: monochromatic
-    output:  builtin_led
+    output: builtin_led
     name: ${upper_devicename} Led
     id: led1
     effects:
@@ -348,7 +342,7 @@ text_sensor:
               id: ip_address_label
               text:
                 format: "%s"
-                args: ['id(ip_address).state.c_str()']
+                args: ["id(ip_address).state.c_str()"]
     ssid:
       id: ssid_name
       name: "Connected SSID"
@@ -361,12 +355,11 @@ text_sensor:
 time:
   - platform: homeassistant
     id: homeassistant_time
-
 # voice_assistant:
 #   id: m5_va_1
 #   microphone: mic
 #   noise_suppression_level: 2
-#   media_player: 
+#   media_player:
 #   on_listening:
 #     - light.turn_on:
 #         id: led1

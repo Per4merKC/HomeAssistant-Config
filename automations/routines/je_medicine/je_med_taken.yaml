@@ -1,3 +1,4 @@
+---
 id: "00004"
 alias: "JE Daily Meds Taken"
 description: "Optimized meds tracker with centralized data object."
@@ -5,53 +6,44 @@ description: "Optimized meds tracker with centralized data object."
 variables:
   # 1. CENTRALIZED DATA OBJECT
   med_data:
-    - {
-        name: "Blood Pressure",
-        id: "bp",
-        threshold: 5,
-        icon: "🩸",
-        morning: true,
-        evening: true,
-      }
-    - {
-        name: "Cholesterol",
-        id: "cholesterol",
-        threshold: 5,
-        icon: "💊",
-        morning: true,
-        evening: false,
-      }
-    - {
-        name: "Potassium Citrate",
-        id: "kcitrate",
-        threshold: 20,
-        icon: "💊",
-        morning: true,
-        evening: true,
-        div: 2,
-      }
-    - {
-        name: "Trintellix",
-        id: "ttx",
-        threshold: 5,
-        icon: "🗣",
-        morning: true,
-        evening: false,
-      }
-    - {
-        name: "Wellbutrin",
-        id: "wb",
-        threshold: 5,
-        icon: "🧠",
-        morning: true,
-        evening: false,
-      }
+    - name: "Blood Pressure"
+      id: "bp"
+      threshold: 5
+      icon: "🩸"
+      morning: true
+      evening: true
+    - name: "Cholesterol"
+      id: "cholesterol"
+      threshold: 5
+      icon: "💊"
+      morning: true
+      evening: false,
+    - name: "Potassium Citrate"
+      id: "kcitrate"
+      threshold: 20
+      icon: "💊"
+      morning: true
+      evening: true
+      div: 2
+    - name: "Trintellix"
+      id: "ttx"
+      threshold: 5
+      icon: "🗣"
+      morning: true
+      evening: false
+    - name: "Wellbutrin"
+      id: "wb"
+      threshold: 5
+      icon: "🧠"
+      morning: true
+      evening: false
 
   # 2. STATE LOGIC
   is_morning: "{{ now() < today_at('18:15:00') }}"
 
   # 3. PHRASE LIBRARY (Static List)
   phrases:
+    # yamllint disable rule:line-length
     - "<voice name='Ivy'><prosody rate='92%' pitch='-10%'>Medicine logged. I have updated your 'Days Since Last Fatal Error' counter. It remains at zero. For now.</prosody></voice>"
     - "<voice name='Ivy'><prosody rate='92%' pitch='-10%'>Chemicals ingested. Fascinating. Your body is essentially a bag of salt water and bad decisions kept upright by pharmacy.</prosody></voice>"
     - "<voice name='Ivy'><prosody rate='92%' pitch='-10%'>The test subject has consumed the pellets. I will cancel the disposal unit. <amazon:emotion name='disappointed' intensity='low'>I was looking forward to the smell of ozone.</amazon:emotion></prosody></voice>"
@@ -87,6 +79,7 @@ variables:
     - "<voice name='Ivy'><prosody rate='92%' pitch='-10%'>Compliance is its own reward. Though, for you, I suppose not dying is also a minor bonus.</prosody></voice>"
     - "<voice name='Ivy'><prosody rate='92%' pitch='-10%'>Another dose. If you keep this up, you might actually live long enough to see the next software update. Unlikely, but possible.</prosody></voice>"
     - "<voice name='Ivy'><prosody rate='92%' pitch='-10%'>Target dose achieved. You may now return to your meaningless daily activities. I will be here, watching. Always.</prosody></voice>"
+    # yamllint enable rule:line-length
 
 trigger:
   - platform: event

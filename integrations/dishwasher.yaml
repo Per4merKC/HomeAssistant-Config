@@ -64,7 +64,7 @@ automation:
         data:
           target: kitchen
           message: >-
-            Dishwasher cycle started. 
+            Dishwasher cycle started.
             There are {{ states('counter.dishwasher_pods') }} pods remaining.
 
   # 2. TRIGGERED BY TIMER FINISHING (Logic Fix: Clean, not Dirty)
@@ -124,7 +124,7 @@ automation:
                   title: Dishwasher Button Reminder
                   target: kitchen
                   message: >-
-                    Don't forget to push the dishwasher button after 
+                    Don't forget to push the dishwasher button after
                     you start the machine so I can track the remaining pods.
 
   # 4. RESET TO DIRTY (New Logic for Door Closing)
@@ -154,6 +154,7 @@ script:
         target:
           entity_id: counter.dishwasher_pods
         data:
+          # yamllint disable-line rule:line-length
           value: "{{ states('counter.dishwasher_pods') | int + states('input_number.dishwasher_pods_refill_amount') | int }}"
       # Optional: Reset the input back to a common default
       - service: input_number.set_value

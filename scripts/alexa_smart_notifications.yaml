@@ -1,3 +1,4 @@
+---
 alexa_smart_notifications:
   alias: "Alexa Smart SSML Notifier"
   description: "Advanced Alexa notifications with Priority chimes and Area awareness."
@@ -27,8 +28,8 @@ alexa_smart_notifications:
     # 1. DYNAMIC 'ALL' LOOKUP
     # This finds every media_player that has 'last_called_summary' (unique to Alexa)
     all_alexas: >
-      {% set alexas = states.media_player 
-        | selectattr('attributes.last_called_summary', 'defined') 
+      {% set alexas = states.media_player
+        | selectattr('attributes.last_called_summary', 'defined')
         | map(attribute='entity_id') | list %}
       {{ alexas if alexas | length > 0 else states.media_player | map(attribute='entity_id') | list }}
 

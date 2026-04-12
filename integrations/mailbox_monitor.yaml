@@ -26,7 +26,7 @@ template:
         device_class: occupancy
         icon: mdi:airplane
         state: >
-          {{ is_state('person.john', 'not_home') and 
+          {{ is_state('person.john', 'not_home') and
              is_state('person.robert', 'not_home') }}
         delay_on:
           hours: 24

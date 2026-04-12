@@ -12,10 +12,9 @@ triggers:
     to: "on"
 
 actions:
-
-#################################################
-# VARIABLES (compute everything once)
-#################################################
+  #################################################
+  # VARIABLES (compute everything once)
+  #################################################
 
   - variables:
       someone_in_bed: >
@@ -34,7 +33,14 @@ actions:
       # 1. Determine Target Light
       target_light: >
         {% if night_mode %}
-          {% set night_bulbs = ["light.bathroom_sink_1", "light.bathroom_sink_2", "light.bathroom_sink_3", "light.bathroom_sink_4"] %}
+          {%
+            set night_bulbs = [
+              "light.bathroom_sink_1",
+              "light.bathroom_sink_2",
+              "light.bathroom_sink_3",
+              "light.bathroom_sink_4"
+            ]
+          %}
           {% set active_lights = night_bulbs | select('is_state', 'on') | list %}
           {% if active_lights | count > 0 %}
             {{ active_lights | first }}
@@ -66,16 +72,24 @@ actions:
       # 5. CALCULATE OVERRIDE
       # Using a buffer for hardware drift (15 for brightness, 100 for Kelvin)
       manual_override: >
-        {{ is_state(target_light, 'on') and 
-           ( ((current_actual_brightness - brightness) | abs > 15) or 
-             ((current_actual_kelvin - color_temp) | abs > 100) ) }}
+        {{
+          is_state(target_light, 'on')
+          and
+          (
+            (
+              (current_actual_brightness - brightness) | abs > 15)
+              or
+              (current_actual_kelvin - color_temp) | abs > 100)
+            )
+          )
+        }}
 
       timeout: >
         {{ "00:20:00" if shower_mode else "00:03:00" }}
 
-#################################################
-# TURN LIGHTS ON (IF NOT OVERRIDDEN)
-#################################################
+  #################################################
+  # TURN LIGHTS ON (IF NOT OVERRIDDEN)
+  #################################################
   - action: input_boolean.turn_on
     target:
       entity_id: input_boolean.bathroom_lighting_active
@@ -91,9 +105,9 @@ actions:
           color_temp_kelvin: "{{ color_temp }}"
           transition: 2
 
-#################################################
-# WAIT UNTIL ROOM EMPTY
-#################################################
+  #################################################
+  # WAIT UNTIL ROOM EMPTY
+  #################################################
 
   - wait_for_trigger:
       - platform: state
@@ -101,9 +115,9 @@ actions:
         to: "off"
         for: "{{ timeout }}"
 
-#################################################
-# TURN LIGHTS OFF
-#################################################
+  #################################################
+  # TURN LIGHTS OFF
+  #################################################
 
   - action: light.turn_off
     target:

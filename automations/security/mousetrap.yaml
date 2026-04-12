@@ -16,7 +16,7 @@ action:
     data:
       message: Please empty the mousetrap as soon as possible
       title: Mouse Trap Alert
- 
+
   - action: script.text_notify_all
     data_template:
       title: "🪤 Mouse Trap Alert"

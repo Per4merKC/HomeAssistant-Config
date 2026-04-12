@@ -1,3 +1,4 @@
+---
 basement_motion_helper:
   alias: "Basement Motion Helper"
   description: "Helper script to manage basement motion-triggered actions with a timer."

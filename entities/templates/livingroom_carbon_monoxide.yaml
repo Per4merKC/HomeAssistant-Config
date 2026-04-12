@@ -4,8 +4,12 @@ binary_sensor:
     device_class: carbon_monoxide
     name: Living Room Carbon Monoxide Detector
     state: >-
-      {% if is_state('sensor.basement_smoke_alarm_level', '255') 
-        and is_state('sensor.basement_smoke_alarm_type', '2') %}
+      {%
+        if
+          is_state('sensor.basement_smoke_alarm_level', '255')
+        and
+          is_state('sensor.basement_smoke_alarm_type', '2')
+      %}
         On
       {% else %}
         Off

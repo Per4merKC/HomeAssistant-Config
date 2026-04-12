@@ -1,6 +1,9 @@
+---
 id: "00070"
 alias: "JE: Weight Sync & Bio-Scan"
-description: "Syncs weight to Habitica/Alexa always; AWTRIX only if no visitors."
+description: >
+  Syncs weight to Habitica/Alexa always;
+  AWTRIX only if no visitors.
 mode: single
 trigger:
   - platform: state
@@ -23,6 +26,7 @@ action:
       - service: mqtt.publish
         data:
           topic: awtrix_4200c8/custom/JE_Weight
+          # yamllint disable rule:line-length
           payload: |-
             {
               "text": "JE: {{ current_w | int }} ({% if weight_delta <= 0 %}down {{ weight_delta | abs }}{% else %}up {{ weight_delta }}{% endif %})",
@@ -32,6 +36,7 @@ action:
               "duration": 5,
               "stack": 0
             }
+          # yamllint enable rule:line-length
           qos: 0
           retain: false
 
@@ -45,10 +50,10 @@ action:
     data:
       agent_id: conversation.google_generative_ai
       text: >
-        John Edmonds just completed a 'Weigh In'. 
+        John Edmonds just completed a 'Weigh In'.
         Current mass: {{ current_w }} lbs. Delta: {{ weight_delta }} lbs.
         Act as a crisp, slightly snarky spaceship computer terminal.
-        Provide a one-sentence verbal announcement acknowledging the sync and the trend. 
+        Provide a one-sentence verbal announcement acknowledging the sync and the trend.
         Keep it technical, sci-fi, and humorous.
     response_variable: gemini_response
 

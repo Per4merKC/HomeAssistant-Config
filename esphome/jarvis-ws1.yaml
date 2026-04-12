@@ -57,24 +57,24 @@ display:
     vsync_pulse_width: 4
     data_pins:
       red:
-        - 1 #r3
-        - 2 #r4
-        - 42 #r5
-        - 41 #r6
-        - 40 #r7
+        - 1
+        - 2
+        - 42
+        - 41
+        - 40
       blue:
-        - 14 #b3
-        - 38 #b4
-        - 18 #b5
-        - 17 #b6
-        - 10 #b7
+        - 14
+        - 38
+        - 18
+        - 17
+        - 10
       green:
-        - 39 #g2
-        - 0 #g3
-        - 45 #g4
-        - 48 #g5
-        - 47 #g6
-        - 21 #g7
+        - 39
+        - 0
+        - 45
+        - 48
+        - 47
+        - 21
     pages:
       - id: initializing_page
         lambda: |-
@@ -125,7 +125,7 @@ globals:
 
   - id: showing_fullscreen_image
     initial_value: "false"
-    restore_value: no
+    restore_value: false
     type: bool
 
 animation:
@@ -152,7 +152,7 @@ web_server:
   auth:
     password: !secret web_server_password
     username: !secret web_server_username
-  #include_internal: True
+  # include_internal: True
   port: 80
   version: 3
 

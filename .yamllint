@@ -1,14 +1,15 @@
 ---
 ignore: |
   automations.yaml
-  blueprints/*/homeassistant/*.yaml
+  blueprints/
   custom_components/
   esphome/.esphome/
   ip_bans.yaml
   notebooks/
   scenes.yaml
   scripts.yaml
-  themes/*.yaml
+  themes/
+
 rules:
   braces:
     level: error

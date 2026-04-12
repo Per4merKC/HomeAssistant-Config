@@ -55,7 +55,7 @@ rest_command:
     url: "https://habitica.com/api/v3/tasks/{{ task_id }}"
     method: put
     headers:
-      x-api-user: !secret habitica_api_user # FIXED: Changed from api_key to api_user
+      x-api-user: !secret habitica_api_user
       x-api-key: !secret habitica_api_key
       x-client: !secret habitica_api_client
       Content-Type: "application/json"

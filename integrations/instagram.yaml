@@ -1,3 +1,4 @@
+---
 # -------------------------------------------------------------------------
 # INSTAGRAM ECOSYSTEM
 # Includes: Follower Count Fetching, Daily Change Tracking,
@@ -17,7 +18,7 @@ sensor:
     scan_interval: 86400
     headers:
       User-Agent: "Mozilla/5.0"
-      accept: "text/html" #,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+      accept: "text/html"
     value_template: >
       {# Regex: Find the og:description tag and grab everything before the first space #}
       {% set pattern = '<meta property="og:description" content="([0-9,.]+)' %}
@@ -66,7 +67,7 @@ automation:
           - "unknown"
     action:
       - delay:
-          minutes: "{{ range(0, 21) | random }}" # Using 21 allows for a full 20-minute delay
+          minutes: "{{ range(0, 21) | random }}"
       - service: homeassistant.update_entity
         target:
           entity_id: sensor.instagram_followers
@@ -79,7 +80,12 @@ automation:
         entity_id: sensor.instagram_followers
     condition:
       - condition: template
-        value_template: "{{ trigger.from_state.state != trigger.to_state.state and trigger.to_state.state not in ['unavailable', 'unknown'] }}"
+        value_template: >
+          {{
+            trigger.from_state.state != trigger.to_state.state
+            and
+            trigger.to_state.state not in ['unavailable', 'unknown']
+          }}
     action:
       - service: mqtt.publish
         data:
@@ -109,7 +115,9 @@ automation:
       - service: script.text_notify_john
         data:
           title: "Instagram Milestone!"
-          message: "You've reached {{ trigger.to_state.state }} followers. Daily change: {{ states('sensor.instagram_daily_change') }}."
+          message: >
+            You've reached {{ trigger.to_state.state }} followers.
+            Daily change: {{ states('sensor.instagram_daily_change') }}.
           data: []
 
       # 2. Alexa Smart Notification only if John is home

@@ -23,7 +23,7 @@ action:
   - action: light.turn_off
     target:
       entity_id: light.sink_light
-  
+
   # 2. Wait 2 seconds for Zigbee mesh to update
   - delay: "00:00:02"
 

@@ -2,7 +2,7 @@
 binary_sensor:
   - name: Bathroom Shower Active
     state: >
-      {{ 
-        states('sensor.bathroom_humidity_rate') 
-        | float > 0.8 
+      {{
+        states('sensor.bathroom_humidity_rate')
+        | float > 0.8
       }}

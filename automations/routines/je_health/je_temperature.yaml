@@ -22,10 +22,10 @@ action:
           topic: awtrix_4200c8/custom/JE_TEMP
           payload: >-
             {
-              "text": "JE: {{ current_temp }}°F", 
-              "textCase": 2, 
-              "icon": "1257", 
-              "repeat": 2, 
+              "text": "JE: {{ current_temp }}°F",
+              "textCase": 2,
+              "icon": "1257",
+              "repeat": 2,
               "duration": 5
             }
 
@@ -37,8 +37,8 @@ action:
     data:
       agent_id: conversation.google_generative_ai
       text: >-
-        John synced body temp: {{ current_temp }}°F. 
-        Act as a spaceship medical AI with a sense of humor. 
+        John synced body temp: {{ current_temp }}°F.
+        Act as a spaceship medical AI with a sense of humor.
         One-sentence technical status update.
     response_variable: gemini_res
 

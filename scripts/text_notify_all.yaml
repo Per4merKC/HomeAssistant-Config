@@ -1,3 +1,4 @@
+---
 text_notify_all:
   alias: "Notify All via IOS"
   description: "Notify John and Robert if allowed"

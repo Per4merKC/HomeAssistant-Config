@@ -95,7 +95,7 @@ i2c:
   - id: bus_a
     sda: GPIO21
     scl: GPIO22
-    scan: True
+    scan: true
 
 font:
   - file: "gfonts://Roboto"

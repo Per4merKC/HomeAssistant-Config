@@ -27,9 +27,13 @@ action:
       title: "🚨 Fridge Temperature Alert"
       message: >
         {% if trigger.id == 'hot_alert' %}
-          The fridge is too warm! Current temp: {{ states('sensor.refrigerator_temperature_air_temperature') }}°F. Check the door.
+          The fridge is too warm! Current temp:
+          {{ states('sensor.refrigerator_temperature_air_temperature') }}°F.
+          Check the door.
         {% else %}
-          The fridge is too cold! Current temp: {{ states('sensor.refrigerator_temperature_air_temperature') }}°F. Food may freeze.
+          The fridge is too cold! Current temp:
+          {{ states('sensor.refrigerator_temperature_air_temperature') }}°F.
+          Food may freeze.
         {% endif %}
       data:
         push:

@@ -8,7 +8,9 @@
   max_temp: 54
   cold_tolerance: 2.5
   hot_tolerance: 2.5
-  target_temp: 38 # Food safety range is typically 35-38°F, but we set a slightly higher target to reduce compressor wear and save energy.
+  # Food safety range is typically 35-38°F, but we set a slightly
+  # higher target to reduce compressor wear and save energy.
+  target_temp: 38
   ac_mode: true
   initial_hvac_mode: "cool"
   precision: 0.1
