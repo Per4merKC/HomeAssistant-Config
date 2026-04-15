@@ -2,6 +2,9 @@
 recorder:
   db_url: !secret mariadb_url
   purge_keep_days: 10
+  include:
+    entities:
+      - sensor.duolingo_streak
   exclude:
     domains:
       - sun

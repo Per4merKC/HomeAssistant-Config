@@ -1,0 +1,294 @@
+substitutions:
+  name: "bedroom-jarvis"
+  friendly_name: "Bedroom JARVIS"
+  color_cyan: "00FFFF"
+  color_amber: "FFBF00"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+  platformio_options:
+    board_build.arduino.memory_type: qio_opi
+    board_build.flash_mode: dio
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  framework:
+    type: esp-idf
+  flash_size: 8MB
+
+esp32_ble_tracker:
+
+bluetooth_proxy:
+  active: true
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+# --- Network & Security ---
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${name} Fallback Hotspot"
+    password: !secret ap_password
+
+api:
+  encryption:
+    key: !secret esphome_encryption_key
+
+web_server:
+  auth:
+    username: !secret web_server_username
+    password: !secret web_server_password
+  port: 80
+  version: 3
+
+ota:
+  platform: esphome
+
+logger:
+  level: DEBUG
+
+time:
+  - platform: homeassistant
+    id: ha_time
+
+# --- Hardware: I2C & IO Expander ---
+i2c:
+  - sda: GPIO08
+    scl: GPIO09
+    scan: true
+    id: bus_a
+
+ch422g:
+  id: io_expander
+
+# --- Display Backlight Control ---
+output:
+  - platform: gpio
+    pin:
+      # Corrected reference: calls the ch422g component instead of creating an ID
+      ch422g: io_expander
+      number: 2
+      mode: OUTPUT
+    id: backlight_pin
+
+light:
+  - platform: binary
+    name: "${friendly_name} Backlight"
+    id: screen_backlight
+    output: backlight_pin
+    restore_mode: RESTORE_DEFAULT_ON
+
+# --- High-Performance RGB Display Interface ---
+display:
+  - platform: rpi_dpi_rgb
+    id: my_display
+    color_order: RGB
+    dimensions:
+      width: 800
+      height: 480
+    pclk_pin: 7
+    hsync_pin: 46
+    vsync_pin: 3
+    de_pin: 5
+    data_pins:
+      red: [1, 2, 42, 41, 40]
+      green: [39, 0, 45, 48, 47, 21]
+      blue: [14, 38, 18, 17, 10]
+    pclk_frequency: 14MHz
+    hsync_pulse_width: 4
+    hsync_front_porch: 8
+    hsync_back_porch: 43
+    vsync_pulse_width: 4
+    vsync_front_porch: 8
+    vsync_back_porch: 12
+
+# --- Touch Interface ---
+touchscreen:
+  - platform: gt911
+    display: my_display
+    interrupt_pin: 4
+    reset_pin:
+      # Corrected reference
+      ch422g: io_expander
+      number: 3
+    on_touch:
+      - if:
+          condition:
+            light.is_off: screen_backlight
+          then:
+            - light.turn_on: screen_backlight
+
+# --- Home Assistant Telemetry ---
+sensor:
+  - platform: homeassistant
+    id: john_iphone_bat
+    entity_id: sensor.john_iphone_battery_level
+  - platform: homeassistant
+    id: robert_iphone_bat
+    entity_id: sensor.robert_iphone_battery_level
+
+binary_sensor:
+  - platform: homeassistant
+    id: alert_post_light
+    entity_id: light.outside_post_light
+
+# --- Fonts ---
+font:
+  - file: "gfonts://Roboto"
+    id: font_clock
+    size: 140
+  - file: "gfonts://Roboto"
+    id: font_label
+    size: 28
+
+# --- LVGL JARVIS UI ---
+lvgl:
+  displays:
+    - my_display
+  bg_color: 0x050A14
+
+  pages:
+    - id: sleep_page
+      widgets:
+        # Outer HUD Ring (Large, dimmer)
+        - arc:
+            id: clock_ring_outer
+            align: CENTER
+            y: 0
+            width: 470
+            height: 470
+            min_value: 0
+            max_value: 100
+            value: 43 # Length of the visible segment
+            bg_opa: 0%
+            arc_opa: 0% # Hides the background track
+            indicator:
+              arc_color: 0x00FFFF
+              arc_width: 2
+              arc_opa: 60% # Makes the outer ring subtle
+            rotation: 0
+
+        # Inner HUD Ring (The main "spinning" element)
+        - arc:
+            id: clock_ring_inner
+            align: CENTER
+            y: 0
+            width: 435
+            height: 435
+            min_value: 0
+            max_value: 100
+            value: 25 # Shorter segment for contrast
+            bg_opa: 0%
+            arc_opa: 0% # Hides the background track
+            indicator:
+              arc_color: 0x00FFFF
+              arc_width: 4
+              arc_opa: 100%
+            rotation: 0
+
+        # Central HUD Clock
+        - label:
+            id: ui_clock
+            text: "00:00"
+            align: CENTER
+            y: -20
+            text_color: 0x00FFFF
+            text_font: font_clock
+
+        - arc:
+            id: john_arc
+            align: TOP_LEFT
+            x: 40
+            y: 40
+            width: 150
+            height: 150
+            bg_opa: 0
+            arc_color: 0x00FFFF
+            arc_width: 8
+
+        - arc:
+            id: robert_arc
+            align: BOTTOM_LEFT
+            x: 40
+            y: -40
+            width: 150
+            height: 150
+            bg_opa: 0
+            arc_color: 0x00FFFF
+            arc_width: 8
+
+        - obj:
+            id: alert_container
+            align: TOP_RIGHT
+            x: -20
+            y: 20
+            width: 260
+            height: 440
+            bg_opa: 0
+            layout: vertical
+            widgets:
+              - obj:
+                  id: ui_post_light_alert
+                  width: 240
+                  height: 70
+                  bg_color: 0xFFBF00
+                  radius: 8
+                  hidden: true
+                  widgets:
+                    - label:
+                        {
+                          text: "OUTSIDE LIGHT ON",
+                          align: CENTER,
+                          text_color: 0x000000,
+                        }
+
+        - button:
+            align: BOTTOM_RIGHT
+            x: -20
+            y: -20
+            width: 130
+            height: 60
+            bg_color: 0x1A237E
+            widgets:
+              - label: { text: "SLEEP", align: CENTER }
+            on_click:
+              - light.turn_off: screen_backlight
+
+# --- Automation Engine ---
+interval:
+  - interval: 50ms
+    then:
+      - lambda: |-
+          static uint16_t rot1 = 0;
+          static uint16_t rot2 = 0;
+
+          // Outer ring: Slow clockwise rotation
+          rot1 = (rot1 + 2) % 360; 
+          // Inner ring: Faster counter-clockwise rotation
+          rot2 = (rot2 + 357) % 360; 
+
+          // We pass the IDs directly since they are already raw LVGL pointers
+          lv_arc_set_rotation(id(clock_ring_outer), rot1);
+          lv_arc_set_rotation(id(clock_ring_inner), rot2);
+
+  - interval: 1s
+    then:
+      - lvgl.label.update:
+          id: ui_clock
+          text: !lambda 'return id(ha_time).now().strftime("%H:%M");'
+      - lvgl.arc.update:
+          id: john_arc
+          value: !lambda "return id(john_iphone_bat).state;"
+      - lvgl.arc.update:
+          id: robert_arc
+          value: !lambda "return id(robert_iphone_bat).state;"
+
+      - lvgl.obj.update:
+          id: ui_post_light_alert
+          hidden: !lambda "return !id(alert_post_light).state;"

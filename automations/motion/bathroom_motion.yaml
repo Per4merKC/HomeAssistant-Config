@@ -76,11 +76,9 @@ actions:
           is_state(target_light, 'on')
           and
           (
-            (
-              (current_actual_brightness - brightness) | abs > 15)
-              or
-              (current_actual_kelvin - color_temp) | abs > 100)
-            )
+            ((current_actual_brightness - brightness) | abs > 15)
+            or
+            ((current_actual_kelvin - color_temp) | abs > 100)
           )
         }}
 
