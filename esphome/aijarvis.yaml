@@ -10,14 +10,23 @@ esphome:
   name_add_mac_suffix: false
   platformio_options:
     board_build.arduino.memory_type: qio_opi
-    board_build.flash_mode: dio
+    board_build.flash_mode: qio
 
 esp32:
   board: esp32-s3-devkitc-1
   variant: esp32s3
   framework:
     type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_HZ: "1000"
+      CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240: "y"
+      CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
+      CONFIG_SPIRAM_RODATA: "y"
   flash_size: 8MB
+  # cpu_frequency: 160MHz
+  # Default is 240MHz, but we can lower it for stability with the display
 
 esp32_ble_tracker:
 
@@ -66,6 +75,7 @@ i2c:
 
 ch422g:
   id: io_expander
+  i2c_id: bus_a
 
 # --- Display Backlight Control ---
 output:
@@ -86,7 +96,9 @@ light:
 
 # --- High-Performance RGB Display Interface ---
 display:
-  - platform: rpi_dpi_rgb
+  # - platform: rpi_dpi_rgb
+  - platform: mipi_rgb
+    model: ESP32-S3-TOUCH-LCD-4.3
     id: my_display
     color_order: RGB
     dimensions:
@@ -111,12 +123,12 @@ display:
 # --- Touch Interface ---
 touchscreen:
   - platform: gt911
+    id: my_touch
     display: my_display
     interrupt_pin: 4
     reset_pin:
-      # Corrected reference
       ch422g: io_expander
-      number: 3
+      number: 1
     on_touch:
       - if:
           condition:
@@ -130,8 +142,30 @@ sensor:
     id: john_iphone_bat
     entity_id: sensor.john_iphone_battery_level
   - platform: homeassistant
+    id: john_watch_bat
+    entity_id: sensor.john_iphone_watch_battery_level
+
+  - platform: homeassistant
     id: robert_iphone_bat
     entity_id: sensor.robert_iphone_battery_level
+  - platform: homeassistant
+    id: robert_watch_bat
+    entity_id: sensor.robert_iphone_watch_battery_level
+
+text_sensor:
+  - platform: homeassistant
+    id: john_iphone_bat_status
+    entity_id: sensor.john_iphone_battery_state
+  - platform: homeassistant
+    id: john_watch_bat_status
+    entity_id: sensor.john_iphone_watch_battery_state
+
+  - platform: homeassistant
+    id: robert_iphone_bat_status
+    entity_id: sensor.robert_iphone_battery_state
+  - platform: homeassistant
+    id: robert_watch_bat_status
+    entity_id: sensor.robert_iphone_watch_battery_state
 
 binary_sensor:
   - platform: homeassistant
@@ -292,3 +326,18 @@ interval:
       - lvgl.obj.update:
           id: ui_post_light_alert
           hidden: !lambda "return !id(alert_post_light).state;"
+
+      - lambda: |-
+          // Check John's Phone State
+          if (id(john_iphone_bat_status).state == "Charging") {
+            lv_obj_set_style_arc_color(id(john_arc), lv_color_hex(0x00FF00), LV_PART_INDICATOR); // Green
+          } else {
+            lv_obj_set_style_arc_color(id(john_arc), lv_color_hex(0x00FFFF), LV_PART_INDICATOR); // Cyan
+          }
+
+          // Check Robert's Phone State
+          if (id(robert_iphone_bat_status).state == "Charging") {
+            lv_obj_set_style_arc_color(id(robert_arc), lv_color_hex(0x00FF00), LV_PART_INDICATOR); // Green
+          } else {
+            lv_obj_set_style_arc_color(id(robert_arc), lv_color_hex(0x00FFFF), LV_PART_INDICATOR); // Cyan
+          }

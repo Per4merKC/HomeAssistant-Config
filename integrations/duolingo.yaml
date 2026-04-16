@@ -44,11 +44,12 @@ rest:
         unit_of_measurement: "days"
         icon: mdi:school
         value_template: >
-          {% if value_json is defined and value_json.streak is defined %}
-            {{ value_json.streak | int }}
+          {% if value_json is defined 
+            and value_json.streak is defined 
+            and value_json.streak not in ['unknown', 'unavailable', None] %}
+            {{ value_json.streak | int(0) }}
           {% else %}
-            {# Fallback to current state if the API fails #}
-            {{ states('sensor.duolingo_streak') | int }}
+            {{ this.state if this.state not in ['unknown', 'unavailable', None] else 0 }}
           {% endif %}
 
 template:
