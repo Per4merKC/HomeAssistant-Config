@@ -325,13 +325,19 @@ automation:
           - "unavailable"
           - "unknown"
     condition:
-      # Verify the streak actually increased compared to the morning baseline
       - condition: template
         value_template: >
           {% set streak = states('sensor.duolingo_streak') | int(0) %}
           {% set baseline = states('input_number.duolingo_streak_baseline') | int(0) %}
-          {# Success only if we actually moved the needle today #}
-          {{ streak > baseline }}
+
+          {# 1. Success only if we actually moved the needle today #}
+          {% set moved_needle = streak > baseline %}
+
+          {# 2. Only run once per calendar day #}
+          {% set last_run = state_attr('automation.duolingo_success_handler', 'last_triggered') %}
+          {% set already_run_today = last_run is not none and last_run.date() == now().date() %}
+
+          {{ moved_needle and not already_run_today }}
     action:
       - variables:
           new_streak: "{{ states('sensor.duolingo_streak') | int(0) }}"
