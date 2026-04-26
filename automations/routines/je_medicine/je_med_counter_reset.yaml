@@ -5,12 +5,19 @@ description: "Catches text input from iOS notification and updates counter"
 trigger:
   - platform: event
     event_type: ios.notification_action_fired
+condition:
+  - condition: template
+    value_template: >-
+      {{ (trigger.event.data.actionName | default(''))[:7] == 'REFILL_' }}
 action:
   - variables:
       action_name: "{{ trigger.event.data.actionName | default('') }}"
-      med_id: "{{ action_name.split('_')[1] | lower if '_' in action_name else '' }}"
+      med_id: "{{ action_name[7:] | lower }}"
       refill_amount: "{{ trigger.event.data.textInput | int(0) if trigger.event.data.textInput is defined else 0 }}"
       counter_entity: "counter.{{ med_id }}_medicine_counter"
+
+  - condition: template
+    value_template: "{{ med_id != '' }}"
 
   # Update the counter
   - action: counter.set_value
