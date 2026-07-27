@@ -4,3 +4,5 @@ logger:
     homeassistant.components.counter: debug
     homeassistant.components.rest_command: debug
     homeassistant.components.rest: debug
+    custom_components.medicine_reminder: debug
+

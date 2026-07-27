@@ -18,6 +18,12 @@ variables:
       icon: "💊"
       morning: true
       evening: false,
+    - name: "Indapamide"
+      id: "indapamide"
+      threshold: 5
+      icon: "💊"
+      morning: true
+      evening: false,
     - name: "Potassium Citrate"
       id: "kcitrate"
       threshold: 20
