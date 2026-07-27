@@ -11,20 +11,19 @@ script:
     mode: queued
     fields:
       task_id:
-        description: "Habitica Task ID"
+        description: "Habitica Task ID (matches the uid of the item in todo.muscle_mystic_dailies)"
         example: "3877bca5-9400-4ec8-afd0-b26c404ee194"
     sequence:
-      # Step 1: Score the task (gives rewards)
-      - action: rest_command.habitica_score_task
+      # Marking the item complete via the native Habitica integration scores it
+      # the same way the app checkbox does - replaces the old rest_command pair
+      # (score/up + update task), which depended on a separately managed API
+      # key/token that had started returning 401.
+      - action: todo.update_item
+        target:
+          entity_id: todo.muscle_mystic_dailies
         data:
-          task_id: "{{ task_id }}"
-      # Small delay to avoid race conditions
-      - delay: "00:00:01"
-      # Step 2: Mark task as completed (checkbox)
-      - action: rest_command.habitica_update_task
-        data:
-          task_id: "{{ task_id }}"
-          completed: true
+          item: "{{ task_id | lower }}"
+          status: completed
 
 # 2. REST COMMANDS
 rest_command:

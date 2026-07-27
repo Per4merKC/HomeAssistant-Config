@@ -118,14 +118,15 @@ automation:
     condition:
       - condition: template
         value_template: >
-          {# 1. Ensure the sensor is actually a number (blocks 'unavailable'/'unknown') #}
+          {# 1. Ensure the sensor is actually a number greater than 0 (blocks 'unavailable'/'unknown' AND transient 0-blips from a failed poll) #}
           {% set streak = states('sensor.duolingo_streak') %}
-          {% set is_valid = streak | is_number %}
+          {% set is_valid = streak | is_number and streak | int(0) > 0 %}
 
           {# 2. Ensure we haven't already performed a successful reset today #}
-          {# This attribute only updates if the 'action' block actually runs #}
+          {# last_triggered is stored in UTC; as_local() converts before comparing to now()'s local date, #}
+          {# otherwise this guard silently fails every evening once UTC has rolled to the next calendar day #}
           {% set last_run = state_attr('automation.duolingo_daily_baseline_reset', 'last_triggered') %}
-          {% set already_run_today = last_run is not none and last_run.date() == now().date() %}
+          {% set already_run_today = last_run is not none and as_local(last_run).date() == now().date() %}
 
           {{ is_valid and not already_run_today }}
     action:
@@ -330,12 +331,15 @@ automation:
           {% set streak = states('sensor.duolingo_streak') | int(0) %}
           {% set baseline = states('input_number.duolingo_streak_baseline') | int(0) %}
 
-          {# 1. Success only if we actually moved the needle today #}
-          {% set moved_needle = streak > baseline %}
+          {# 1. Success only if we actually moved the needle today (streak > 0 guards against a transient #}
+          {# 0-blip from a failed poll ever being read as "moved the needle" if baseline is ever also 0) #}
+          {% set moved_needle = streak > 0 and streak > baseline %}
 
-          {# 2. Only run once per calendar day #}
+          {# 2. Only run once per calendar day. last_triggered is stored in UTC; as_local() converts before #}
+          {# comparing to now()'s local date, otherwise this guard silently fails every evening once UTC #}
+          {# has rolled to the next calendar day - the exact reason this fired 3x in one evening #}
           {% set last_run = state_attr('automation.duolingo_success_handler', 'last_triggered') %}
-          {% set already_run_today = last_run is not none and last_run.date() == now().date() %}
+          {% set already_run_today = last_run is not none and as_local(last_run).date() == now().date() %}
 
           {{ moved_needle and not already_run_today }}
     action:
