@@ -11,19 +11,54 @@ script:
     mode: queued
     fields:
       task_id:
-        description: "Habitica Task ID (matches the uid of the item in todo.muscle_mystic_dailies)"
+        description: "Habitica Task ID"
         example: "3877bca5-9400-4ec8-afd0-b26c404ee194"
     sequence:
-      # Marking the item complete via the native Habitica integration scores it
-      # the same way the app checkbox does - replaces the old rest_command pair
-      # (score/up + update task), which depended on a separately managed API
-      # key/token that had started returning 401.
-      - action: todo.update_item
-        target:
-          entity_id: todo.muscle_mystic_dailies
+      # Reverted from the native todo.update_item approach (2026-07-26): that
+      # path was erroring 3/3 on 2026-07-27 morning ("Unable to update the
+      # score...please try again"). This rest_command pair is what callers'
+      # task_id values (raw Habitica task UUIDs) already match.
+      #
+      # 2026-07-27: confirmed Habitica's API itself intermittently 404s on
+      # valid task IDs (upstream bug, unresolved - see
+      # home-assistant/core#173480 and tr4nt0r/habiticalib#361). Retrying
+      # after a short delay self-heals since the same ID succeeds moments
+      # later; this isn't a stale-ID problem on our end.
+      - variables:
+          max_attempts: 3
+      - repeat:
+          for_each: "{{ range(1, max_attempts + 1) | list }}"
+          sequence:
+            - action: rest_command.habitica_score_task
+              data:
+                task_id: "{{ task_id }}"
+              response_variable: score_response
+              continue_on_error: true
+            - action: rest_command.habitica_update_task
+              data:
+                task_id: "{{ task_id }}"
+                completed: true
+              response_variable: update_response
+              continue_on_error: true
+            - if:
+                - condition: template
+                  value_template: >-
+                    {{ score_response is defined and score_response.status < 300
+                       and update_response is defined and update_response.status < 300 }}
+              then:
+                - stop: "Habitica task {{ task_id }} completed successfully"
+            - if:
+                - condition: template
+                  value_template: "{{ repeat.index < max_attempts }}"
+              then:
+                - delay: "00:00:03"
+      - action: persistent_notification.create
         data:
-          item: "{{ task_id | lower }}"
-          status: completed
+          title: "Habitica: Complete Daily failed"
+          message: >-
+            Failed to complete Habitica task `{{ task_id }}` after {{ max_attempts }} attempts.
+            Check it off manually in the Habitica app.
+          notification_id: "habitica_complete_failed_{{ task_id }}"
 
 # 2. REST COMMANDS
 rest_command:

@@ -4,7 +4,7 @@ alias: Arrive Home at Night
 trigger:
   platform: zone
   entity_id:
-    - device_tracker.john_iphone_promax
+    - device_tracker.john_iphone
     - device_tracker.robert_iphone_pro
   zone: zone.home
   event: enter

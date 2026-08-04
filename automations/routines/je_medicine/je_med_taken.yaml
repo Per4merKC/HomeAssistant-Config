@@ -11,7 +11,7 @@ variables:
       threshold: 5
       icon: "🩸"
       morning: true
-      evening: true
+      evening: false
     - name: "Cholesterol"
       id: "cholesterol"
       threshold: 5
@@ -47,7 +47,7 @@ variables:
   # 2. STATE LOGIC
   is_morning: "{{ now() < today_at('18:15:00') }}"
 
-  # 3. PHRASE LIBRARY (Static List)
+  # 3. PHRASE LIBRARY (fallback if the AI-generated line fails)
   phrases:
     # yamllint disable rule:line-length
     - "<voice name='Ivy'><prosody rate='92%' pitch='-10%'>Medicine logged. I have updated your 'Days Since Last Fatal Error' counter. It remains at zero. For now.</prosody></voice>"
@@ -110,7 +110,6 @@ action:
   - variables:
       from_button: "{{ trigger.id == 't_00004_button' }}"
       space_chime: "<audio src='soundbank://soundlibrary/ui/gameshow/amzn_ui_sfx_gameshow_positive_response_02'/>"
-      response_var: "{{ phrases | random }}"
       target_counters: >
         {% set attr = 'morning' if is_morning else 'evening' %}
         {% set selected_ids = med_data | selectattr(attr, 'eq', true) | map(attribute='id') | list %}
@@ -119,6 +118,31 @@ action:
           {% set ns.entities = ns.entities + ['counter.' ~ med_id ~ '_medicine_counter'] %}
         {% endfor %}
         {{ ns.entities }}
+
+  # 1b. AI-generated GLaDOS-style acknowledgement. continue_on_error keeps
+  # the automation running if the conversation agent errors out or times out;
+  # the variables block below falls back to the static phrase library
+  # whenever ai_response wasn't populated or came back empty.
+  - action: conversation.process
+    continue_on_error: true
+    data:
+      agent_id: conversation.chatgpt
+      text: >-
+        You are GLaDOS from Portal, coldly and sarcastically acknowledging
+        that John has just taken his medication. Respond with one or two
+        short, dry, dark-humor sentences in character. Plain text only —
+        no markup, no quotation marks.
+    response_variable: ai_response
+
+  - variables:
+      ai_text: >-
+        {{ (ai_response.response.speech.plain.speech | trim)
+           if (ai_response is defined and ai_response.response.speech.plain.speech is defined)
+           else '' }}
+      response_var: >-
+        {{ ("<voice name='Ivy'><prosody rate='92%' pitch='-10%'>" ~ ai_text ~ "</prosody></voice>")
+           if (ai_text | length > 0)
+           else (phrases | random) }}
 
   # Define derived variables in a separate block to ensure response_var exists
   - variables:

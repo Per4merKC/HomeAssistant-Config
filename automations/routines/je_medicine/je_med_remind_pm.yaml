@@ -15,12 +15,30 @@ condition:
       - condition: time
         after: "18:30:00"
 action:
-  - service: script.text_notify_john
+  # AI-generated GLaDOS-style evening nag. continue_on_error keeps the
+  # automation running if the conversation agent errors out or times out;
+  # reminder_message below falls back to the static phrase library
+  # whenever ai_response wasn't populated or came back empty. This is a
+  # plain push notification (never announced via Alexa), so no SSML markup.
+  - action: conversation.process
+    continue_on_error: true
     data:
-      title: "Medication Alert!"
-      message: >
-        {{
-          [
+      agent_id: conversation.chatgpt
+      text: >-
+        You are GLaDOS from Portal, sarcastically reminding John that it is
+        time to take his evening medication. Respond with one short, dry,
+        dark-humor sentence in character. Plain text only — no markup, no
+        quotation marks.
+    response_variable: ai_response
+
+  - variables:
+      ai_text: >-
+        {{ (ai_response.response.speech.plain.speech | trim)
+           if (ai_response is defined and ai_response.response.speech.plain.speech is defined)
+           else '' }}
+      # yamllint disable rule:line-length
+      reminder_message: >-
+        {{ ai_text if (ai_text | length > 0) else ([
             "Evening meds time, John — because your body doesn't have a night shift crew.",
             "Take your meds so your dreams don’t turn into a CGI horror movie.",
             "Night meds: the sequel nobody asked for but everybody needs.",
@@ -52,8 +70,13 @@ action:
             "Night meds — the most adult thing you’ll do today.",
             "Take your meds so your body doesn’t attempt ‘surprise science.’",
             "Evening meds: because you deserve to respawn tomorrow with full health."
-          ] | random
-        }}
+          ] | random) }}
+      # yamllint enable rule:line-length
+
+  - service: script.text_notify_john
+    data:
+      title: "Medication Alert!"
+      message: "{{ reminder_message }}"
       data:
         actions:
           - action: "JE_MEDS_TAKEN"
