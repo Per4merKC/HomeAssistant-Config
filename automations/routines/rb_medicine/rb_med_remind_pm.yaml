@@ -15,18 +15,60 @@ condition:
       - condition: time
         after: "18:30:00"
 action:
+  # AI-generated cheerful beekeeper evening nag. continue_on_error keeps the
+  # automation running if the conversation agent errors out, times out, or
+  # (as happened for John's equivalent automation on 2026-08-10) returns a
+  # swallowed API error as if it were a normal reply; reminder_message below
+  # falls back to the static beekeeper-themed phrase library whenever
+  # ai_response wasn't populated, came back empty, or came back as an
+  # internal error response.
   - action: conversation.process
+    continue_on_error: true
     data:
       agent_id: conversation.chatgpt
       text: >-
-        Your objective is to get Robert to take his evening medicines.
-        Your response should be two sentences or less and use dark
-        humor in the response.
-    response_variable: response_var
+        Your objective is to cheerfully remind Robert to take his evening
+        medicines, using light, upbeat beekeeper and beehive-themed humor.
+        Your response should be two sentences or less.
+    response_variable: ai_response
+
+  - variables:
+      ai_text: >-
+        {{ (ai_response.response.speech.plain.speech | trim)
+           if (ai_response is defined
+               and ai_response.response.speech.plain.speech is defined
+               and ai_response.response.response_type != 'error')
+           else '' }}
+      # yamllint disable rule:line-length
+      reminder_message: >-
+        {{ ai_text if (ai_text | length > 0) else ([
+            "Evening buzz, Robert! Time to take your meds so you can keep the hive humming tomorrow.",
+            "Every good beekeeper has a routine — yours starts with taking your evening pills!",
+            "The bees are tucking in for the night. Time for you to take your meds too!",
+            "Busy bee, don't forget your evening medicine — self-care makes the sweetest honey.",
+            "A happy hive needs a happy keeper. Take your evening pills and keep the good vibes flowing!",
+            "Bee-lieve in yourself — take your evening meds and give your body the TLC it deserves!",
+            "Time to swarm those evening pills, Robert — your hive is counting on you!",
+            "Just like the bees wind down at dusk, it's time for your evening meds. You've got this!",
+            "A little pollen, a little medicine — both make for a thriving Robert. Take your pills!",
+            "The hive never skips a beat, and neither should you — evening meds time!",
+            "Sweet dreams start with taking care of yourself. Take your evening medicine, beekeeper!",
+            "Your bees would be proud — take your evening pills and keep buzzing along strong.",
+            "Time to cap off the day right: take your meds, just like sealing up a perfect honeycomb.",
+            "Evening meds, Robert! Keep your hive — and yourself — thriving.",
+            "The queen bee approves of good habits. Take your evening medicine!",
+            "Buzzing by to remind you — evening pills, then rest easy like a well-tended hive.",
+            "You take care of your bees all day; now it's time to take care of you. Evening meds!",
+            "A thriving apiary starts with a healthy keeper. Take your evening meds, Robert!",
+            "Time to bee responsible — your evening medicine is calling!",
+            "Wrap up the day the sweet way: take your meds and let the hive rest easy."
+          ] | random) }}
+      # yamllint enable rule:line-length
+
   - service: script.text_notify_robert
     data:
       title: "Medication Alert!"
-      message: "{{ response_var.response.speech.plain.speech }}"
+      message: "{{ reminder_message }}"
       data:
         actions:
           - action: "RB_MEDS_TAKEN"

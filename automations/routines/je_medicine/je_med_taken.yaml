@@ -137,7 +137,9 @@ action:
   - variables:
       ai_text: >-
         {{ (ai_response.response.speech.plain.speech | trim)
-           if (ai_response is defined and ai_response.response.speech.plain.speech is defined)
+           if (ai_response is defined
+               and ai_response.response.speech.plain.speech is defined
+               and ai_response.response.response_type != 'error')
            else '' }}
       response_var: >-
         {{ ("<voice name='Ivy'><prosody rate='92%' pitch='-10%'>" ~ ai_text ~ "</prosody></voice>")

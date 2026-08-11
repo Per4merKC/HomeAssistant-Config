@@ -7,19 +7,62 @@ trigger:
   event_data:
     actionName: RB_MEDS_TAKEN
 action:
+  # AI-generated cheerful beekeeper acknowledgement. continue_on_error keeps
+  # the automation running if the conversation agent errors out, times out,
+  # or (as happened for John's equivalent automation on 2026-08-10) returns
+  # a swallowed API error as if it were a normal reply; response_var_text
+  # below falls back to the static beekeeper-themed phrase library whenever
+  # ai_response wasn't populated, came back empty, or came back as an
+  # internal error response.
   - action: conversation.process
+    continue_on_error: true
     data:
       agent_id: conversation.chatgpt
       text: >-
-        You are GLaDOS and are acknologing that Robert has taken his pills.
-        Your response should be two sentences or less and use dark humor in
-        the response.
-    response_variable: response_var
+        You are a cheerful beekeeper assistant warmly congratulating Robert
+        for taking his pills, using light beehive-themed humor. Your
+        response should be two sentences or less.
+    response_variable: ai_response
+
+  - variables:
+      ai_text: >-
+        {{ (ai_response.response.speech.plain.speech | trim)
+           if (ai_response is defined
+               and ai_response.response.speech.plain.speech is defined
+               and ai_response.response.response_type != 'error')
+           else '' }}
+      # yamllint disable rule:line-length
+      response_var_text: >-
+        {{ ai_text if (ai_text | length > 0) else ([
+            "Medication logged! The whole hive is buzzing with pride.",
+            "Well done, Robert! That's one more sweet win for your health today.",
+            "Pills taken — you're officially as reliable as a worker bee today!",
+            "Great job! Your hive salutes your commitment to staying healthy.",
+            "Dose complete! You're building quite the honeycomb of good habits.",
+            "Nicely done! Somewhere, a bee is doing a little happy dance for you.",
+            "Medicine logged — you're the sweetest kind of responsible today!",
+            "You did it! That's another gold star in your beekeeping logbook.",
+            "Pills confirmed — keep up the great work, busy bee!",
+            "Wonderful! Your hive (and your health) thank you for the good habit.",
+            "Medication taken! You're pollinating your day with great choices.",
+            "Way to go! You've kept the hive of your health running smoothly.",
+            "Logged and done! You're buzzing in the right direction today.",
+            "Great job, Robert — the queen bee herself would approve!",
+            "Dose complete! Your body is thriving like a well-tended apiary.",
+            "You did the responsible thing — sweet as honey, Robert!",
+            "Pills in! That's a solid day's work for any good beekeeper.",
+            "Nicely handled! Keep buzzing along, one healthy choice at a time.",
+            "Medicine logged — your hive is proud, and so are we!",
+            "Confirmed! You're building a thriving colony of good habits."
+          ] | random) }}
+      # yamllint enable rule:line-length
+
   - service: script.text_notify_robert
     data_template:
       title: "Thank You!"
-      message: "{{ response_var.response.speech.plain.speech }}"
+      message: "{{ response_var_text }}"
       data: {}
+
   - service: input_boolean.turn_on
     target:
       entity_id: input_boolean.rb_medicine

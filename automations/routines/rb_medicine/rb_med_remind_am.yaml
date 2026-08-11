@@ -17,18 +17,60 @@ condition:
       - condition: time
         before: "18:30:00"
 action:
+  # AI-generated cheerful beekeeper morning nag. continue_on_error keeps the
+  # automation running if the conversation agent errors out, times out, or
+  # (as happened for John's equivalent automation on 2026-08-10) returns a
+  # swallowed API error as if it were a normal reply; reminder_message below
+  # falls back to the static beekeeper-themed phrase library whenever
+  # ai_response wasn't populated, came back empty, or came back as an
+  # internal error response.
   - action: conversation.process
+    continue_on_error: true
     data:
       agent_id: conversation.chatgpt
       text: >-
-        Your objective is to get Robert to take his morning medicines.
-        Your response should be two sentences or less and use dark
-        humor in the response.
-    response_variable: response_var
+        Your objective is to cheerfully remind Robert to take his morning
+        medicines, using light, upbeat beekeeper and beehive-themed humor.
+        Your response should be two sentences or less.
+    response_variable: ai_response
+
+  - variables:
+      ai_text: >-
+        {{ (ai_response.response.speech.plain.speech | trim)
+           if (ai_response is defined
+               and ai_response.response.speech.plain.speech is defined
+               and ai_response.response.response_type != 'error')
+           else '' }}
+      # yamllint disable rule:line-length
+      reminder_message: >-
+        {{ ai_text if (ai_text | length > 0) else ([
+            "Good morning, Robert! Time to buzz into the day — take your morning meds first.",
+            "Rise and shine like the bees at sunrise — your morning pills are waiting!",
+            "A productive hive starts the day right, and so should you. Morning meds time!",
+            "Good morning, beekeeper! Fuel up with your medicine before the bees put you to work.",
+            "The early bee gets the nectar — and you get healthier by taking your morning pills!",
+            "Time to wake up and take your meds, just like the hive waking up to a brand new day.",
+            "Morning buzz! Don't forget your pills before you check on the hive.",
+            "Start your day sweetly — take your morning medicine, Robert!",
+            "The bees are already hard at work. Catch up by taking your morning meds!",
+            "A great beekeeping day starts with a healthy keeper. Morning pills, please!",
+            "Bee bright and take your morning meds — your hive needs you at your best.",
+            "Morning has broken, and so should your pill bottle — time for your meds!",
+            "Buzz buzz! Time to take your morning medicine and get the day going.",
+            "Your bees rise with the sun — rise with your morning meds too!",
+            "A cheerful morning starts with self-care. Take your pills, Robert!",
+            "Time to pollinate your morning with good habits — starting with your medicine!",
+            "The hive's humming along nicely — make sure you are too. Morning meds!",
+            "Good morning! A spoonful of routine keeps the whole hive thriving — take your meds!",
+            "Rise and buzz, Robert — your morning medicine is ready when you are!",
+            "Start the day like a busy bee — happy, healthy, and medicated on schedule!"
+          ] | random) }}
+      # yamllint enable rule:line-length
+
   - service: script.text_notify_robert
     data:
       title: "Medication Alert!"
-      message: "{{ response_var.response.speech.plain.speech }}"
+      message: "{{ reminder_message }}"
       data:
         actions:
           - action: "RB_MEDS_TAKEN"
