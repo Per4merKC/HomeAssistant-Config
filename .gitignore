@@ -13,6 +13,7 @@ __pycache__
 # Directory (contents) ignores
 .cache
 .cloud
+.ha_mcp
 .storage
 deps
 everything-presence-zone-configurator
@@ -73,4 +74,3 @@ www/alexa_tts/*
 
 # Ignore binary files
 *.bin
-.ha_mcp/logs/mcp_usage.jsonl
