@@ -1,0 +1,57 @@
+---
+id: "00082"
+alias: "Bed Lights: Button 2 Hold (Dim)"
+description: >
+  Holding button 2 ramps brightness down in 5% steps every 300ms until
+  released, or until the light hits its minimum brightness floor
+  (~1%, HA won't step a light fully off). No-ops if the light is
+  already off. Requires a helper toggle: input_boolean.bed_lights_dim_hold.
+  Same mode: restart reasoning as the brighten automation.
+trigger:
+  # See bed_lights_on.yaml for why attribute: event_type is intentionally
+  # omitted from these triggers — it would silently drop an event whose
+  # event_type repeats the previous value.
+  - platform: state
+    id: hold_start
+    entity_id: event.ikea_led_buttons_button_2
+  - platform: state
+    id: hold_stop
+    entity_id: event.ikea_led_buttons_button_2
+condition:
+  - condition: template
+    value_template: >
+      {{ (trigger.id == 'hold_start' and trigger.to_state.attributes.event_type == 'long_press')
+         or (trigger.id == 'hold_stop' and trigger.to_state.attributes.event_type == 'long_release') }}
+action:
+  - choose:
+      # --- Hold started ---
+      - conditions: "{{ trigger.id == 'hold_start' }}"
+        sequence:
+          - if: "{{ is_state('light.ikea_led_striplights', 'on') }}"
+            then:
+              - action: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.bed_lights_dim_hold
+              - repeat:
+                  while:
+                    - condition: state
+                      entity_id: input_boolean.bed_lights_dim_hold
+                      state: "on"
+                    - condition: state
+                      entity_id: light.ikea_led_striplights
+                      state: "on"
+                  sequence:
+                    - action: light.turn_on
+                      target:
+                        entity_id: light.ikea_led_striplights
+                      data:
+                        brightness_step_pct: -5
+                    - delay:
+                        milliseconds: 300
+      # --- Hold released ---
+      - conditions: "{{ trigger.id == 'hold_stop' }}"
+        sequence:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.bed_lights_dim_hold
+mode: restart

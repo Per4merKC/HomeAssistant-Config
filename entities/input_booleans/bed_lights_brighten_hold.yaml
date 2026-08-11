@@ -1,0 +1,4 @@
+---
+bed_lights_brighten_hold:
+  name: Bed Lights Brighten Hold
+  icon: mdi:brightness-6

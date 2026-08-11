@@ -1,0 +1,4 @@
+---
+bed_lights_dim_hold:
+  name: Bed Lights Dim Hold
+  icon: mdi:brightness-4
