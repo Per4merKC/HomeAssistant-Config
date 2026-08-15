@@ -298,7 +298,7 @@ automation:
           entity_id: scene.before_dry
 
   # 6. WASHER NAG (Periodic Reminder)
-  - id: "00024"
+  - id: "00080"
     alias: "Laundry: Washer Move Reminder (Nag)"
     trigger:
       - platform: time_pattern
