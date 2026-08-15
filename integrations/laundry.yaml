@@ -142,7 +142,7 @@ automation:
             {% if wash_done_message is defined and wash_done_message.data is defined %}
               {{ wash_done_message.data }}
             {% else %}
-              <speak>The dryer is done. Your clothes are warm and ready to be folded.</speak>
+              <speak>The washer is done. Time to move your clothes to the dryer.</speak>
             {% endif %}
           target: ALL
 
