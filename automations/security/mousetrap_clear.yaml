@@ -1,0 +1,14 @@
+---
+id: "00084"
+alias: Mouse Trap AWTRIX Clear
+trigger:
+  - platform: state
+    entity_id: binary_sensor.mouse_trap_general_purpose
+    to: "off"
+action:
+  - action: mqtt.publish
+    data:
+      topic: awtrixng-4200c8/cmd/apps/pushed/mousetrap
+      qos: 0
+      retain: false
+      payload: "{}"

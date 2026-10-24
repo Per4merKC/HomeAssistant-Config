@@ -1,7 +1,7 @@
 ---
 id: "00066"
 alias: Stock Ticker
-description: "Display stock prices on AWTRIX"
+description: "Compact stock prices and daily changes on AWTRIX NG"
 mode: single
 trigger:
   - platform: state
@@ -13,60 +13,64 @@ trigger:
       - sensor.yahoofinance_tmus
       - sensor.yahoofinance_mgc
     attribute: regularMarketPrice
+  - platform: time_pattern
+    minutes: "/15"
 condition: []
+variables:
+  change_threshold: 0.2
+  scroll_speed: 100
+  display_repeat: 1
+  display_duration_ms: 10000
 action:
-  - variables:
-      # take out the space from the join on the next line before production
-      entity_list: >
-        {{ states.sensor
-        | selectattr('entity_id', 'search', '^sensor\\.yahoofinance')
-        | map(attribute='entity_id') | join(', ') }}
   - repeat:
-      count: "{{ entity_list.split(',') | length }}"
+      for_each: >-
+        {{ states.sensor
+           | selectattr('entity_id', 'search', '^sensor\\.yahoofinance_')
+           | map(attribute='entity_id') | list }}
       sequence:
-        - variables:
-            # yamllint disable rule:line-length
-            stock_icon: >-
-              {% set icon_key = state_attr(entity_list.split(',')[repeat.index - 1]
-              | trim, 'trending') %}
-              {% set icon_values =
-                {
-                  "up": "arrowup",
-                  "down": "arrowdown"
-                }
-              %}
-              {{ icon_values.get(icon_key, '') }}
-            # yamllint enable rule:line-length
         - service: mqtt.publish
           data:
-            retain: false
             qos: 0
-            # yamllint disable rule:line-length
+            retain: false
             topic: >-
-              {% set entity = entity_list.split(',')[repeat.index - 1] | trim %}
+              {% set entity = repeat.item %}
               {% set symbol = state_attr(entity, 'symbol') or entity.split('yahoofinance_', 1)[-1] | upper %}
               awtrixng-4200c8/cmd/apps/pushed/yahoofinance_{{ symbol }}
             payload: >-
-              {% set entity = entity_list.split(',')[repeat.index - 1] | trim %}
+              {% set entity = repeat.item %}
               {% set symbol = state_attr(entity, 'symbol') or entity.split('yahoofinance_', 1)[-1] | upper %}
-              {% set name = state_attr(entity, 'friendly_name') or symbol %}
               {% set currency = state_attr(entity, 'currencySymbol') or state_attr(entity, 'currency') or '' %}
               {% set price = state_attr(entity, 'regularMarketPrice') | float(none) %}
               {% if price is none %}
                 {% set price = states(entity) | float(none) %}
               {% endif %}
+              {% set change = state_attr(entity, 'regularMarketChangePercent') | float(none) %}
+              {% set previous_close = state_attr(entity, 'regularMarketPreviousClose') | float(none) %}
+              {% if change is none and price is not none and previous_close is not none and previous_close > 0 %}
+                {% set change = (price - previous_close) / previous_close * 100 %}
+              {% endif %}
+              {% set icon = 'stock-neutral' %}
+              {% set color = '#FFFFFF' %}
               {% if price is none %}
-                {% set display = name ~ ' (' ~ symbol ~ ') - Price unavailable' %}
+                {% set display = symbol ~ ' Price unavailable' %}
               {% else %}
-                {% set display = name ~ ' (' ~ symbol ~ ') - ' ~ currency ~ price %}
+                {% set display = symbol ~ ' ' ~ currency ~ ('%.2f' | format(price)) %}
+                {% if change is not none %}
+                  {% set display = display ~ ' (' ~ ('%+.1f' | format(change | round(1) + 0.0)) ~ '%)' %}
+                  {% if change > change_threshold %}
+                    {% set icon = 'stock-up' %}
+                    {% set color = '#24FF55' %}
+                  {% elif change < -change_threshold %}
+                    {% set icon = 'stock-down' %}
+                    {% set color = '#FF3333' %}
+                  {% endif %}
+                {% endif %}
               {% endif %}
-              {% set payload = {
-                "durationMs": 10000,
-                "text": display,
-                "textOffsetX": 33
-              } %}
-              {% if stock_icon %}
-                {% set payload = dict(payload, icon=stock_icon | string) %}
-              {% endif %}
-              {{ payload | to_json }}
-            # yamllint enable rule:line-length
+              {{ {
+                'text': display,
+                'textColor': color,
+                'icon': icon,
+                'durationMs': display_duration_ms,
+                'repeat': display_repeat,
+                'scroll': {'speed': scroll_speed}
+              } | to_json }}

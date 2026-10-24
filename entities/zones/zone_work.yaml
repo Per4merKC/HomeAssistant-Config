@@ -1,7 +1,8 @@
 ---
+# 6160 Sprint Parkway, Overland Park; radius includes the building and GPS margin.
 name: T-Mobile
-latitude: 38.91557963389569
-longitude: -94.65879321098328
+latitude: 38.9159856
+longitude: -94.6570049
 icon: mdi:cellphone-cog
 passive: false
-radius: 53
+radius: 125

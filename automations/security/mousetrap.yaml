@@ -12,6 +12,20 @@ trigger:
       minutes: 5
       seconds: 0
 action:
+  - action: mqtt.publish
+    data:
+      topic: awtrixng-4200c8/cmd/apps/pushed/mousetrap
+      qos: 0
+      retain: false
+      payload: >-
+        {{ {
+          'text': 'Empty mousetrap',
+          'icon': 'mouse',
+          'textColor': '#FFBF00',
+          'durationMs': 7000,
+          'repeat': 1
+        } | to_json }}
+
   - action: notify.persistent_notification
     data:
       message: Please empty the mousetrap as soon as possible

@@ -60,6 +60,23 @@ automation:
           entity_id: timer.dishwasher_cycle_timer
         data:
           duration: "02:00:00"
+      - action: mqtt.publish
+        continue_on_error: true
+        data:
+          topic: awtrixng-4200c8/cmd/notify
+          qos: 0
+          retain: false
+          payload: >-
+            {{ {
+              'text': [
+                {'text': 'DISH ', 'color': '#00BFFF'},
+                {'text': 'STARTED', 'color': '#FFFFFF'}
+              ],
+              'icon': 'dishwasher',
+              'durationMs': 12000,
+              'repeat': 1,
+              'scroll': {'speed': 80}
+            } | to_json }}
       - service: script.alexa_smart_notifications
         data:
           target: kitchen

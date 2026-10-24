@@ -4,19 +4,50 @@
 # Follower fetching, daily change, milestone notifications, and AWTRIX NG
 # -------------------------------------------------------------------------
 
-sensor:
-  - platform: rest
-    name: instagram_followers
-    unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3cd
-    resource_template: !secret ig_url
+# Fetching is scheduled below; loading this command does not contact Instagram.
+rest_command:
+  instagram_followers_fetch:
+    url: !secret ig_url
     method: GET
     headers:
       content-type: "application/json"
       user-agent: "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
-    value_template: "{{ value_json.data.user.edge_followed_by.count }}"
-    scan_interval: 7200
 
 template:
+  # Time triggers only: no request at startup or on template reload.
+  # This trigger-based sensor restores its last state after a restart.
+  - trigger:
+      - platform: time
+        at:
+          - "00:05:00"
+          - "06:05:00"
+          - "12:05:00"
+          - "18:05:00"
+    action:
+      - action: rest_command.instagram_followers_fetch
+        response_variable: instagram_response
+        continue_on_error: true
+    sensor:
+      - name: "Instagram Followers Scheduled"
+        default_entity_id: sensor.instagram_followers_scheduled
+        unique_id: instagram_followers_scheduled
+        unit_of_measurement: "followers"
+        state: >-
+          {% set response = instagram_response | default({}) %}
+          {% set body = response.get('content', {}) if response is mapping else {} %}
+          {% set body = body if body is mapping else body | from_json({}) %}
+          {% set data = body.get('data', {}) if body is mapping else {} %}
+          {% set user = data.get('user', {}) if data is mapping else {} %}
+          {% set followed = user.get('edge_followed_by', {}) if user is mapping else {} %}
+          {% set count = followed.get('count') if followed is mapping else none %}
+          {% set status = response.get('status') if response is mapping else none %}
+          {{ count | int if status == 200 and is_number(count) else this.state }}
+        attributes:
+          last_attempt: "{{ now().isoformat() }}"
+          last_http_status: >-
+            {% set response = instagram_response | default({}) %}
+            {{ response.get('status', 'request_failed') if response is mapping else 'request_failed' }}
+
   # This sensor restores its previous value after a Home Assistant restart.
   # If Instagram is unavailable at midnight, preserve the previous baseline.
   - trigger:
@@ -26,7 +57,7 @@ template:
       - name: "Instagram Followers at Midnight"
         unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3ce
         state: >-
-          {% set current = states('sensor.instagram_followers') %}
+          {% set current = states('sensor.instagram_followers_scheduled') %}
           {{ current | int if is_number(current) else this.state }}
         unit_of_measurement: "followers"
 
@@ -34,7 +65,7 @@ template:
       - name: "Instagram Daily Change"
         unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3cf
         state: >-
-          {% set current = states('sensor.instagram_followers') %}
+          {% set current = states('sensor.instagram_followers_scheduled') %}
           {% set baseline = states('sensor.instagram_followers_at_midnight') %}
           {% if is_number(current) and is_number(baseline) %}
             {{ (current | int) - (baseline | int) }}
@@ -51,7 +82,7 @@ automation:
       the pushed app within five minutes after an AWTRIX restart.
     trigger:
       - platform: state
-        entity_id: sensor.instagram_followers
+        entity_id: sensor.instagram_followers_scheduled
         to: null
 
       - platform: state
@@ -65,7 +96,7 @@ automation:
     condition:
       - condition: template
         value_template: >-
-          {{ is_number(states('sensor.instagram_followers')) }}
+          {{ is_number(states('sensor.instagram_followers_scheduled')) }}
 
     action:
       - service: mqtt.publish
@@ -74,7 +105,7 @@ automation:
           retain: false
           topic: awtrixng-4200c8/cmd/apps/pushed/instagram
           payload: >-
-            {% set current = states('sensor.instagram_followers') | int(none) %}
+            {% set current = states('sensor.instagram_followers_scheduled') | int(none) %}
             {% set baseline = states('sensor.instagram_followers_at_midnight') | int(none) %}
             {% if current is none %}
               {% set display = 'Instagram unavailable' %}
@@ -95,7 +126,7 @@ automation:
     id: "00077"
     trigger:
       - platform: state
-        entity_id: sensor.instagram_followers
+        entity_id: sensor.instagram_followers_scheduled
         to: null
 
     condition:

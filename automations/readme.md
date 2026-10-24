@@ -1,6 +1,6 @@
 # Script Listing
 
- > Next Available Number: 00083
+ > Next Available Number: 00086
 
 <!-- markdownlint-disable MD009 MD019 -->
 
@@ -88,5 +88,8 @@
 |  00080 | laundry                  | Laundry: Washer Move Reminder (Nag)                                                                                                                                | integrations          |
 |  00081 | bed_lights_brighten_hold | IKEA button 1 hold brightens Bed Lights in steps while held                                                                                                        | routines/bed_lights   |
 |  00082 | bed_lights_dim_hold      | IKEA button 2 hold dims Bed Lights in steps while held                                                                                                             | routines/bed_lights   |
+|  00083 | duolingo                 | Clear the Duolingo success app from AWTRIX at midnight                                                                                                             | integrations          |
+|  00084 | mousetrap_clear          | Clear the AWTRIX mousetrap app when the trap sensor returns to off                                                                                                  | security              |
+|  00085 | laundry                  | AWTRIX running status, waiting-load count, and move/empty reminders                                                                                                  | integrations          |
 
 <!-- markdownlint-enable MD009 MD019 -->

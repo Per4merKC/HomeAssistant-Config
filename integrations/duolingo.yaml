@@ -99,6 +99,20 @@ template:
 
 # 3. AUTOMATIONS (The "Muscle")
 automation:
+  - alias: "Duolingo: Clear AWTRIX at Midnight"
+    id: "00083"
+    description: "Remove yesterday's success app at midnight regardless of API availability."
+    trigger:
+      - platform: time
+        at: "00:00:00"
+    action:
+      - action: mqtt.publish
+        data:
+          topic: awtrixng-4200c8/cmd/apps/pushed/JE_DUOLINGO
+          qos: 0
+          retain: false
+          payload: "{}"
+
   - alias: "Duolingo: Daily Baseline Reset"
     id: "00073"
     trigger:

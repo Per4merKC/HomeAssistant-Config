@@ -4,7 +4,7 @@ substitutions:
   friendly_name: EP1 Bathroom
 
 packages:
-  Everything Smart Technology.Everything Presence One: github://everythingsmarthome/everything-presence-one/everything-presence-one-ble-rev1.6.yaml@main
+  Everything Smart Technology.Everything Presence One: !include packages/ep1-den/everything-presence-one-ble-rev1.6.yaml
 
 esphome:
   name: ${name}
@@ -12,8 +12,10 @@ esphome:
   friendly_name: ${friendly_name}
 
 ota:
-  - platform: esphome
-    password: !secret ota_password
+  # Extend the manufacturer's existing port-3232 OTA server.
+  # Require encrypted OTA, inheriting the existing API encryption key.
+  - id: !extend ota_esphome
+    encryption:
 
 api:
   encryption:
@@ -22,6 +24,7 @@ api:
 web_server:
   port: 80
   auth:
+    type: digest
     username: !secret web_server_username
     password: !secret web_server_password
 

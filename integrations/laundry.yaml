@@ -75,20 +75,6 @@ automation:
       - service: counter.decrement
         target:
           entity_id: counter.washing_machine_pods
-      - service: mqtt.publish
-        data:
-          qos: 0
-          retain: false
-          topic: "awtrixng-4200c8/cmd/apps/pushed/washer"
-          payload: >
-            {
-              "text": "Washing machine running...",
-              "icon": "waschmasch",
-              "repeat": 2,
-              "durationMs": 5000
-            }
-
-  # 2. WASHER DONE (Triggered by Power < 3000 for 2 min)
   - id: "00023"
     alias: "Laundry: Washer Finished"
     trigger:
@@ -117,13 +103,6 @@ automation:
           effect: "Pulse"
           # brightness_pct: 80
           # color_name: orange
-      - service: mqtt.publish
-        data:
-          qos: 0
-          retain: false
-          topic: "awtrixng-4200c8/cmd/apps/pushed/washer"
-          payload: "{}"
-
       - service: ai_task.generate_data
         continue_on_error: true
         data:
@@ -187,20 +166,6 @@ automation:
         data:
           brightness_pct: 80
           color_name: blue
-      - service: mqtt.publish
-        data:
-          qos: 0
-          retain: false
-          topic: "awtrixng-4200c8/cmd/apps/pushed/dryer"
-          payload: >
-            {
-              "text": "Dryer running...",
-              "icon": "dryer",
-              "repeat": 2,
-              "durationMs": 5000
-            }
-
-      # Concurrency Fix: Only clear the washer light if the washer is actually idle
       - choose:
           - conditions:
               - condition: state
@@ -277,14 +242,6 @@ automation:
           title: "Dryer Finished"
           message: "The dryer is done. Time to fold the clothes!"
           data: {}
-      - service: mqtt.publish
-        data:
-          qos: 0
-          retain: false
-          topic: "awtrixng-4200c8/cmd/apps/pushed/dryer"
-          payload: "{}"
-
-  # 5. DRYER DOOR: The Cleanup Trigger
   - id: "00033"
     alias: "Laundry: Dryer Emptied"
     trigger:
@@ -353,3 +310,82 @@ automation:
           title: "Laundry Nag"
           message: "Don't forget the laundry! {{ states('counter.laundry_queue') }} load(s) still in the washer."
           data: {}
+
+  # AWTRIX apps follow the stored appliance states and waiting-load count.
+  - id: "00085"
+    alias: "Laundry: AWTRIX Status Display"
+    description: "Show running appliances and persistent move/empty reminders."
+    trigger:
+      - platform: state
+        entity_id:
+          - input_select.washing_machine_status
+          - input_select.dryer_status
+          - counter.laundry_queue
+      - platform: homeassistant
+        event: start
+      - platform: mqtt
+        topic: awtrixng-4200c8/availability
+        payload: "online"
+    action:
+      - action: mqtt.publish
+        continue_on_error: true
+        data:
+          topic: awtrixng-4200c8/cmd/apps/pushed/washer
+          qos: 0
+          retain: false
+          payload: >-
+            {% if is_state('input_select.washing_machine_status', 'Running') %}
+              {{ {
+                'text': 'WASHING',
+                'icon': 'waschmasch',
+                'textColor': '#00BFFF',
+                'durationMs': 6000,
+                'repeat': 1,
+                'scroll': {'mode': 'bounce', 'speed': 80}
+              } | to_json }}
+            {% else %}
+              {}
+            {% endif %}
+      - action: mqtt.publish
+        continue_on_error: true
+        data:
+          topic: awtrixng-4200c8/cmd/apps/pushed/laundry_move
+          qos: 0
+          retain: false
+          payload: >-
+            {% set waiting = states('counter.laundry_queue') | int(0) %}
+            {% if waiting > 0 %}
+              {% set label = 'MOVE WASH' if waiting == 1 else waiting ~ ' LOADS TO DRY' %}
+              {{ {
+                'text': label,
+                'icon': 'waschmasch',
+                'textColor': '#FFBF00',
+                'textFadeMs': 2000,
+                'durationMs': 7000,
+                'repeat': 1,
+                'scroll': {'mode': 'bounce', 'speed': 80}
+              } | to_json }}
+            {% else %}
+              {}
+            {% endif %}
+      - action: mqtt.publish
+        continue_on_error: true
+        data:
+          topic: awtrixng-4200c8/cmd/apps/pushed/dryer
+          qos: 0
+          retain: false
+          payload: >-
+            {% set status = states('input_select.dryer_status') %}
+            {% if status in ['Running', 'Done'] %}
+              {{ {
+                'text': 'DRYING' if status == 'Running' else 'EMPTY DRYER',
+                'icon': 'dryer',
+                'textColor': '#00BFFF' if status == 'Running' else '#33FF66',
+                'textFadeMs': 0 if status == 'Running' else 2000,
+                'durationMs': 7000,
+                'repeat': 1,
+                'scroll': {'mode': 'bounce', 'speed': 80}
+              } | to_json }}
+            {% else %}
+              {}
+            {% endif %}
