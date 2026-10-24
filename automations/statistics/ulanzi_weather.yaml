@@ -10,27 +10,24 @@ variables:
     {% set icon_key = states('weather.honey_haus') %}
     {% set icon_values =
       {
-        "clear_night": "53383",
-        "cloudy": "53384",
-        "exceptional": "5464",
-        "fog": "56703",
-        "hail": "53385",
-        "humidity": "51764",
-        "lightning_rainy": "49299",
-        "lightning": "50231",
-        "partlycloudy": "53802",
-        "pouring": "49300",
-        "rainy": "2284",
-        "snowy_rainy": "49301",
-        "snowy": "2289",
-        "sunny": "11201",
-        "temp": "2056",
-        "windspeed": "7789",
-        "windy_variant": "15618",
-        "windy": "17076"
+        "clear-night": "weather-clear-night",
+        "cloudy": "cloud-cloudy-overcast",
+        "exceptional": "exceptional",
+        "fog": "weather-fog",
+        "hail": "hail",
+        "lightning-rainy": "lightningbolt",
+        "lightning": "lightningbolt",
+        "partlycloudy": "partly-cloudy",
+        "pouring": "weather-rain-showers",
+        "rainy": "weather-rain-showers",
+        "snowy-rainy": "snowyrainy",
+        "snowy": "snowflake",
+        "sunny": "sun",
+        "windy-variant": "windz",
+        "windy": "windy"
       }
     %}
-    {{ icon_values.get(icon_key, '1246') }}
+    {{ icon_values.get(icon_key, '') }}
   air_temp: >-
     {{ state_attr('weather.honey_haus', 'temperature') }}
     {{ state_attr('weather.honey_haus', 'temperature_unit') }}
@@ -65,17 +62,20 @@ action:
   - service: mqtt.publish
     metadata: {}
     data:
-      topic: awtrix_4200c8/custom/HA_Weather
+      topic: awtrixng-4200c8/cmd/apps/pushed/HA_Weather
       # yamllint disable rule:line-length
-      payload: |-
-        {
-          "text": "Temp: {{ air_temp }} Humid: {{ humid_info }} Wind: {{ wind_info }} ({{ wind_dir }})",
-          "textCase": 1,
-          "icon": "{{ weather_icon }}",
+      payload: >-
+        {% set payload = {
+          "text": "Temp: " ~ air_temp ~ " Humid: " ~ humid_info ~
+                  " Wind: " ~ wind_info ~ " (" ~ wind_dir ~ ")",
+          "textCase": "upper",
           "repeat": 2,
-          "duration": 5,
-          "stack": 0
-        }
+          "durationMs": 5000
+        } %}
+        {% if weather_icon %}
+          {% set payload = dict(payload, icon=weather_icon | string) %}
+        {% endif %}
+        {{ payload | to_json }}
       # yamllint enable rule:line-length
       qos: 0
       retain: false

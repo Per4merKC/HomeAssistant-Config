@@ -21,8 +21,10 @@ condition:
       }}
 action:
   - variables:
-      bp_top: "{{ states('sensor.withings_systolic_blood_pressure_mmhg_john') }}"
-      bp_bottom: "{{ states('sensor.withings_diastolic_blood_pressure_mmhg_john') }}"
+      bp_top: "{{ states('sensor.withings_systolic_blood_pressure_mmhg_john') | float | round(1) }}"
+      bp_bottom: "{{ states('sensor.withings_diastolic_blood_pressure_mmhg_john') | float | round(1) }}"
+      bp_top_display: "{{ bp_top | round(0) | int }}"
+      bp_bottom_display: "{{ bp_bottom | round(0) | int }}"
 
   # 1. CONDITIONAL: Update AWTRIX Display (Only if no visitors)
   - if:
@@ -32,15 +34,14 @@ action:
     then:
       - service: mqtt.publish
         data:
-          topic: awtrix_4200c8/custom/JE_BP
+          topic: awtrixng-4200c8/cmd/apps/pushed/JE_BP
           payload: |-
             {
-              "text": "JE: {{ bp_top }}/{{ bp_bottom }}",
-              "textCase": 2,
-              "icon": "331",
+              "text": "JE: {{ bp_top_display }}/{{ bp_bottom_display }}",
+              "textCase": "asTyped",
+              "icon": "blood-pressure",
               "repeat": 2,
-              "duration": 5,
-              "stack": 0
+              "durationMs": 5000
             }
           qos: 0
           retain: false
@@ -56,10 +57,10 @@ action:
       agent_id: conversation.google_generative_ai
       text: >-
         John Edmonds just synced his blood pressure.
-        Reading: {{ bp_top }} over {{ bp_bottom }}.
+        Reading: {{ bp_top_display }} over {{ bp_bottom_display }}.
         Act as a crisp, efficient medical bay AI on a spaceship.
         Provide a one-sentence verbal status update.
-        Be technical, sci-fi, and humorous. No emojis.
+        Be technical, sci-fi, and humorous. No emojis. Use whole numbers only; no decimals.
         Response will be spoken so pronounce the blood pressure
         part as "120 over 80" for example.
     response_variable: gemini_response

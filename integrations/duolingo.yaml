@@ -4,18 +4,10 @@
 # Includes: API Fetching, Token Management, Nagging, and Success Tracking
 # -------------------------------------------------------------------------
 
-# 1. INPUT HELPERS (The "Storage" for your JWT and IDs)
-input_text:
-  duolingo_jwt:
-    icon: mdi:school
-    max: 255
-    mode: password
-    name: Duolingo JWT Token
-  duolingo_userid:
-    icon: mdi:account-circle
-    mode: text
-    name: Duolingo User ID
-
+# 1. INPUT HELPERS
+# NOTE 2026-08-16: the JWT/userid input_text helpers and the login-based
+# rest_command/automation were removed after switching the streak sensor to
+# the public, unauthenticated username lookup (see the "rest:" section below).
 input_number:
   duolingo_streak_baseline:
     icon: mdi:counter
@@ -28,13 +20,23 @@ input_number:
 # 2. SENSORS (The "Brain")
 rest:
   # yamllint disable-line rule:line-length
-  - resource_template: "https://www.duolingo.com/2017-06-30/users/{{ states('input_text.duolingo_userid') }}?fields=streak"
+  # Public profile lookup by username - no login/JWT required. Switched from
+  # the authenticated /users/{id} endpoint 2026-08-16 after the login flow
+  # (rest_command.duolingo_login) started failing with 401s.
+  # NOTE: on this search-by-username endpoint, the fields filter needs the
+  # GraphQL-style "users{streak}" selector (URL-encoded), not a bare
+  # "fields=streak" - a bare "streak" here silently returns "{}" (HTTP 200,
+  # empty body) instead of an error, which is why the first attempt at this
+  # fix still read 0.
+  # URL (including username) lives in secrets.yaml, not here, since this file
+  # is git-tracked - resource: (not resource_template:) since !secret only
+  # resolves for a whole scalar value, not inside a Jinja template string.
+  - resource: !secret duolingo_profile
     scan_interval: 86400
     method: GET
     headers:
       # yamllint disable-line rule:line-length
       user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-      Authorization: "{{ states('input_text.duolingo_jwt') }}"
 
     # "sensor" here is a list of sensors created from this REST call.
     sensor:
@@ -43,10 +45,12 @@ rest:
         unit_of_measurement: "days"
         icon: mdi:school
         value_template: >
-          {% if value_json is defined 
-            and value_json.streak is defined 
-            and value_json.streak not in ['unknown', 'unavailable', None] %}
-            {{ value_json.streak | int(0) }}
+          {% if value_json is defined
+            and value_json.users is defined
+            and value_json.users | length > 0
+            and value_json.users[0].streak is defined
+            and value_json.users[0].streak not in ['unknown', 'unavailable', None] %}
+            {{ value_json.users[0].streak | int(0) }}
           {% else %}
             {{ this.state if this.state not in ['unknown', 'unavailable', None] else 0 }}
           {% endif %}
@@ -93,18 +97,6 @@ template:
           {% else %} mdi:emoticon-dead
           {% endif %}
 
-rest_command:
-  duolingo_login:
-    url: "https://www.duolingo.com/2017-06-30/login"
-    method: POST
-    headers:
-      Content-Type: "application/json"
-      Accept: "application/json"
-      # yamllint disable-line rule:line-length
-      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    payload: >
-      {"identifier": "{{ username }}", "password": "{{ password }}"}
-
 # 3. AUTOMATIONS (The "Muscle")
 automation:
   - alias: "Duolingo: Daily Baseline Reset"
@@ -137,66 +129,10 @@ automation:
 
       - service: mqtt.publish
         data:
-          topic: awtrix_4200c8/JE_DUOLINGO
+          topic: awtrixng-4200c8/cmd/apps/pushed/JE_DUOLINGO
+          qos: 0
+          retain: false
           payload: "{}"
-
-  - alias: "Duolingo: Token Refresh"
-    id: "00072"
-    trigger:
-      - platform: state
-        entity_id: sensor.duolingo_streak
-        to: "unavailable"
-      - platform: time
-        at: "03:00:00"
-    condition:
-      - condition: or
-        conditions:
-          - condition: state
-            entity_id: sensor.duolingo_streak
-            state: "unavailable"
-          - condition: time
-            weekday:
-              - mon
-    action:
-      # 1. Run the login command
-      - action: rest_command.duolingo_login
-        data:
-          username: !secret duolingo_username
-          password: !secret duolingo_password
-        response_variable: login_data
-
-      # 2. Check if the login was successful (Status 200)
-      - if:
-          - condition: template
-            value_template: "{{ login_data is defined and login_data.status == 200 }}"
-        then:
-          - variables:
-              # This looks for the JWT in headers (standard)
-              # but falls back to checking the body if they sent it there.
-              jwt_value: >
-                {% if login_data.headers.get('jwt') %}
-                  {{ login_data.headers.get('jwt') }}
-                {% elif login_data.content.get('jwt') %}
-                  {{ login_data.content.get('jwt') }}
-                {% else %}{% endif %}
-              user_id_value: "{{ login_data.content.get('id') }}"
-
-          # 3. Only update the input_texts if we actually got valid data
-          - if:
-              - condition: template
-                value_template: "{{ jwt_value != '' and user_id_value != '' }}"
-            then:
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.duolingo_jwt
-                data:
-                  value: "Bearer {{ jwt_value }}"
-
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.duolingo_userid
-                data:
-                  value: "{{ user_id_value }}"
 
   - alias: "Duolingo: Adaptive Nag System"
     id: "00074"
@@ -368,12 +304,14 @@ automation:
       # send display to AWTRIX
       - action: mqtt.publish
         data:
-          topic: awtrix_4200c8/custom/JE_DUOLINGO
+          topic: awtrixng-4200c8/cmd/apps/pushed/JE_DUOLINGO
+          qos: 0
+          retain: false
           payload: >-
             {
               "text": "Streak achieved! {{ new_streak }} Days",
-              "textCase": 2,
-              "icon": "70320",
+              "textCase": "asTyped",
+              "icon": "duolingo",
               "repeat": 2,
-              "duration": 5
+              "durationMs": 5000
             }

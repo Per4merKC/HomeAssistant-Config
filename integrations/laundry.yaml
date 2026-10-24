@@ -77,13 +77,15 @@ automation:
           entity_id: counter.washing_machine_pods
       - service: mqtt.publish
         data:
-          topic: "awtrix_4200c8/custom/washer"
+          qos: 0
+          retain: false
+          topic: "awtrixng-4200c8/cmd/apps/pushed/washer"
           payload: >
             {
               "text": "Washing machine running...",
-              "icon": 24502,
+              "icon": "waschmasch",
               "repeat": 2,
-              "duration": 5
+              "durationMs": 5000
             }
 
   # 2. WASHER DONE (Triggered by Power < 3000 for 2 min)
@@ -117,7 +119,9 @@ automation:
           # color_name: orange
       - service: mqtt.publish
         data:
-          topic: "awtrix_4200c8/custom/washer"
+          qos: 0
+          retain: false
+          topic: "awtrixng-4200c8/cmd/apps/pushed/washer"
           payload: "{}"
 
       - service: ai_task.generate_data
@@ -185,13 +189,15 @@ automation:
           color_name: blue
       - service: mqtt.publish
         data:
-          topic: "awtrix_4200c8/custom/dryer"
+          qos: 0
+          retain: false
+          topic: "awtrixng-4200c8/cmd/apps/pushed/dryer"
           payload: >
             {
               "text": "Dryer running...",
-              "icon": 24504,
+              "icon": "dryer",
               "repeat": 2,
-              "duration": 5
+              "durationMs": 5000
             }
 
       # Concurrency Fix: Only clear the washer light if the washer is actually idle
@@ -273,7 +279,9 @@ automation:
           data: {}
       - service: mqtt.publish
         data:
-          topic: "awtrix_4200c8/custom/dryer"
+          qos: 0
+          retain: false
+          topic: "awtrixng-4200c8/cmd/apps/pushed/dryer"
           payload: "{}"
 
   # 5. DRYER DOOR: The Cleanup Trigger

@@ -20,4 +20,4 @@ condition:
 action:
   - service: light.turn_off
     target:
-      entity_id: light.awtrix_4200c8_matrix
+      entity_id: light.living_room_awtrix_ng_matrix

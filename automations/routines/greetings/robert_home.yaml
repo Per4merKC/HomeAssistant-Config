@@ -8,16 +8,18 @@ trigger:
     zone: zone.home
     event: enter
 action:
-  - service: esphome.ulanzi_icon_screen
+  - service: mqtt.publish
     data:
-      default_font: true
-      icon_name: home_assistant
-      text: Welcome home, Robert!
-      lifetime: 30
-      screen_time: 15
-      r: 128
-      g: 128
-      b: 128
+      topic: awtrixng-4200c8/cmd/notify
+      qos: 0
+      retain: false
+      payload: >-
+        {{ {
+          "text": "Welcome home, Robert!",
+          "icon": "home-assistant",
+          "textColor": [128, 128, 128],
+          "durationMs": 15000
+        } | to_json }}
   - wait_for_trigger:
       - platform: state
         entity_id: binary_sensor.front_door

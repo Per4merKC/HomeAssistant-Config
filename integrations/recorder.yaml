@@ -1,16 +1,18 @@
 ---
 recorder:
   db_url: !secret mariadb_url
-  purge_keep_days: 10
-  include:
-    entities:
-      - sensor.duolingo_streak
+  purge_keep_days: 30
   exclude:
     domains:
       - sun
+      - update
+      - weather
     entities:
       - sensor.chiefs_tracker
       - sensor.local_time
       - sensor.mun_tracker
       - sensor.royals_tracker
       - sensor.sporting_tracker
+    entity_globs:
+      - binary_sensor.????????_????????*
+      - light.????????_????????*

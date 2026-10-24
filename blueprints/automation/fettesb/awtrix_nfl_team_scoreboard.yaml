@@ -1,33 +1,18 @@
 blueprint:
-  name: AWTRIX - NFL Team Scoreboard
+  name: AWTRIX NG - NFL Team Scoreboard
   author: Hank_the_Tank
-  description: "# NFL Team Scoreboard for AWTRIX Light\n\n\n## Screenshots\n\n  ![](https://raw.githubusercontent.com/fettesb/Homeassistant_blueprints/main/screenshot.svg)
-    \ - ![](https://raw.githubusercontent.com/fettesb/Homeassistant_blueprints/main/screenshot2.svg)
-    \ -  ![](https://raw.githubusercontent.com/fettesb/Homeassistant_blueprints/main/screenshot3.svg)\n\n\n\n\n\n\n\n##
-    Prerequisites\n**Before** using this blueprint, ensure that you have **HACS**
-    installed. You also need the ha-teamtracker integration [here](https://github.com/vasqued2/ha-teamtracker).\n\n##
-    Credits\nto Blueforcer for Awtrix Light\nIf you want to support his hard work
-    in developing awtrix light, please consider to buy your Ulanzi clock with his
-    affiliate links\n\n\n[EU] [link](https://www.ulanzi.de/products/ulanzi-pixel-smart-uhr-2882?ref=28e02dxl)\n[US]
-    [link](https://www.ulanzi.com/products/ulanzi-pixel-smart-clock-2882?ref=28e02dxl)\n\nIf
-    you already have hundreds of clocks, there are more ways to support him.\n[Github](https://github.com/Blueforcer/awtrix-light#support)\nwanna
-    join the [Darkside](https://discord.gg/a3n8spsn)?\n## Get the Awtrix Light Companion
-    App for iOS/Android\n\n<a href='https://play.google.com/store/apps/details?id=de.awtrix.light&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'>
-    <img style=\"width: 20%; height: auto;\" alt='Get it on Google Play' src='https://raw.githubusercontent.com/fettesb/Homeassistant_blueprints/main/playstore_button.png'/>
-    </a> <a href='https://apps.apple.com/de/app/awtrix-light/id6459478110'> <img style=\"width:
-    20%; height: auto;\" alt='Get it on Google Play' src='https://raw.githubusercontent.com/fettesb/Homeassistant_blueprints/main/appstore_button.png'/>
-    </a>\n\n\n**Special Thanks to RobG** This would not be possible without him\n\n**Thanks
-    in advance**\n"
+  description: Local AWTRIX NG adaptation of the NFL scoreboard by Hank_the_Tank (fettesb). Requires the
+    TeamTracker integration. Select AWTRIX NG MQTT devices; the blueprint reads their MQTT prefix sensors.
+    The upstream source URL refers to the original AWTRIX 3 blueprint.
   domain: automation
   input:
     awtrix:
       name: AWTRIX Device
-      description: Select the Awtrix 3
+      description: Select AWTRIX NG devices with MQTT discovery enabled.
       selector:
         device:
           integration: mqtt
           manufacturer: Blueforcer
-          model: AWTRIX 3
           multiple: true
     appname:
       name: Awtrix Application name
@@ -54,90 +39,101 @@ blueprint:
           filter:
           - integration: teamtracker
           multiple: false
-  source_url: https://raw.githubusercontent.com/fettesb/Homeassistant_blueprints/main/Awtrix
-    NFL Team Scoreboard/awtrix_nfl_team_scoreboard.yaml
+  source_url: https://raw.githubusercontent.com/fettesb/Homeassistant_blueprints/main/Awtrix NFL Team
+    Scoreboard/awtrix_nfl_team_scoreboard.yaml
 variables:
-  device_ids: !input awtrix
-  devices: "{% macro get_device(device_id) %}\n  {{ states((device_entities(device_id)
-    | select('search','device_topic') | list)[0] | default('unknown')) }}\n{% endmacro
-    %} {% set ns = namespace(devices=[]) %} {% for device_id in device_ids %}\n  {%
-    set device=get_device(device_id)|replace(' ','')|replace('\\n','') %}\n  {% set
-    ns.devices = ns.devices + [ device ] %}\n{% endfor %} {{ ns.devices | reject('match','unavailable|unknown')
-    | list }}"
-  appname: !input appname
-  my_sensor: !input my_sensor
-  message_duration: !input message_duration
+  device_ids: !input 'awtrix'
+  devices: |-
+    {% set ns = namespace(devices=[]) %}
+    {% for device_id in device_ids %}
+      {% set entities = device_entities(device_id) | select('search', 'mqtt_prefix') | list %}
+      {% set prefix = states(entities[0]) if entities else 'unknown' %}
+      {% set ns.devices = ns.devices + [prefix] %}
+    {% endfor %}
+    {{ ns.devices | reject('match', 'unavailable|unknown') | list }}
+  appname: !input 'appname'
+  my_sensor: !input 'my_sensor'
+  message_duration: !input 'message_duration'
   team_colors_0: '{{ state_attr(my_sensor, ''team_colors'')[0] }}'
   team_colors_1: '{{ state_attr(my_sensor, ''team_colors'')[1] }}'
   opponent_colors_0: '{{ state_attr(my_sensor, ''opponent_colors'')[0] }}'
   opponent_colors_1: '{{ state_attr(my_sensor, ''opponent_colors'')[1] }}'
-  team_score: "{% set raw_team_score = state_attr(my_sensor, 'team_score') %} {% if
-    raw_team_score|int < 10 %}\n  {{  \"0\" + raw_team_score|string }}\n{% else %}\n
-    \   {{ raw_team_score|string }}\n{% endif %}"
-  opponent_score: "{% set raw_opponent_score = state_attr(my_sensor, 'opponent_score')
-    %} {% if raw_opponent_score|int < 10 %}\n    {{ \"0\" + raw_opponent_score|string
-    }}\n{% else %}\n    {{ raw_opponent_score|string }}\n{% endif %}"
-  first_quarter: '{"dp":[12,7,"#ffffff"]}, {"dp":[14,7,"#5F5F5F"]}, {"dp":[17,7,"#5F5F5F"]},
-    {"dp":[19,7,"#5F5F5F"]},'
-  second_quarter: '{"dp":[12,7,"#ffffff"]}, {"dp":[14,7,"#ffffff"]}, {"dp":[17,7,"#5F5F5F"]},
-    {"dp":[19,7,"#5F5F5F"]},'
-  third_quarter: '{"dp":[12,7,"#ffffff"]}, {"dp":[14,7,"#ffffff"]}, {"dp":[17,7,"#ffffff"]},
-    {"dp":[19,7,"#5F5F5F"]},'
-  fourth_quarter: '{"dp":[12,7,"#ffffff"]}, {"dp":[14,7,"#ffffff"]}, {"dp":[17,7,"#ffffff"]},
-    {"dp":[19,7,"#ffffff"]},'
-  payload_switch: "{\n  \"name\" : \"{{ appname }}\"\n}"
-  payload_game_start: "{\n  \"draw\":[ \n    {\"df\":[0,0,16,8,\"{{ team_colors_0
-    }}\"]},     \n    {\"df\":[16,0,16,8,\"{{ opponent_colors_0 }}\"]}, \n    {\"dl\":[1,0,1,7,\"{{
-    team_colors_1 }}\"]},\n    {\"dl\":[3,0,3,7,\"{{ team_colors_1 }}\"]},\n    {\"dl\":[28,0,28,7,\"{{
-    opponent_colors_1 }}\"]}, \n    {\"dl\":[30,0,30,7,\"{{ opponent_colors_1 }}\"]},
-    \n    {{ first_quarter }}\n    {\"dt\":[7, 1, \"{{ team_score }}\",[255,255,255]]},
-    \n    {\"dt\":[18, 1, \"{{ opponent_score }}\",[255,255,255]]}, \n    {\"dl\":[15,3,16,3,\"#ffffff\"]}
-    \n  ], \n  \"duration\": {{ message_duration }} \n}"
-  payload_second_quarter: "{\n  \"draw\":[ \n    {\"df\":[0,0,16,8,\"{{ team_colors_0
-    }}\"]},     \n    {\"df\":[16,0,16,8,\"{{ opponent_colors_0 }}\"]}, \n    {\"dl\":[1,0,1,7,\"{{
-    team_colors_1 }}\"]},\n    {\"dl\":[3,0,3,7,\"{{ team_colors_1 }}\"]},\n    {\"dl\":[28,0,28,7,\"{{
-    opponent_colors_1 }}\"]}, \n    {\"dl\":[30,0,30,7,\"{{ opponent_colors_1 }}\"]},
-    \n    {{ second_quarter }}\n    {\"dt\":[7, 1, \"{{ team_score }}\",[255,255,255]]},
-    \n    {\"dt\":[18, 1, \"{{ opponent_score }}\",[255,255,255]]}, \n    {\"dl\":[15,3,16,3,\"#ffffff\"]}
-    \n  ], \n  \"duration\": {{ message_duration }} \n}"
-  payload_third_quarter: "{\n  \"draw\":[ \n    {\"df\":[0,0,16,8,\"{{ team_colors_0
-    }}\"]},     \n    {\"df\":[16,0,16,8,\"{{ opponent_colors_0 }}\"]}, \n    {\"dl\":[1,0,1,7,\"{{
-    team_colors_1 }}\"]},\n    {\"dl\":[3,0,3,7,\"{{ team_colors_1 }}\"]},\n    {\"dl\":[28,0,28,7,\"{{
-    opponent_colors_1 }}\"]}, \n    {\"dl\":[30,0,30,7,\"{{ opponent_colors_1 }}\"]},
-    \n    {{ third_quarter }}\n    {\"dt\":[7, 1, \"{{ team_score }}\",[255,255,255]]},
-    \n    {\"dt\":[18, 1, \"{{ opponent_score }}\",[255,255,255]]}, \n    {\"dl\":[15,3,16,3,\"#ffffff\"]}
-    \n  ], \n  \"duration\": {{ message_duration }} \n}"
-  payload_fourth_quarter: "{\n  \"draw\":[ \n    {\"df\":[0,0,16,8,\"{{ team_colors_0
-    }}\"]},     \n    {\"df\":[16,0,16,8,\"{{ opponent_colors_0 }}\"]}, \n    {\"dl\":[1,0,1,7,\"{{
-    team_colors_1 }}\"]},\n    {\"dl\":[3,0,3,7,\"{{ team_colors_1 }}\"]},\n    {\"dl\":[28,0,28,7,\"{{
-    opponent_colors_1 }}\"]}, \n    {\"dl\":[30,0,30,7,\"{{ opponent_colors_1 }}\"]},
-    \n    {{ fourth_quarter }}\n    {\"dt\":[7, 1, \"{{ team_score }}\",[255,255,255]]},
-    \n    {\"dt\":[18, 1, \"{{ opponent_score }}\",[255,255,255]]}, \n    {\"dl\":[15,3,16,3,\"#ffffff\"]}
-    \n  ], \n  \"duration\": {{ message_duration }} \n}"
+  team_score: |-
+    {% set raw_team_score = state_attr(my_sensor, 'team_score') %} {% if raw_team_score|int < 10 %}
+      {{  "0" + raw_team_score|string }}
+    {% else %}
+        {{ raw_team_score|string }}
+    {% endif %}
+  opponent_score: |-
+    {% set raw_opponent_score = state_attr(my_sensor, 'opponent_score') %} {% if raw_opponent_score|int < 10 %}
+        {{ "0" + raw_opponent_score|string }}
+    {% else %}
+        {{ raw_opponent_score|string }}
+    {% endif %}
+  first_quarter: '["pixel", 12,7,"#ffffff"], ["pixel", 14,7,"#5F5F5F"], ["pixel", 17,7,"#5F5F5F"], ["pixel",
+    19,7,"#5F5F5F"],'
+  second_quarter: '["pixel", 12,7,"#ffffff"], ["pixel", 14,7,"#ffffff"], ["pixel", 17,7,"#5F5F5F"], ["pixel",
+    19,7,"#5F5F5F"],'
+  third_quarter: '["pixel", 12,7,"#ffffff"], ["pixel", 14,7,"#ffffff"], ["pixel", 17,7,"#ffffff"], ["pixel",
+    19,7,"#5F5F5F"],'
+  fourth_quarter: '["pixel", 12,7,"#ffffff"], ["pixel", 14,7,"#ffffff"], ["pixel", 17,7,"#ffffff"], ["pixel",
+    19,7,"#ffffff"],'
+  payload_switch: |-
+    {
+      "name" : "{{ appname }}"
+    }
+  payload_game_start: "{\n  \"draw\":[ \n    [\"rectFill\", 0,0,16,8,\"{{ team_colors_0 }}\"],     \n\
+    \    [\"rectFill\", 16,0,16,8,\"{{ opponent_colors_0 }}\"], \n    [\"line\", 1,0,1,7,\"{{ team_colors_1\
+    \ }}\"],\n    [\"line\", 3,0,3,7,\"{{ team_colors_1 }}\"],\n    [\"line\", 28,0,28,7,\"{{ opponent_colors_1\
+    \ }}\"], \n    [\"line\", 30,0,30,7,\"{{ opponent_colors_1 }}\"], \n    {{ first_quarter }}\n    [\"\
+    text\", 7, 1, \"{{ team_score }}\",[255,255,255]], \n    [\"text\", 18, 1, \"{{ opponent_score }}\"\
+    ,[255,255,255]], \n    [\"line\", 15,3,16,3,\"#ffffff\"] \n  ], \n  \"durationMs\": {{ (message_duration\
+    \ | float(0) * 1000) | int }} \n}"
+  payload_second_quarter: "{\n  \"draw\":[ \n    [\"rectFill\", 0,0,16,8,\"{{ team_colors_0 }}\"],   \
+    \  \n    [\"rectFill\", 16,0,16,8,\"{{ opponent_colors_0 }}\"], \n    [\"line\", 1,0,1,7,\"{{ team_colors_1\
+    \ }}\"],\n    [\"line\", 3,0,3,7,\"{{ team_colors_1 }}\"],\n    [\"line\", 28,0,28,7,\"{{ opponent_colors_1\
+    \ }}\"], \n    [\"line\", 30,0,30,7,\"{{ opponent_colors_1 }}\"], \n    {{ second_quarter }}\n   \
+    \ [\"text\", 7, 1, \"{{ team_score }}\",[255,255,255]], \n    [\"text\", 18, 1, \"{{ opponent_score\
+    \ }}\",[255,255,255]], \n    [\"line\", 15,3,16,3,\"#ffffff\"] \n  ], \n  \"durationMs\": {{ (message_duration\
+    \ | float(0) * 1000) | int }} \n}"
+  payload_third_quarter: "{\n  \"draw\":[ \n    [\"rectFill\", 0,0,16,8,\"{{ team_colors_0 }}\"],    \
+    \ \n    [\"rectFill\", 16,0,16,8,\"{{ opponent_colors_0 }}\"], \n    [\"line\", 1,0,1,7,\"{{ team_colors_1\
+    \ }}\"],\n    [\"line\", 3,0,3,7,\"{{ team_colors_1 }}\"],\n    [\"line\", 28,0,28,7,\"{{ opponent_colors_1\
+    \ }}\"], \n    [\"line\", 30,0,30,7,\"{{ opponent_colors_1 }}\"], \n    {{ third_quarter }}\n    [\"\
+    text\", 7, 1, \"{{ team_score }}\",[255,255,255]], \n    [\"text\", 18, 1, \"{{ opponent_score }}\"\
+    ,[255,255,255]], \n    [\"line\", 15,3,16,3,\"#ffffff\"] \n  ], \n  \"durationMs\": {{ (message_duration\
+    \ | float(0) * 1000) | int }} \n}"
+  payload_fourth_quarter: "{\n  \"draw\":[ \n    [\"rectFill\", 0,0,16,8,\"{{ team_colors_0 }}\"],   \
+    \  \n    [\"rectFill\", 16,0,16,8,\"{{ opponent_colors_0 }}\"], \n    [\"line\", 1,0,1,7,\"{{ team_colors_1\
+    \ }}\"],\n    [\"line\", 3,0,3,7,\"{{ team_colors_1 }}\"],\n    [\"line\", 28,0,28,7,\"{{ opponent_colors_1\
+    \ }}\"], \n    [\"line\", 30,0,30,7,\"{{ opponent_colors_1 }}\"], \n    {{ fourth_quarter }}\n   \
+    \ [\"text\", 7, 1, \"{{ team_score }}\",[255,255,255]], \n    [\"text\", 18, 1, \"{{ opponent_score\
+    \ }}\",[255,255,255]], \n    [\"line\", 15,3,16,3,\"#ffffff\"] \n  ], \n  \"durationMs\": {{ (message_duration\
+    \ | float(0) * 1000) | int }} \n}"
 trigger:
 - platform: state
   entity_id:
-  - !input my_sensor
+  - !input 'my_sensor'
   to: IN
   id: Game Start
 - platform: state
   entity_id:
-  - !input my_sensor
+  - !input 'my_sensor'
   to: POST
   id: Game End
 - platform: state
   entity_id:
-  - !input my_sensor
+  - !input 'my_sensor'
   attribute: team_score
   id: Team Score Change
 - platform: state
   entity_id:
-  - !input my_sensor
+  - !input 'my_sensor'
   attribute: opponent_score
   id: Opponent Score Change
 - platform: state
   entity_id:
-  - !input my_sensor
+  - !input 'my_sensor'
   attribute: quarter
   id: Quarter Change
 condition: []
@@ -155,20 +151,20 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_game_start }}'
         - service: mqtt.publish
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/switch'
+            topic: '{{ repeat.item }}/cmd/apps/switch'
             payload: '{{ payload_switch }}'
       - conditions:
         - condition: trigger
           id:
           - Quarter Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 1
           below: 3
@@ -177,14 +173,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_second_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Quarter Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 2
           below: 4
@@ -193,14 +189,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_third_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Quarter Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 3
           below: 5
@@ -209,14 +205,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_fourth_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Team Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 0
           below: 2
@@ -225,20 +221,20 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_game_start }}'
         - service: mqtt.publish
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/switch'
+            topic: '{{ repeat.item }}/cmd/apps/switch'
             payload: '{{ payload_switch }}'
       - conditions:
         - condition: trigger
           id:
           - Team Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 1
           below: 3
@@ -247,14 +243,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_second_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Team Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 2
           below: 4
@@ -263,14 +259,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_third_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Team Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 3
           below: 5
@@ -279,14 +275,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_fourth_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Opponent Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 0
           below: 2
@@ -295,20 +291,20 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_game_start }}'
         - service: mqtt.publish
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/switch'
+            topic: '{{ repeat.item }}/cmd/apps/switch'
             payload: '{{ payload_switch }}'
       - conditions:
         - condition: trigger
           id:
           - Opponent Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 1
           below: 3
@@ -317,14 +313,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_second_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Opponent Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 2
           below: 4
@@ -333,14 +329,14 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_third_quarter }}'
       - conditions:
         - condition: trigger
           id:
           - Opponent Score Change
         - condition: numeric_state
-          entity_id: !input my_sensor
+          entity_id: !input 'my_sensor'
           attribute: quarter
           above: 3
           below: 5
@@ -349,7 +345,7 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
             payload: '{{ payload_fourth_quarter }}'
 - repeat:
     for_each: '{{ devices }}'
@@ -364,5 +360,6 @@ action:
           data:
             qos: 0
             retain: false
-            topic: '{{ repeat.item }}/custom/{{ appname }}'
+            topic: '{{ repeat.item }}/cmd/apps/pushed/{{ appname }}'
+            payload: '{}'
 mode: restart

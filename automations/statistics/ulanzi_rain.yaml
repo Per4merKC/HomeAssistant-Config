@@ -10,20 +10,20 @@ trigger:
       - sensor.netatmo_netatmo_outdoor_rain_guage_rain_today
 variables:
   rain_overlay: >-
-    {%- if states("sensor.netatmo_netatmo_outdoor_rain_guage_rain") > 0 -%}
+    {%- if states("sensor.netatmo_netatmo_outdoor_rain_guage_rain") | float(0) > 0 -%}
     rain
     {%- else -%}
-    clear
+    {{ '' }}
     {%- endif -%}
   rain_now: >-
     {{
       states("sensor.netatmo_netatmo_outdoor_rain_guage_rain")
-      | float(2)
+      | float(0)
     }}
   rain_day: >-
     {{
       states("sensor.netatmo_netatmo_outdoor_rain_guage_rain_today")
-      | float(2)
+      | float(0)
     }}
   # yamllint disable-line rule:line-length
   rain_text: >-
@@ -42,19 +42,19 @@ action:
         data:
           payload: |-
             {
-              "duration": 10,
-              "icon": "41619",
+              "durationMs": 10000,
+              "icon": "umbrella",
               "overlay": "{{ rain_overlay }}",
               "text": "{{ rain_text }}",
-              "textOffset": 33
+              "textOffsetX": 33
             }
           qos: 0
           retain: false
-          topic: awtrix_4200c8/custom/netatmo_rain
+          topic: awtrixng-4200c8/cmd/apps/pushed/netatmo_rain
     else:
       - service: mqtt.publish
         data:
-          payload: {}
+          payload: "{}"
           qos: 0
           retain: false
-          topic: awtrix_4200c8/custom/netatmo_rain
+          topic: awtrixng-4200c8/cmd/apps/pushed/netatmo_rain

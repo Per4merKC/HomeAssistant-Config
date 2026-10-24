@@ -31,22 +31,42 @@ action:
               | trim, 'trending') %}
               {% set icon_values =
                 {
-                  "up": "120",
-                  "down": "124"
+                  "up": "arrowup",
+                  "down": "arrowdown"
                 }
               %}
-              {{ icon_values.get(icon_key, '507') }}
+              {{ icon_values.get(icon_key, '') }}
             # yamllint enable rule:line-length
         - service: mqtt.publish
           data:
+            retain: false
             qos: 0
             # yamllint disable rule:line-length
-            topic: awtrix_4200c8/custom/yahoofinance_{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'symbol') }}
-            payload: |-
-              {
-                "duration": 10,
-                "icon": "{{ stock_icon }}",
-                "text": "{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'friendly_name') }} ({{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'symbol') }}) - {{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'currencySymbol')  }}{{ state_attr(entity_list.split(',')[repeat.index - 1] | trim, 'regularMarketPrice')  }}",
-                "textOffset": 33
-              }
+            topic: >-
+              {% set entity = entity_list.split(',')[repeat.index - 1] | trim %}
+              {% set symbol = state_attr(entity, 'symbol') or entity.split('yahoofinance_', 1)[-1] | upper %}
+              awtrixng-4200c8/cmd/apps/pushed/yahoofinance_{{ symbol }}
+            payload: >-
+              {% set entity = entity_list.split(',')[repeat.index - 1] | trim %}
+              {% set symbol = state_attr(entity, 'symbol') or entity.split('yahoofinance_', 1)[-1] | upper %}
+              {% set name = state_attr(entity, 'friendly_name') or symbol %}
+              {% set currency = state_attr(entity, 'currencySymbol') or state_attr(entity, 'currency') or '' %}
+              {% set price = state_attr(entity, 'regularMarketPrice') | float(none) %}
+              {% if price is none %}
+                {% set price = states(entity) | float(none) %}
+              {% endif %}
+              {% if price is none %}
+                {% set display = name ~ ' (' ~ symbol ~ ') - Price unavailable' %}
+              {% else %}
+                {% set display = name ~ ' (' ~ symbol ~ ') - ' ~ currency ~ price %}
+              {% endif %}
+              {% set payload = {
+                "durationMs": 10000,
+                "text": display,
+                "textOffsetX": 33
+              } %}
+              {% if stock_icon %}
+                {% set payload = dict(payload, icon=stock_icon | string) %}
+              {% endif %}
+              {{ payload | to_json }}
             # yamllint enable rule:line-length

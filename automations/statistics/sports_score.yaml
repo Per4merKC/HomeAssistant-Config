@@ -48,7 +48,7 @@ action:
           - condition: template
             value_template: |-
               {{
-                as_timestamp(state_attr("trigger.to_state.attributes.date"))
+                as_timestamp(trigger.to_state.attributes.date)
                 |
                 timestamp_custom('%Y-%m-%d')
                 >=
@@ -57,7 +57,7 @@ action:
           - condition: template
             value_template: |-
               {{
-                as_timestamp(state_attr("trigger.to_state.attributes.date"))
+                as_timestamp(trigger.to_state.attributes.date)
                 |
                 timestamp_custom('%Y-%m-%d')
                 <=
@@ -67,22 +67,23 @@ action:
       - service: mqtt.publish
         data:
           qos: 0
+          retain: false
           topic: >-
-            awtrix_4200c8/custom/{{ trigger.to_state.attributes.sport }}_{{
+            awtrixng-4200c8/cmd/apps/pushed/{{ trigger.to_state.attributes.sport }}_{{
             trigger.to_state.attributes.team_abbr }}
           # yamllint disable rule:line-length
           payload: |-
             {
               "draw": [
-                {"df": [0, 0, 12, 8, "{{ team_color_1 }}"]},
-                {"dl": [1, 0, 1, 7, "{{ team_color_2 }}"]},
-                {"dt": [3, 1, "{{ '%02d' | format(team_score) }}",[255, 255, 255]]},
-                {"db": [12, 0, 8, 8, {{ sport_icon }}]},
-                {"df": [20, 0, 12, 8, "{{ opponent_color_1 }}"]},
-                {"dl": [30, 0, 30, 7, "{{ opponent_color_2 }}"]},
-                {"dt": [22, 1, "{{ '%02d' | format(opponent_score) }}",[255,255,255]]}
+                ["rectFill", 0, 0, 12, 8, "{{ team_color_1 }}"],
+                ["line", 1, 0, 1, 7, "{{ team_color_2 }}"],
+                ["text", 3, 1, "{{ '%02d' | format(team_score) }}",[255, 255, 255]],
+                ["bitmap", 12, 0, 8, 8, {{ sport_icon }}],
+                ["rectFill", 20, 0, 12, 8, "{{ opponent_color_1 }}"],
+                ["line", 30, 0, 30, 7, "{{ opponent_color_2 }}"],
+                ["text", 22, 1, "{{ '%02d' | format(opponent_score) }}",[255,255,255]]
               ],
-              "duration": 10
+              "durationMs": 10000
             }
           # yamllint enable rule:line-length
       - choose:
@@ -153,20 +154,21 @@ action:
                         minutes: 0
                         seconds: 1
                         milliseconds: 0
-      - service: scene.turn_on
-        target:
-          entity_id: scene.before_score_update
-        data: {}
-      - service: scene.delete
-        target:
-          entity_id: scene.before_score_update
-        data: {}
+              - service: scene.turn_on
+                target:
+                  entity_id: scene.before_score_update
+                data: {}
+              - service: scene.delete
+                target:
+                  entity_id: scene.before_score_update
+                data: {}
     else:
       - service: mqtt.publish
         data:
           qos: 0
+          retain: false
           topic: >-
-            awtrix_4200c8/custom/{{ trigger.to_state.attributes.sport }}_{{
+            awtrixng-4200c8/cmd/apps/pushed/{{ trigger.to_state.attributes.sport }}_{{
             trigger.to_state.attributes.team_abbr }}
-          payload: ""
+          payload: "{}"
         alias: Send MQTT to clear the application, it's stale or future

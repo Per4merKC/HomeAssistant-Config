@@ -13,9 +13,11 @@ condition:
     value_template: "{{ is_number(trigger.to_state.state) }}"
 action:
   - variables:
-      current_w: "{{ trigger.to_state.state | float }}"
-      previous_w: "{{ trigger.from_state.state | float if is_number(trigger.from_state.state) else current_w }}"
-      weight_delta: "{{ (current_w - previous_w) | round(2) }}"
+      current_w: "{{ trigger.to_state.state | float | round(1) }}"
+      previous_w: "{{ (trigger.from_state.state | float | round(1)) if trigger.from_state is not none and is_number(trigger.from_state.state) else current_w }}"
+      weight_delta: "{{ (current_w - previous_w) | round(1) }}"
+      current_w_display: "{{ current_w | round(0) | int }}"
+      weight_delta_display: "{{ weight_delta | round(0) | int }}"
 
   # 1. CONDITIONAL: Update AWTRIX Display (Only if no visitors)
   - if:
@@ -25,16 +27,15 @@ action:
     then:
       - service: mqtt.publish
         data:
-          topic: awtrix_4200c8/custom/JE_Weight
+          topic: awtrixng-4200c8/cmd/apps/pushed/JE_Weight
           # yamllint disable rule:line-length
           payload: |-
             {
-              "text": "JE: {{ current_w | int }} ({% if weight_delta <= 0 %}down {{ weight_delta | abs }}{% else %}up {{ weight_delta }}{% endif %})",
-              "textCase": 2,
-              "icon": "27742",
+              "text": "JE: {{ current_w_display }} ({% if weight_delta_display <= 0 %}down {{ weight_delta_display | abs }}{% else %}up {{ weight_delta_display }}{% endif %})",
+              "textCase": "asTyped",
+              "icon": "weight",
               "repeat": 2,
-              "duration": 5,
-              "stack": 0
+              "durationMs": 5000
             }
           # yamllint enable rule:line-length
           qos: 0
@@ -51,10 +52,10 @@ action:
       agent_id: conversation.google_generative_ai
       text: >
         John Edmonds just completed a 'Weigh In'.
-        Current mass: {{ current_w }} lbs. Delta: {{ weight_delta }} lbs.
+        Current mass: {{ current_w_display }} lbs. Delta: {{ weight_delta_display }} lbs.
         Act as a crisp, slightly snarky spaceship computer terminal.
         Provide a one-sentence verbal announcement acknowledging the sync and the trend.
-        Keep it technical, sci-fi, and humorous.
+        Keep it technical, sci-fi, and humorous. Use whole numbers only; no decimals.
     response_variable: gemini_response
 
   # 4. ALWAYS: Voice Announcement via Smart Notifications

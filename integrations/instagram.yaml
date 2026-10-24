@@ -1,126 +1,128 @@
 ---
 # -------------------------------------------------------------------------
 # INSTAGRAM ECOSYSTEM
-# Includes: Follower Count Fetching, Daily Change Tracking,
-#           Milestone Notifications, and AWTRIX Integration
+# Follower fetching, daily change, milestone notifications, and AWTRIX NG
 # -------------------------------------------------------------------------
-
-# packages/instagram.yaml
-shell_command:
-  debug_instagram: 'curl -L -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" {{ url }} > /config/www/ig_debug.html'
 
 sensor:
   - platform: rest
     name: instagram_followers
     unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3cd
-    resource: !secret ig_url
+    resource_template: !secret ig_url
     method: GET
-    scan_interval: 86400
     headers:
-      User-Agent: "Mozilla/5.0"
-      accept: "text/html"
-    value_template: >
-      {# Regex: Find the og:description tag and grab everything before the first space #}
-      {% set pattern = '<meta property="og:description" content="([0-9,.]+)' %}
-      {# set pattern = 'content="([0-9,]+) Followers' #}
-      {% set match = value | regex_findall(pattern, ignorecase=True) %}
-
-      {% if match %}
-        {# Remove commas and convert to an integer #}
-        {{ match[0] | replace(',', '') | int(0) }}
-      {% else %}
-        {{ states('sensor.instagram_followers') | int(0) }}
-      {% endif %}
+      content-type: "application/json"
+      user-agent: "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
+    value_template: "{{ value_json.data.user.edge_followed_by.count }}"
+    scan_interval: 7200
 
 template:
+  # This sensor restores its previous value after a Home Assistant restart.
+  # If Instagram is unavailable at midnight, preserve the previous baseline.
   - trigger:
       - platform: time
         at: "00:00:00"
-      - platform: homeassistant
-        event: start
     sensor:
       - name: "Instagram Followers at Midnight"
         unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3ce
-        state: "{{ states('sensor.instagram_followers') | int(0) }}"
+        state: >-
+          {% set current = states('sensor.instagram_followers') %}
+          {{ current | int if is_number(current) else this.state }}
         unit_of_measurement: "followers"
 
   - sensor:
       - name: "Instagram Daily Change"
         unique_id: 15b3405a-e79c-40bc-b587-39ab5778b3cf
-        state: >
-          {% set current = states('sensor.instagram_followers') | int(0) %}
-          {% set midnight = states('sensor.instagram_followers_at_midnight') | int(0) %}
-          {{ current - midnight }}
+        state: >-
+          {% set current = states('sensor.instagram_followers') %}
+          {% set baseline = states('sensor.instagram_followers_at_midnight') %}
+          {% if is_number(current) and is_number(baseline) %}
+            {{ (current | int) - (baseline | int) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
         unit_of_measurement: "followers"
 
 automation:
-  - alias: "Instagram: Manual Update with Jitter"
-    id: "00068"
-    trigger:
-      - platform: time_pattern
-        minutes: "0"
-    condition:
-      - condition: state
-        entity_id: binary_sensor.withings_in_bed_john
-        state:
-          - "off"
-          - "unknown"
-    action:
-      - delay:
-          minutes: "{{ range(0, 21) | random }}"
-      - service: homeassistant.update_entity
-        target:
-          entity_id: sensor.instagram_followers
-
   - alias: "AWTRIX: Display Instagram Followers"
     id: "000076"
-    description: "Update AWTRIX only when the count actually changes"
+    description: >-
+      Publish follower updates, refresh the daily baseline, and restore
+      the pushed app within five minutes after an AWTRIX restart.
     trigger:
       - platform: state
         entity_id: sensor.instagram_followers
+        to: null
+
+      - platform: state
+        entity_id: sensor.instagram_followers_at_midnight
+        to: null
+
+      - platform: time_pattern
+        minutes: "/5"
+
+    # Existing valid-reading check, also used for scheduled refreshes.
     condition:
       - condition: template
-        value_template: >
-          {{
-            trigger.from_state.state != trigger.to_state.state
-            and
-            trigger.to_state.state not in ['unavailable', 'unknown']
-          }}
+        value_template: >-
+          {{ is_number(states('sensor.instagram_followers')) }}
+
     action:
       - service: mqtt.publish
         data:
-          topic: awtrix_4200c8/custom/instagram
-          payload: |-
-            {% set change = states('sensor.instagram_daily_change') | int(0) %}
-            {% set prefix = '+' if change >= 0 else '' %}
-            {
-              "icon": "52162",
-              "text": "{{ states('sensor.instagram_followers') }} ({{ prefix }}{{ change }})",
-              "duration": 5
-            }
+          qos: 0
+          retain: false
+          topic: awtrixng-4200c8/cmd/apps/pushed/instagram
+          payload: >-
+            {% set current = states('sensor.instagram_followers') | int(none) %}
+            {% set baseline = states('sensor.instagram_followers_at_midnight') | int(none) %}
+            {% if current is none %}
+              {% set display = 'Instagram unavailable' %}
+            {% elif baseline is not none %}
+              {% set change = current - baseline %}
+              {% set sign = '+' if change >= 0 else '' %}
+              {% set display = current ~ " (" ~ sign ~ change ~ ")" %}
+            {% else %}
+              {% set display = current | string %}
+            {% endif %}
+            {{ {
+              "icon": "instagram",
+              "text": display,
+              "durationMs": 5000
+            } | to_json }}
 
   - alias: "Instagram: Milestone & Smart Notifications"
     id: "00077"
     trigger:
       - platform: state
         entity_id: sensor.instagram_followers
+        to: null
+
     condition:
       - condition: template
-        value_template: >
-          {% set old = trigger.from_state.state | int(0) %}
-          {% set new = trigger.to_state.state | int(0) %}
+        value_template: >-
+          {% set previous = trigger.from_state.state
+             if trigger.from_state is not none else none %}
+          {% set current = trigger.to_state.state
+             if trigger.to_state is not none else none %}
+          {% set new = current | int(0) %}
+          {% set old = previous | int(new) %}
           {{ (new // 100) > (old // 100) }}
+
     action:
-      # 1. iOS Notification via your text_notify_john script
       - service: script.text_notify_john
         data:
           title: "Instagram Milestone!"
-          message: >
-            You've reached {{ trigger.to_state.state }} followers.
-            Daily change: {{ states('sensor.instagram_daily_change') }}.
+          message: >-
+            {% set current = trigger.to_state.state | int %}
+            {% set baseline = states('sensor.instagram_followers_at_midnight') %}
+            You've reached {{ current }} followers.
+            {% if is_number(baseline) %}
+              {% set change = current - (baseline | int) %}
+              Daily change: {{ '+' if change >= 0 else '' }}{{ change }}.
+            {% endif %}
           data: []
 
-      # 2. Alexa Smart Notification only if John is home
       - if:
           - condition: state
             entity_id: person.john
@@ -130,4 +132,6 @@ automation:
             data:
               target: "John"
               priority: "Normal"
-              message: "Congratulations John, your Instagram just hit {{ trigger.to_state.state }} followers."
+              message: >-
+                Congratulations John, your Instagram just hit
+                {{ trigger.to_state.state }} followers.

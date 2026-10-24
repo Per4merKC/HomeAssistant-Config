@@ -125,13 +125,15 @@ automation:
               # awtrix_4200c8
               - action: mqtt.publish
                 data:
-                  topic: "awtrix_4200c8/custom/mailbox"
+                  qos: 0
+                  retain: false
+                  topic: "awtrixng-4200c8/cmd/apps/pushed/mailbox"
                   payload: >
                     {
                       "text": "Mail has arrived!",
-                      "icon": 60233,
+                      "icon": "mailbox",
                       "repeat": 2,
-                      "duration": 5
+                      "durationMs": 5000
                     }
 
               - if:
@@ -189,8 +191,10 @@ automation:
                       # Clear awtrix_4200c8
                       - action: mqtt.publish
                         data:
-                          topic: "awtrix_4200c8/custom/mailbox"
-                          payload: ""
+                          qos: 0
+                          retain: false
+                          topic: "awtrixng-4200c8/cmd/apps/pushed/mailbox"
+                          payload: "{}"
 
                       # Vacation → send COLLECTION message (correct wording)
                       - if:
@@ -227,5 +231,7 @@ automation:
 
       - action: mqtt.publish
         data:
-          topic: "awtrix_4200c8/custom/mailbox"
+          qos: 0
+          retain: false
+          topic: "awtrixng-4200c8/cmd/apps/pushed/mailbox"
           payload: "{}"

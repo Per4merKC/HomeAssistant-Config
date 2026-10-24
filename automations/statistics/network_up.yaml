@@ -8,7 +8,7 @@ trigger:
     minutes: "20"
 condition:
   - condition: state
-    entity_id: light.awtrix_4200c8_matrix
+    entity_id: light.living_room_awtrix_ng_matrix
     state: "on"
 action:
   - service: mqtt.publish
@@ -16,13 +16,13 @@ action:
       # yamllint disable rule:line-length
       payload: |-
         {
-          "duration": 10,
+          "durationMs": 10000,
           "icon": "upload",
-          "text": "Upload speed is {{ '%.0f' | format(state_attr('sensor.speedtest_upload', 'bytes_sent')/1000000)  }} Mbs  /s",
-          "textCase": 2,
-          "textOffset": 33
+          "text": "Upload speed is {{ states('sensor.speedtest_upload') | float(0) | round(0) | int }} {{ state_attr('sensor.speedtest_upload', 'unit_of_measurement') or 'Mbit/s' }}",
+          "textCase": "asTyped",
+          "textOffsetX": 33
         }
       # yamllint enable rule:line-length
       qos: 0
       retain: false
-      topic: awtrix_4200c8/custom/speedtest_up
+      topic: awtrixng-4200c8/cmd/apps/pushed/speedtest_up

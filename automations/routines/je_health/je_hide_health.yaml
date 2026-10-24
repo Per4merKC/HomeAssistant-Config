@@ -15,19 +15,19 @@ action:
     data:
       qos: 0
       retain: false
-      topic: awtrix_4200c8/custom/JE_BP
+      topic: awtrixng-4200c8/cmd/apps/pushed/JE_BP
       payload: "{}"
   - service: mqtt.publish
     metadata: {}
     data:
       qos: 0
       retain: false
-      topic: awtrix_4200c8/custom/JE_Weight
+      topic: awtrixng-4200c8/cmd/apps/pushed/JE_Weight
       payload: "{}"
   - service: mqtt.publish
     metadata: {}
     data:
       qos: 0
       retain: false
-      topic: awtrix_4200c8/custom/JE_TEMP
+      topic: awtrixng-4200c8/cmd/apps/pushed/JE_TEMP
       payload: "{}"
